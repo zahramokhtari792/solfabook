@@ -1,0 +1,94 @@
+{
+  "expo": {
+    "name": "solfabook",
+    "slug": "solfabook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "expo.solfabook.with-webbrowser-redirect",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "package": "com.zahra27_7.solfabook",
+      "versionCode": 5
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@config-plugins/react-native-blob-util",
+      "@config-plugins/react-native-pdf",
+      [
+        "react-native-share",
+        {
+          "ios": [
+            "fb",
+            "instagram",
+            "twitter",
+            "tiktoksharesdk"
+          ],
+          "android": [
+            "com.facebook.katana",
+            "com.instagram.android",
+            "com.twitter.android",
+            "com.zhiliaoapp.musically"
+          ]
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "assets/fonts/iransans.ttf"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": true
+        }
+      ],
+      [
+        "expo-screen-orientation"
+      ],
+      "expo-build-properties"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a059143a-6ae4-477e-9524-9d842701a74a"
+      }
+    }
+  }
+}
