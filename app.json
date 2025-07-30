@@ -28,7 +28,13 @@
         "android.permission.SYSTEM_ALERT_WINDOW"
       ],
       "package": "com.zahra27_7.solfabook",
-      "versionCode": 5
+      "versionCode": 5,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -57,7 +63,7 @@
         "expo-font",
         {
           "fonts": [
-            "assets/fonts/iransans.ttf"
+            "./assets/fonts/iransans.ttf"
           ]
         }
       ],
@@ -87,7 +93,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "a059143a-6ae4-477e-9524-9d842701a74a"
+        "projectId": "66069161-91a6-430e-ad2f-96dbd6554072"
       }
     }
   }
