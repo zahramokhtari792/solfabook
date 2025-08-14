@@ -1,7 +1,365 @@
 {
-    "My Library":"کتابخانه‌من",
-    "SolfaSaz":"سل‌فاساز",
-    "Explore":"اکسپلور",
-    "Categories":"گروه‌بندی",
-    "Home":"خانه"
+    "My Library": "کتابخانه‌من",
+    "SolfaSaz": "سل‌فاساز",
+    "Explore": "اکسپلور",
+    "Categories": "گروه‌بندی",
+    "currency": "تومان",
+    "View All": "مشاهده‌ی بیشتر",
+    "unknown": "نامعلوم",
+    "success": "موفق",
+    "failed": "ناموفق",
+    "wallet recharge": "شارژ کیف پول",
+    "Wallet payment": "پرداخت از کیف پول",
+    "Gateway payment": "پرداخت از درگاه",
+    "withdrawal": "بازگشت وجه",
+    "cancel order": "لغو سفارش",
+    "Transaction ID": "شناسه‌ی تراکنش",
+    "Date": "تاریخ",
+    "Password is not Valid.": "رمز عبور معتبر نیست.",
+    "Password and password confirmation do not match.": "فیلدهای رمز عبور و تکرار رمز عبور شما با هم تطابق ندارند.",
+    "8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character.": "8 تا 15 کاراکتر که حاوی حداقل یک حرف کوچک، یک حرف بزرگ، یک رقم عددی و یک کاراکتر خاص هستند.",
+    "A verification code has been sent to": "یک کد تأیید ارسال شده است به",
+    "About Us": "درباره ما",
+    "Accepted": "پذیرفته شده",
+    "Account": "پروفایل",
+    "Add To Cart": "افزودن به سبد خرید",
+    "Address": "آدرس",
+    "Addresses": "آدرس‌های من",
+    "All": "همه",
+    "Amount": "مبلغ",
+    "An error occurred. Please check your internet connection.": "خطایی رخ داد. لطفا اتصال اینترنت خود را بررسی کنید.",
+    "An error occurred. Please try again later.": "خطایی رخ داد. لطفا بعدا دوباره امتحان کنید.",
+    "An unexpected error occurred!": "یک خطای غیر منتظره رخ داد!",
+    "Are you sure you want to cancel your order?": "آیا مطمئن هستید که می خواهید سفارش خود را لغو کنید؟",
+    "Are you sure you want to delete your account?": "آیا مطمئن هستید که می خواهید حساب کاربری خود را حذف کنید؟",
+    "Are you sure you want to log out?": "آیا مطمئن هستید که می خواهید خارج شوید؟",
+    "Blog": "وبلاگ",
+    "Cancel": "لغو",
+    "Cancel Order?": "لغو سفارش؟",
+    "Canceled": "لغو شد",
+    "Card number": "شماره کارت",
+    "Cart": "سبد خرید",
+    "Cash": "وجه نقد",
+    "Change Information": "تغییر اطلاعات",
+    "Change Password": "تغییر رمز عبور",
+    "Change Phone Number": "تغییر شماره تلفن",
+    "Charge": "شارژ",
+    "Charging": "شارژ",
+    "Choose your desired shipping method. *": "روش حمل و نقل مورد نظر خود را انتخاب کنید. *",
+    "Complete Order": "تکمیل سفارش",
+    "Completed": "تکمیل شده",
+    "Contact Us": "تماس با ما",
+    "Delete Account": "حذف حساب کاربری",
+    "Delivered": "تحویل داده شده",
+    "Delivery Fee": "هزینه ارسال",
+    "Desired amount": "مقدار مورد نظر",
+    "Details": "جزئیات",
+    "Didn't you receive a verification code?": "آیا کد تأیید دریافت نکردید؟",
+    "Digimall wallet": "کیف پول دیگیمال",
+    "Discount Price": "تخفیف شما",
+    "Dismiss": "لغو",
+    "Done date": "تاریخ انجام",
+    "Email Address": "آدرس ایمیل",
+    "Enter card number": "شماره کارت را وارد کنید",
+    "Enter desired amount": "مقدار مورد نظر را وارد کنید",
+    "Enter Password Confirmation.": "لطفا رمز عبور خود را تکرار نمایید.",
+    "Enter the desired amount.": "مقدار مورد نظر را وارد کنید.",
+    "Enter your charge code": "کد شارژ خود را وارد کنید",
+    "Enter your Password.": "رمز عبور خود را وارد نمایید.",
+    "Enter your postal address. *": "آدرس پستی خود را وارد کنید. *",
+    "Error saving language": "خطا در ذخیره زبان",
+    "FAQ": "سؤالات متداول",
+    "Failed to send code. Please make sure the phone number you entered is correct.": "ارسال کد ناموفق لطفا مطمئن شوید شماره تلفنی که وارد کرده اید صحیح است.",
+    "Featured Products": "محصولات ویژه",
+    "For accessing your account, please sign in first.": "برای دسترسی به حساب خود ابتدا وارد شوید.",
+    "Forgot your password?": "رمز ورود خود را فراموش کرده اید؟",
+    "Full Name": "نام کامل",
+    "Help & Support": "تماس با پشتیبانی",
+    "Home": "خانه",
+    "Your wallet balance is not enough.": "موجودی کیف پول شما کافی نمی باشد.",
+    "Subscription successfully purchased and activated.": "اشتراک با موفقیت خریداری و فعال شد.",
+    "How would you rate this product?": "این محصول را چگونه ارزیابی می کنید؟",
+    "Insufficient stock or wallet balance.": "موجودی یا موجودی کیف پول ناکافی.",
+    "Insufficient stock!": "سهام ناکافی!",
+    "Invite Friends": "دعوت از دوستان",
+    "Language": "زبان",
+    "Log Out": "خروج از حساب",
+    "Login With Code": "ورود با کد",
+    "Login With Password": "ورود با رمز عبور",
+    "Login | Register": "ورود | ثبت نام",
+    "Logout": "خروج",
+    "Network error!": "خطای شبکه!",
+    "No": "خیر",
+    "No records to display!": "هیچ نتیجه‌ای برای نمایش وجود ندارد!",
+    "Order ID": "شناسه سفارش",
+    "Order Payment": "پرداخت سفارش",
+    "Order Total": "مبلغ سفارش",
+    "Orders": "سفارشات",
+    "Password": "رمز عبور",
+    "Password Confirmation": "تایید رمز عبور",
+    "Password and repeat password do not match.": "رمز عبور و تکرار رمز عبور مطابقت ندارد.",
+    "Pending": "در دست بررسی",
+    "Phone Number": "شماره تلفن",
+    "Please enter Password Confirmation.": "لطفا تایید رمز عبور را وارد کنید.",
+    "Please enter Password.": "لطفا رمز عبور را وارد کنید",
+    "Please enter card number": "لطفا شماره کارت را وارد کنید",
+    "Please enter charging code first": "لطفا ابتدا کد شارژ را وارد کنید",
+    "Please enter desired amount": "لطفا مقدار مورد نظر را وارد کنید",
+    "Please enter the code correctly.": "لطفا کد را به درستی وارد کنید.",
+    "Please enter your Email Address.": "لطفا آدرس ایمیل خود را وارد کنید.",
+    "Please enter your Full Name.": "لطفا نام کامل خود را وارد کنید",
+    "Please enter your password.": "لطفا رمز عبور خود را وارد کنید.",
+    "Please enter your phone number. A verification code will be sent to your phone number.": "لطفا شماره تلفن خود را وارد کنید یک کد تأیید به شماره تلفن شما ارسال می شود.",
+    "Please fill in all the required fields.": "لطفا تمام فیلدهای مورد نیاز را پر کنید",
+    "Postcode": "کد پستی",
+    "Price": "قيمت ",
+    "Privacy Policy": "حریم خصوصی",
+    "Processing": "در حال پردازش",
+    "Product not found in cart!": "محصول در سبد خرید یافت نشد!",
+    "Product variation not found!": "تنوع محصول یافت نشد!",
+    "Product variation not found.": "تنوع محصول یافت نشد",
+    "Rate This Product": "امتیاز دهید",
+    "Rejected": "رد شد",
+    "Resend Code": "ارسال مجدد کد",
+    "Search": "جستجو",
+    "Result": "نتیجه",
+    "Sales Products": "محصولات فروش",
+    "Send code": "ارسال کد",
+    "Share your views with us.": "نظرات خود را با ما به اشتراک بگذارید.",
+    "Shipping method": "روش ارسال",
+    "Sign In": "ورود",
+    "Something went wrong!": "در اتصال به سرور خطایی پیش آمد.",
+    "Special Products": "محصولات ویژه",
+    "Status": "وضعیت",
+    "Submit": "ثبت",
+    "Submit New Address": "افزودن آدرس جدید",
+    "Submit Order": "پرداخت و تکمیل سفارش",
+    "Submit Review": "ارسال دیدگاه",
+    "Support": "پشتيباني",
+    "Terms & Conditions": "قوانین و مقررات",
+    "The Password you entered is not valid.": "رمز عبوری که وارد کردید معتبر نیست.",
+    "The card number entered is invalid.": "شماره کارت وارد شده نامعتبر است.",
+    "The code entered is invalid.": "کد وارد شده نامعتبر است.",
+    "The entered code is not correct!": "کد وارد شده صحیح نیست!",
+    "The entered password is not correct!": "رمز عبور وارد شده صحیح نیست!",
+    "The file size is greater than 120 KB.": "اندازه فایل بیشتر از 120 کیلوبایت است.",
+    "The mobile number you entered is not valid.": "شماره موبایلی که وارد کردید معتبر نیست.",
+    "The requested amount is greater than your wallet balance.": "مبلغ درخواستی بیشتر از موجودی کیف پول شما است.",
+    "The requested amount must be at least $5.": "مبلغ درخواست شده باید حداقل 5 دلار باشد.",
+    "To access your account, you must first sign in.": "برای دسترسی به حساب خود، ابتدا باید وارد شوید.",
+    "Top Categories": "دسته بندی های برتر",
+    "Top Rated Products": "محصولات با رتبه بالا",
+    "Total": "مجموع",
+    "Total Price:": "قیمت کل:",
+    "Transaction result": "نتیجه تراکنش",
+    "Transaction type": "نوع تراکنش",
+    "Transfer": "انتقال",
+    "Unauthorized access!": "دسترسی غیر مجاز!",
+    "Unauthorized access. Please login.": "دسترسی غیر مجاز لطفا وارد شوید",
+    "Wallet": "کیف پول",
+    "Wallet Balance": "تعادل کیف پول",
+    "Wallet balance:": "تعادل کیف پول:",
+    "We'd love to hear about your experience with this product. Please take a moment to rate this product and help others make a decision.": "ما دوست داریم در مورد تجربه شما با این محصول بشنویم. لطفاً لحظه ای را برای ارزیابی این محصول اختصاص دهید و به دیگران در تصمیم گیری کمک کنید.",
+    "Which payment method do you prefer?": "کدام روش پرداخت را ترجیح می دهید؟",
+    "Wishlist": "لیست علاقه مندی ها",
+    "Withdraw": "برداشت",
+    "Withdraw Requests": "درخواست های برداشت",
+    "Yes": "بله",
+    "You have entered with mobile number {{phone}}.": "شما با شماره تلفن همراه {{phone}} وارد شده اید.",
+    "You have successfully logged out!": "شما با موفقیت خارج شدهاید!",
+    "Your account has been deleted successfully!": "حساب کاربری شما با موفقیت حذف شده است!",
+    "Your changes have been applied.": "تغییرات شما اعمال شده است.",
+    "Your charge code": "کد شارژ شما",
+    "Your order has been canceled successfully!": "سفارش شما با موفقیت لغو شده است!",
+    "Your order has been placed successfully!": "سفارش شما با موفقیت ثبت شده است!",
+    "Your review has been submitted successfully!": "دیدگاه شما با موفقیت ارسال شده است!",
+    "Your submission indicates your agreement to our terms of service and privacy policy.": "ورود شما به معنای موافقت شما با قوانین و شرایط ما است.",
+    "currency unit": "تومان",
+    "message": "سلام! یه اپلیکیشن آموزشی خفن پیدا کردم به اسم فردانوش. کلی دوره و اشتراک آموزشی داره. بیا تو هم نصبش کن، با هم یاد بگیریم!",
+    "more": "بیشتر",
+    "or": "یا",
+    "shipping Method Price": "هرینه ارسال",
+    "text1": "زبان را انتخاب کنید",
+    "َUnavailable": "در دسترس نیست",
+    "City": "شهر",
+    "Province": "استان",
+    "Neighbourhood": "محله",
+    "Receiver Phone.": "شماره تلفن گیرنده",
+    "Receiver name.": "نام گیرنده",
+    "Address Title": "عنوان آدرس",
+    "Postal Address": "آدرس پستی",
+    "Unit": "واحد",
+    "Number": "پلاک",
+    "T": "تومان",
+    "Purchase course": "خرید دوره",
+    "Purchase subscription": "خرید اشتراک",
+    "Please select your Date Of Birth.": "لطفا تاریخ تولد خود را وارد کنید.",
+    "Date Of Birth": "تاریخ تولد",
+    "Description": "توضیحات",
+    "You have an active subscription and cannot purchase a new one.": "شما یک اشتراک فعال دارید و نمی‌توانید اشتراک جدید بخرید.",
+    "You must log in to view first.": "برای مشاهده ابتدا وارد شوید.",
+    "You must have an active subscription to view the videos in this course.": "برای مشاهده این فیلم باید اشتراک فعال داشته باشید.",
+    "You must purchase this course to view the videos in this course.": "برای مشاهده فیلم های این دوره باید این دوره را خریداری کنید.",
+    "Get Started": "شروع کنید",
+    "Sign Up": "ثبت نام",
+    "Don`t have an account?": "حساب کاربری ندارید؟",
+    "Login with": "ورود با ",
+    "OTP": "کد یکبار مصرف",
+    "Sing in your account": "ورود به حساب کاربری",
+    "Boost your business at Magnet": "در مگنت، به کسب و کار خود رونق ببخشید",
+    "Email": "ایمیل",
+    "Failed to send code. Please make sure the email you entered is correct.": "کد ارسال نشد. لطفا مطمئن شوید ایمیلی که وارد کرده اید صحیح است.",
+    "No user found with this email address. Please sign up first.": "هیچ کاربری با این آدرس ایمیل پیدا نشد. لطفا ابتدا ثبت نام کنید",
+    "Create new your account": "ایجاد حساب کاربری",
+    "By creating an acount you agree to our": "با ایجاد حساب کاربری شما موافقت می کنید با",
+    "terms of services": "قوانین و مقررات",
+    "privacy policy": "سیاست حفظ حریم خصوصی",
+    "and": "و",
+    "&": "و",
+    "Already have an account?": "حساب کاربری دارید؟",
+    "Confirm Password": "تکرار رمز عبور",
+    "An authentication code has been sent to": "کد تایید هویت برای شما ارسال شد",
+    "sce left": "ثانیه باقی مانده",
+    "Change Email Address": "تغییر ایمیل",
+    "The code has expired.": "کد منقضی شده است.",
+    "Not yet get?": "هنوز دریافت نکرده اید؟",
+    "🎉 I'm using the Magnet app to showcase my business!\nIf you own a business or want to discover local services and shops, Magnet is the perfect place to connect!": "🎉 من از اپلیکیشن «مگنت» استفاده می‌کنم تا کسب‌وکارم رو معرفی کنم!\nاگر تو هم کسب‌وکاری داری یا می‌خوای با فروشنده‌ها و ارائه‌دهنده‌های خدمات مختلف آشنا بشی، مگنت بهترین جاست!",
+    "You have logged in with": "شما وارد شده اید با",
+    "Please Enter Your Full Name.": "لطفا نام کامل خود را وارد کنید.",
+    "Support Chat": "چت پشتیبانی",
+    "The email address you entered is not valid.": "آدرس ایمیل وارد شده معتبر نمی باشد.",
+    "All fields are required.": "تمامی فیلدها ضروری هستند.",
+    "New ad": "افزودن آگهی",
+    "My socials": "شبکه‌های اجتماعی من",
+    "Wallet and payments": "کیف پول و پرداخت‌ها",
+    "Twitter": "X",
+    "Instagram": "اینستاگرام",
+    "Telegram": "تلگرام",
+    "WhatsApp": "واتساپ",
+    "LinkedIn": "لینکدین",
+    "Facebook": "فیسبوک",
+    "Youtube": "یوتیوب",
+    "Withdrawal": "درخواست برداشت",
+    "Wallet recharge": "شارژ کیف پول",
+    "Payment history": "تاریخچه‌ی پرداخت‌ها",
+    "Your wallet has been successfully topped up.": "کیف پول شما با موفقیت شارژ شد.",
+    "The payment encountered an error.": "پرداخت با خطا مواجه شد.",
+    "Enter your desired amount.": "مبلغ مورد نظر خود را وارد کنید. ",
+    "Payment": "پرداخت",
+    "Amount must be greater than 1.": "مبلغ باید از 1 بیشتر باشد",
+    "Subscriptions": "اشتراک‌ها",
+    "Yearly": "سالانه",
+    "Monthly": "ماهانه",
+    "Buy Now": "اکنون بخرید",
+    "Free": "رایگان",
+    "Wallet balance": "موجودی کیف پول",
+    "Successful": "موفق",
+    "Unsuccessful": "ناموفق",
+    "Buy subscription": "خرید اشتراک",
+    "Inventory": "موجودی",
+    "Account number": "شماره حساب",
+    "Refund": "بازگشت وجه",
+    "Wallet recharge by admin": "شارژ کیف پول توسط ادمین",
+    "Withdrawal from wallet by admin": "برداشت از کیف پول توسط ادمین",
+    "Withdrawal request": "درخواست برداشت",
+    "Payment receipt": "رسید پرداخت",
+    "View": "مشاهده",
+    "End Date": "تاریخ پایان",
+    "The minimum amount allowed for withdrawal is 10 units.": "حداقل مقدار مجاز برای برداشت 10 واحد است.",
+    "The maximum amount allowed for withdrawal is 1000 units.": "حداکثر مقدار مجاز برای برداشت 1000 واحد است.",
+    "The operation failed. You have a request pending review.": "عملیات انجام نشد. شما درخواست دردست بررسی دارید.",
+    "First, complete your bank information.": "ابتدا اطلاعات بانکی خود را تکمیل کنید",
+    "Edit bank information": "ویرایش اطلاعات بانکی",
+    "Cardholder name": "نام صاحب کارت",
+    "Account holder name": "نام صاحب حساب",
+    "Bank name": "نام بانک",
+    "IBAN": "شبا",
+    "Your information was successfully registered.": "اطلاعات شما با موفقیت ثبت شد.",
+    "Search...": "جست‌جو",
+    "You have already submitted your comment.": "شما قبلا نظر خود را ثبت کرده اید.",
+    "Share the details of your experience here.": "جزئیات تجربه خود را در این مکان به اشتراک بگذارید.",
+    "Your ad has been successfully trended.": "آگهی شما با موفقیت نردبان شد.",
+    "Ad trend": "نردبان آگهی",
+    "London": "لندن",
+    "Filters": "فیلترها",
+    "Please log in first.": "لطفا ابتدا وارد شوید.",
+    "Please enter your name.": "لطفا نام خود را وارد کنید.",
+    "Name": "نام",
+    "Last Name": "نام خانوادگی",
+    "First and last name are required.": "وارد کردن نام و نام خانوادگی الزامی می باشد.",
+    "Recharge wallet": "شارژ کیف پول",
+    "The minimum allowed amount is 10,000 Tomans.": "حداقل مقدار مجاز 10,000 تومان می باشد.",
+    "Pay for the order with ID": "پرداخت سفارش با شناسه",
+    "File name": "نام فایل",
+    "Buying files from wallet": "خرید فایل از کیف پول",
+    "Purchase files from the payment gateway": "خرید فایل از درگاه پرداخت",
+    "Pay for the order from your wallet": "پرداخت سفارش از کیف پول",
+    "Pay for the order through the payment gateway": "پرداخت سفارش از درگاه پرداخت",
+    "Enter your desired amount in Tomans.": "مبلغ مورد نظر خود را به تومان وارد کنید.",
+    "Amount in Tomans": "مبلغ به تومان",
+    "IBAN Number": "شماره شبا",
+    "Enter your IBAN number.": "شماره شبای خود را وارد کنید.",
+    "Transactions": "تراکنش‌ها",
+    "Settings": "تنظیمات",
+    "Device information": "اطلاعات دستگاه",
+    "More": "بیشتر",
+    "Publisher": "ناشر",
+    "Writer": "نویسنده",
+    "Narrator": "گوینده",
+    "Translator": "مترجم",
+    "Author": "مؤلف",
+    "From {{num}} rates": "از {{num}} نظر",
+    "Post a comment": "ثبت نظر",
+    "Share your opinion with us.": "نظر خودتون رو با ما به اشتراک بذارید.",
+    "Content quality": "کیفیت محتوا",
+    "Credibility and history": "اعتبار و سابقه",
+    "Trustworthiness": "امانتداری",
+    "Buy": "خرید",
+    "Get free": "دریافت رایگان",
+    "Get a printed copy": "دریافت نسخه چاپی",
+    "Study the book sample": "مطالعه نمونه کتاب",
+    "About the book": "درباره‌ی کتاب",
+    "Full description": "توضیحات کامل",
+    "Category": "دسته بندی",
+    "Album description": "توضیحات آلبوم",
+    "Book Description": "توضیحات کتاب",
+    "{{num}} pages": "{{num}} صفحه",
+    "Audio file": "فایل صوتی",
+    "Video": "تصویری",
+    "File type": "نوع فایل",
+    "Picture": "عکس",
+    "Audio": "صوتی",
+    "Audio And Picture": "صوتی و تصویری",
+    "PDF And Audio": "پی دی اف و صوتی",
+    "video": "فیلم",
+    "Code": "کد محصول",
+    "Publish Date": "تاریخ انتشار",
+    "Number of pages": "تعداد صفحه",
+    "Duration": "مدت زمان",
+    "Image frame": "ابعاد تصویر",
+    "User comments": "نظرات کاربران",
+    "Book rating": "امتیاز کتاب",
+    "My opinion and rating": "نظر و امتیاز من",
+    "Usefull": "مفید بود🙂",
+    "Fruitful": "پرباربود🤔",
+    "Fascinating": "جذاب بود🧐",
+    "Informative": "آموزنده بود🤓",
+    "My opinion about this book...": "نظر من در مورد این کتاب...",
+    "My opinion about this album...": "نظر من در مورد این آلبوم...",
+    "To post a comment, you must give it a rating of 1 to 5 stars.": "برای ثبت نظر باید حتما از ۱ تا ۵ ستاره بدی",
+    "Ok": "متوجه شدم",
+    "To post a comment, you must write your comment!🙄": "برای ثبت نظر باید حتما نظرت رو بنویسی!🙄",
+    "Are you sure you want to delete your comment?": "آیا از حذف نظرت مطمئنی؟",
+    "Delete comment": "حذف نظر",
+    "Published": "منتشر شده",
+    "File": "فایل",
+    "Album": "آلبوم",
+    "Bookmarked": "نشان‌شده",
+    "Favorite": "موردعلاقه",
+    "Delete": "حذف",
+    "Are you sure you want to delete the file? By doing this, you will no longer have access to the purchased file.": "آیا از حذف فایل اطمینان دارید؟ با انجام این عملیات شما دیگر دسترسی به فایل خریداری شده ندارید.",
+    "Are you sure you want to delete the album? By doing this, you will no longer have access to the purchased album.": "آیا از حذف آلبوم اطمینان دارید؟ با انجام این عملیات شما دیگر دسترسی به آلبوم خریداری شده ندارید.",
+    "About the album": "درباره آلبوم",
+    "Album rating": "امتیاز آلبوم",
+    "Publication date":"تاریخ انتشار"
 }

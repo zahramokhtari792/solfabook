@@ -1,7 +1,7 @@
 import { Dimensions, Platform, ToastAndroid } from "react-native";
 import Constants from "expo-constants";
 import { toJalaali } from 'jalaali-js';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 
 
 var jalaali = require('jalaali-js');
@@ -11,10 +11,28 @@ const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
 export const appName = () => {
     return Constants?.expoConfig?.name;
 }
+export function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const k = 1024;
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + units[i];
+}
+
 
 export const appVersion = () => {
     return Constants?.expoConfig?.version;
 }
+
+export const chunkArray = (array, size) => {
+  const result = [];
+  for (let i = 0; i < array?.length; i += size) {
+    result.push(array?.slice(i, i + size));
+  }
+  return result;
+};
 
 export const getColumnsCount = () => {
     if (deviceWidth >= 1024) {
@@ -210,12 +228,12 @@ export const handleError = (error) => {
 
 
 // یک تاریخ نمونه (مثلاً "2025-05-30")
-export const calculateDaysDifference = (targetDate) => {
-  const now = dayjs();
-  const givenDate = dayjs(targetDate);
-  const diffInDays = now.diff(givenDate, 'day');
-  return diffInDays;
-};
+// export const calculateDaysDifference = (targetDate) => {
+//   const now = dayjs();
+//   const givenDate = dayjs(targetDate);
+//   const diffInDays = now.diff(givenDate, 'day');
+//   return diffInDays;
+// };
   
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -22,7 +22,7 @@ export default function CustomImageCarousal({ data }) {
         { key: 'spacer-right' },
     ]);
     const { width } = useWindowDimensions();
-    const SIZE = width * 0.85;
+    const SIZE = width * 1;
     const SPACER = (width - SIZE) / 2;
     const x = useSharedValue(0);
     const offSet = useSharedValue(0);

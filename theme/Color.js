@@ -5,7 +5,7 @@ const palate = [
         bgColor: (opacity) => `rgba(150, 29, 90, ${opacity})`,
     },
     {
-        //orange
+        //gray
         color: "#9C9C9C",
         bgColor: (opacity) => `rgba(156, 156, 156, ${opacity})`,
     },
@@ -26,8 +26,8 @@ const palate = [
     },
     {
         //background white
-        color: "#FAFAFA",
-        bgColor: (opacity) => `rgba(250, 250, 250, ${opacity})`,
+        color: "#FFFFFF",
+        bgColor: (opacity) => `rgba(255, 255, 255, ${opacity})`,
     },
     {
         //red
@@ -61,18 +61,18 @@ const palate = [
     },
     {
         //dark gray
-        color: "#1c1c1e",
-        bgColor: (opacity) => `rgba(28, 28, 30, ${opacity})`,
+        color: "#F3AF00",
+        bgColor: (opacity) => `rgba(243, 175, 0, ${opacity})`,
     },
 ];
 
 export const themeColor0 = {
-    //neon yellow
+    //purple
     ...palate[0],
 };
 
 export const themeColor1 = {
-    //dark gray
+    //gray
     ...palate[1],
 };
 

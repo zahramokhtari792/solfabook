@@ -1,26 +1,28 @@
-import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, TextInput, Platform, ToastAndroid, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, TextInput, Platform, ToastAndroid, Pressable, Linking, KeyboardAvoidingView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell, } from 'react-native-confirmation-code-field';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { uri } from '../../services/URL';
+import { mainUri, uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
 
-import { themeColor0, themeColor1, themeColor12, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
 import Button from '../../components/Button';
 import TransparentButton from '../../components/TransparentButton';
 import { setToken } from '../../slices/authSlice';
 import { useTranslation } from 'react-i18next';
 import NewStyles from '../../styles/NewStyles';
-import { useNavigation } from '@react-navigation/native';
-import { formatTime, persianAppName, showToastOrAlert } from '../../helpers/Common';
-
-export default function LoginModal({ loginModal, setLoginModal }) {
-    const navigation = useNavigation()
+import { Ionicons } from '@expo/vector-icons';
+import { handleError, showToastOrAlert } from '../../helpers/Common';
+import { useLoginModal } from '../../context/LoginProvider';
+import { TouchableOpacity } from 'react-native';
+export default function LoginModal() {
+    const { loginModal, hideModal, } = useLoginModal();
     const { t } = useTranslation();
     const dispatch = useDispatch();
+
     const [loading, setLoading] = useState(false);
     const [loginWithPassword, setLoginWithPassword] = useState(false);
     const [phone, setPhone] = useState('');
@@ -28,8 +30,8 @@ export default function LoginModal({ loginModal, setLoginModal }) {
     const [password, setPassword] = useState('');
     const [code, setCode] = useState(false);
     const [error, setError] = useState('');
-    const [timer, setTimer] = useState(120);
-
+    const [deviceInfo, setDeviceInfo] = useState('');
+    const device = useSelector(state => state.auth?.deviceInfo)
     const ref = useBlurOnFulfill({ value, cellCount: 6 });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
         value,
@@ -43,18 +45,7 @@ export default function LoginModal({ loginModal, setLoginModal }) {
             return false;
         }
     };
-    useEffect(() => {
-        if (code) {
 
-            if (timer === 0) return;
-
-            const intervalId = setInterval(() => {
-                setTimer(prevTimer => prevTimer - 1);
-            }, 1000);
-
-            return () => clearInterval(intervalId);
-        }
-    }, [timer, code]);
     const validatePassword = () => {
         const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
         if (password.match(pattern)) {
@@ -66,16 +57,19 @@ export default function LoginModal({ loginModal, setLoginModal }) {
 
     const sendVerificationCode = async () => {
         try {
-            const response = await axios.post(`${uri}/sendVerificationCode`, { phone: phone })
+            const response = await axios.post(`${uri}/sendVerificationCode`, { phone: phone, device: device })
             if (response?.data?.success == 'success') {
                 setCode(true);
                 setError('');
-                setTimer(120)
             } else if (response?.data?.error == 'error') {
                 setError(`${t('Failed to send code. Please make sure the phone number you entered is correct.')}`)
             }
         } catch (error) {
-            Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
+            handleError(error)
+            console.log('====================================');
+            console.log(error);
+            console.log('====================================');
+            // Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
         } finally {
             setLoading(false);
         }
@@ -83,7 +77,7 @@ export default function LoginModal({ loginModal, setLoginModal }) {
 
     const codeVerification = async () => {
         try {
-            const response = await axios.post(`${uri}/codeVerification`, { phone: phone, code: value })
+            const response = await axios.post(`${uri}/codeVerification`, { phone: phone, code: value, device: device })
             if (response?.data?.success == 'success') {
                 const userId = JSON.stringify(response?.data?.userId);
                 const userToken = response?.data?.token?.replace('"', "");
@@ -95,15 +89,13 @@ export default function LoginModal({ loginModal, setLoginModal }) {
                 setValue('');
                 setCode(false);
                 setError('');
-                setLoginModal(false);
+                hideModal()
             } else if (response?.data?.error == 'error') {
                 setValue('');
                 setError(`${t('The entered code is not correct!')}`)
             }
         } catch (error) {
-            console.log(error);
-
-            Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
+            handleError(error)
         } finally {
             setLoading(false);
         }
@@ -111,7 +103,7 @@ export default function LoginModal({ loginModal, setLoginModal }) {
 
     const passwordVerification = async () => {
         try {
-            const response = await axios.post(`${uri}/passwordVerification`, { phone: phone, password: password })
+            const response = await axios.post(`${uri}/passwordVerification`, { phone: phone, password: password, device: device })
             if (response?.data?.success == 'success') {
                 const userId = JSON.stringify(response?.data?.userId);
                 const userToken = response?.data?.token?.replace('"', "");
@@ -123,44 +115,50 @@ export default function LoginModal({ loginModal, setLoginModal }) {
                 setValue('');
                 setCode(false);
                 setError('');
-                setLoginModal(false);
+                hideModal()
             } else if (response?.data?.error == 'error') {
                 setValue('');
                 setError(`${t('The entered password is not correct!')}`)
             }
         } catch (error) {
-            Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
+            handleError(error)
+            // Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
         } finally {
             setLoading(false);
         }
     };
 
+
     return (
-        <Modal animationType='fade' style={{ backgroundColor: 'red' }} transparent={true} visible={loginModal} onRequestClose={() => { setLoginModal(!loginModal); }}>
-            <TouchableWithoutFeedback onPress={() => { setLoginModal(false) }}>
+        <Modal animationType='fade' style={{ backgroundColor: 'red' }} transparent={true} visible={loginModal} onRequestClose={() => { hideModal() }}>
+            <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0} style={{ flex: 1 }}>
                 <View style={[styles.container, NewStyles.center]}>
                     <View style={[styles.modalView, NewStyles.border10]}>
-                        <Text style={NewStyles.title10}>{t('Login | Register')}</Text>
+                        <View style={[NewStyles.rowWrapper]}>
+                            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                                <Pressable style={{ padding: 5, }} onPress={() => { hideModal() }}>
+                                    <Ionicons name='close-outline' size={20} color={themeColor10.bgColor(1)} />
+                                </Pressable>
+                            </View>
+                            <Text style={NewStyles.title10}>{t('Login | Register')}</Text>
+                            <View style={{ flex: 1 }} />
+                        </View>
                         {!code ?
                             <View style={styles.wrapper}>
                                 <Text style={NewStyles.text10}>{t('Please enter your phone number. A verification code will be sent to your phone number.')}</Text>
-                                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10]} keyboardType='number-pad' placeholderTextColor={themeColor3.bgColor(1)} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
-                                <View style={[NewStyles.row, { flexWrap: 'wrap', flexDirection: 'row-reverse', gap: 1 }]}>
-                                    <Text style={NewStyles.text10}>با ثبت نام در اپلیکیشن {persianAppName} با</Text>
+                                <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10]} keyboardType='number-pad' placeholderTextColor={themeColor3.bgColor(1)} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
+                                <Text style={NewStyles.text10}>{t('Your submission indicates your agreement to our terms of service and privacy policy.')}</Text>
+                                <View style={[NewStyles.row, { alignSelf: 'center' }]}>
                                     <TouchableOpacity onPress={() => {
-                                        navigation.navigate('Terms & Conditions');
-                                        setLoginModal(false)
-                                    }}><Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>قوانین و مقررات</Text></TouchableOpacity>
-                                    <Text style={NewStyles.text10}> و </Text>
+                                        Linking.openURL(`${mainUri}/terms`)
+                                    }}><Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>{t('Terms & Conditions')}</Text></TouchableOpacity>
+                                    <Text style={NewStyles.text10}> {t('&')} </Text>
                                     <TouchableOpacity onPress={() => {
-                                        setLoginModal(false)
-                                        navigation.navigate('Privacy Policy')
+                                        Linking.openURL(`${mainUri}/privacies`)
                                     }}>
-                                        <Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>سیاست های حریم خصوصی</Text>
+                                        <Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>{t('privacy policy')}</Text>
                                     </TouchableOpacity>
-                                    <Text style={NewStyles.text10}>موافقت می کنید.</Text>
                                 </View>
-                                {/* <Text style={NewStyles.text10}>{t('Your submission indicates your agreement to our terms of service and privacy policy.')}</Text> */}
                                 {error && <Text style={NewStyles.text6}>{error}</Text>}
                                 <Button title={`${t('Send code')}`} loading={loading} onPress={() => { if (validatePhone()) { setLoading(true); sendVerificationCode(); } else { setError(`${t('The mobile number you entered is not valid.')}`) } }} />
                                 <TransparentButton title={`${t('Login With Password')}`} onPress={() => { if (validatePhone()) { setCode(true); setLoginWithPassword(true) } else { setError(`${t('The mobile number you entered is not valid.')}`) } }} />
@@ -169,9 +167,9 @@ export default function LoginModal({ loginModal, setLoginModal }) {
                             loginWithPassword ?
                                 <View style={[styles.wrapper, { width: '95%' }]}>
                                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>{t('Please enter your password.')}</Text>
-                                    <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
+                                    <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={themeColor3.bgColor(1)} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
-                                    <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (validatePassword()) { setLoading(true); passwordVerification(); } else { setError(`${t('The Password you entered is not valid.')}`) } }} />
+                                    <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (password) { setLoading(true); passwordVerification(); } else { showToastOrAlert('رمز عبور خود را وارد کنید.') } }} />
                                     <View style={NewStyles.center}>
                                         <Text style={NewStyles.text3}>{t("Forgot your password?")}</Text>
                                         <View style={NewStyles.rowWrapper}>
@@ -203,33 +201,19 @@ export default function LoginModal({ loginModal, setLoginModal }) {
                                         )}
                                     />
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
-                                    <Button title={`${t('Submit')}`} loading={loading} onPress={() => {
-                                        if (timer>0) {
-                                            if (value?.length === 6) { setLoading(true); codeVerification(); } else { setError(`${t('Please enter the code correctly.')}`) }
-                                        }else{
-                                            showToastOrAlert('کد شما منقضی شده است.')
-                                        }
-                                    }} />
+                                    <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (value?.length === 6) { setLoading(true); codeVerification(); } else { setError(`${t('Please enter the code correctly.')}`) } }} />
                                     <View style={NewStyles.center}>
-                                        {timer > 0 && <View style={[NewStyles.center, { marginBottom: 10 }]}>
-                                            <Text style={[NewStyles.text, { fontFamily: 'VazirBold' }]}>{formatTime(timer)} <Text style={{ color: themeColor3.bgColor(1), fontFamily: 'VazirLight' }}>{t('sce left')}</Text></Text>
-                                        </View>}
-                                        {timer == 0 && <View style={[NewStyles.row, { flexWrap: 'wrap' }]}>
-                                            <Text style={NewStyles.text3}>{t("Didn't you receive a verification code?")}</Text>
-                                            <TouchableOpacity onPress={() => { setLoading(true); setValue(''); sendVerificationCode(); }} >
-                                                <Text style={[NewStyles.text, { marginHorizontal: 5 }]}>{t('Resend Code')}</Text>
-                                            </TouchableOpacity>
-                                        </View>}
+                                        <Text style={NewStyles.text3}>{t("Didn't you receive a verification code?")}</Text>
                                         <View style={NewStyles.rowWrapper}>
-                                            <TransparentButton title={`${t('Change Phone Number')}`} onPress={() => { setError(''); setValue(''); setPhone(''); setCode(false); setTimer(120) }} />
-                                            {/* <Text style={NewStyles.text10}>  {t('or')}  </Text> */}
-
+                                            <TransparentButton title={`${t('Change Phone Number')}`} onPress={() => { setError(''); setValue(''); setPhone(''); setCode(false); }} />
+                                            <Text style={NewStyles.text10}>  {t('or')}  </Text>
+                                            <TransparentButton title={`${t('Resend Code')}`} onPress={() => { setLoading(true); setValue(''); sendVerificationCode(); }} />
                                         </View>
                                     </View>
                                 </View>}
                     </View>
                 </View>
-            </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
         </Modal>
     )
 }

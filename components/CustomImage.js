@@ -1,11 +1,12 @@
-import { Linking, Pressable, StyleSheet, Text, View, ImageBackground } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useLayoutEffect, useState } from 'react';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import NewStyles, { deviceHeight } from '../styles/NewStyles';
+import NewStyles, { deviceHeight, deviceWidth } from '../styles/NewStyles';
 import { imageUri } from '../services/URL';
 import { themeColor0, themeColor4 } from '../theme/Color';
+import { ImageBackground } from 'expo-image';
 
 export default function CustomImage({ item, x, index, size, spacer }) {
 
@@ -35,10 +36,11 @@ export default function CustomImage({ item, x, index, size, spacer }) {
     if (!item?.image_path) {
         return <View style={{ width: spacer }} key={index} />;
     }
+    
 
     return (
         <View style={{ overflow: 'hidden', width: size }} key={index}>
-            <Animated.View style={[styles.imageContainer, NewStyles.border10, style]}>
+            <Animated.View style={[styles.imageContainer, style]}>
                 <ImageBackground style={styles.imageBackground} source={{ uri: `${imageUri}/${item?.image_path}` }} contentFit="cover">
                     {item?.link && <Pressable style={[NewStyles.row, NewStyles.border5, { backgroundColor: themeColor0.bgColor(0.5), gap: 5, padding: 5 }]} onPress={() => { Linking?.openURL(`${item?.link}`) }}>
                         <Ionicons name="information-circle-outline" size={15} color={themeColor4.bgColor(1)} />
@@ -56,8 +58,9 @@ const styles = StyleSheet.create({
     },
     imageBackground: {
         width: '100%',
-        height: deviceHeight * 0.25,
+        // height: deviceWidth >= 768 ? deviceHeight*0.4 : deviceHeight * 0.29,
         padding: '2.5%',
+        aspectRatio:1.6,
         alignItems: 'flex-start',
         justifyContent: 'flex-end'
     },

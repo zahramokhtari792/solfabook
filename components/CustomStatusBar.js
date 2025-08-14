@@ -10,10 +10,10 @@ export default function CustomStatusBar() {
     const navigationState = useNavigationState(state => state);
     const currentRouteName = navigationState.routes[navigationState.index].name;
 
-    const statusBarStyle = Platform.OS==='android' ? 'light-content' : 'default';
+    const statusBarStyle = Platform.OS==='android' ? 'default' : 'default';
     const statusBarBackgroundColor = Platform.OS==='android' ? themeColor0.bgColor(1) : themeColor0.bgColor(1);
 
     return (
-        <StatusBar barStyle={statusBarStyle} backgroundColor={statusBarBackgroundColor} animated={true} StatusBarAnimation='fade' />
+        <StatusBar barStyle={'dark-content'} backgroundColor={statusBarBackgroundColor} animated={true} StatusBarAnimation='fade' />
     )
 }

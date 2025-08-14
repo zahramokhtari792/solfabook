@@ -3,11 +3,15 @@ import { createSlice } from '@reduxjs/toolkit';
 export const authSlice = createSlice({
     name: 'auth',
     initialState: {
-        token: null
+        token: null,
+        deviceInfo: null
     },
     reducers: {
         setToken: (state, action) => {
             state.token = action.payload;
+        },
+        setDeviceInfo: (state, action) => {
+            state.deviceInfo = action.payload;
         },
         removeToken: (state, action) => {
             state.token = null;
@@ -15,6 +19,6 @@ export const authSlice = createSlice({
     }
 });
 
-export const { setToken, removeToken } = authSlice.actions;
+export const { setToken, removeToken, setDeviceInfo } = authSlice.actions;
 
 export default authSlice.reducer

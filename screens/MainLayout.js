@@ -7,13 +7,14 @@ import Home from './home/Home';
 import MyLibrary from './library/MyLibrary';
 import MusicalInstruments from './solfasaz/MusicalInstruments';
 import Explore from './explore/Explore';
-import Categories from './category/Categories';
 import HomeIcon from '../assets/svg/HomeIcon';
 import CategoryIcon from '../assets/svg/CategoryIcon';
 import MainBookIcon from '../assets/svg/MainBookIcon';
 import MusicIcon from '../assets/svg/MusicIcon';
 import LibararyIcon from '../assets/svg/LibararyIcon';
 import Header from '../components/Header';
+import Categories from './category/Categories';
+import MyFiles from './library/MyFiles';
 
 const Tab = createBottomTabNavigator();
 
@@ -36,6 +37,7 @@ export default function MainLayout() {
                 tabBarActiveTintColor: themeColor0.bgColor(1),
                 tabBarInactiveTintColor: themeColor1.bgColor(1),
                 headerLeftContainerStyle: { paddingLeft: '5%' },
+                headerShadowVisible:false,
                 header:()=>{
                     return(
                         <Header/>

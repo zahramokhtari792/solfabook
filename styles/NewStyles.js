@@ -2,6 +2,7 @@ import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7, themeColor8, themeColor9, themeColor10, themeColor11, themeColor12 } from '../theme/Color';
 
 export const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
+export const { width: deviceWidthScreen, height: deviceHeightScreen } = Dimensions.get('screen');
 export const CELL_SIZE = 45;
 export const CELL_BORDER_RADIUS = Platform.OS === 'ios' ? 8 : 0;
 export const DEFAULT_CELL_BG_COLOR = themeColor1.bgColor(1);
@@ -104,7 +105,7 @@ const NewStyles = StyleSheet.create({
     },
 
     shadow: {
-        shadowColor: themeColor10.bgColor(1),
+        shadowColor: themeColor3.bgColor(1),
         shadowOffset: {
             width: 0,
             height: 1,
@@ -117,107 +118,108 @@ const NewStyles = StyleSheet.create({
     border5: {
         borderRadius: 5,
         borderCurve: "continuous",
-        overflow: "hidden",
     },
 
     border10: {
         borderRadius: 10,
         borderCurve: "continuous",
-        overflow: "hidden",
+    },
+    border8: {
+        borderRadius: 8,
+        borderCurve: "continuous"
     },
 
     border100: {
         borderRadius: 100,
         borderCurve: "continuous",
-        overflow: "hidden",
     },
 
     text: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor0.bgColor(1),
         textAlign: 'right',
     },
 
     text1: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor1.bgColor(1),
         textAlign: 'right',
     },
 
     text3: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor3.bgColor(1),
         textAlign: 'right',
     },
 
     text4: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor4.bgColor(1),
         textAlign: 'right',
     },
 
     text6: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor6.bgColor(1),
         textAlign: 'right',
     },
 
     text7: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor7.bgColor(1),
         textAlign: 'right',
     },
 
     text10: {
         fontFamily: 'iransans',
-        fontSize: 12,
+        fontSize: 14,
         color: themeColor10.bgColor(1),
         textAlign: 'right',
     },
 
     title: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor0.bgColor(1),
         textAlign: 'right',
     },
 
     title1: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor1.bgColor(1),
         textAlign: 'right',
     },
 
     title3: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor3.bgColor(1),
         textAlign: 'right',
     },
 
     title4: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor4.bgColor(1),
         textAlign: 'right',
     },
 
     title6: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor6.bgColor(1),
         textAlign: 'right',
     },
 
     title10: {
-        fontSize: 14,
+        fontSize: deviceWidth >= 768 ? 24 : 16,
         fontFamily: 'iransans',
         color: themeColor10.bgColor(1),
         textAlign: 'right',
@@ -253,7 +255,7 @@ const NewStyles = StyleSheet.create({
 
     textInput: {
         minHeight: 50,
-        backgroundColor: themeColor3.bgColor(0.2),
+        backgroundColor: themeColor4.bgColor(1),
         paddingHorizontal: '5%',
     },
 

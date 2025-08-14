@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
-import { showToastOrAlert } from '../../helpers/Common';
+import { handleError, showToastOrAlert } from '../../helpers/Common';
 import NewStyles from '../../styles/NewStyles';
 import { themeColor1, themeColor3, themeColor4 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
@@ -50,10 +50,11 @@ export default function ChangePassword() {
                 const message = t('Your changes have been applied.');
                 showToastOrAlert(message);
                 dispatch(fetchUser(userToken));
+                setPassword(null)
+                setPasswordConfirmation(null)
             }
         } catch (error) {
-            const message = error.response ? t('An unexpected error occurred!') : t('Network error!');
-            showToastOrAlert(message);
+            handleError(error)
         } finally {
             setRefreshing(false);
             setLoading(false);
@@ -65,9 +66,9 @@ export default function ChangePassword() {
             <CustomStatusBar />
             <ScrollView contentContainerStyle={styles.contentContainerStyle} refreshControl={<RefreshControl colors={[themeColor1.bgColor(1)]} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)); }} />}>
                 <Text style={NewStyles.text1}>{t('8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character.')}</Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
+                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10, NewStyles.shadow]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
                 <Text style={NewStyles.text1}>{t('Enter Password Confirmation.')}</Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
+                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10, NewStyles.shadow]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
                 <Button title={`${t('Change Password')}`} loading={loading} onPress={changePassword} />
             </ScrollView>
         </View>
@@ -76,7 +77,7 @@ export default function ChangePassword() {
 
 const styles = StyleSheet.create({
     contentContainerStyle: {
-        paddingHorizontal: '5%',
+        padding: '5%',
         gap: 5,
     }
 })

@@ -1,25 +1,26 @@
-import { Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { MaterialIcons } from '@expo/vector-icons';
-
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import DatePicker from 'react-native-modern-datepicker';
 import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
-import { Dropdown } from 'react-native-element-dropdown';
 import { imageUri, uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
 import NewStyles, { deviceHeight } from '../../styles/NewStyles';
-import { themeColor0, themeColor1, themeColor12, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
+import { themeColor0, themeColor1, themeColor10, themeColor12, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
-// import DatePickerModal from '../../components/DatePickerModal';
 import { showToastOrAlert } from '../../helpers/Common';
 import { ImageBackground } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DatePickerModal from '../../components/DatePickerModal';
 
 export default function Profile() {
+    const jalaali = require('jalaali-js');
 
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -27,18 +28,20 @@ export default function Profile() {
     const user = useSelector(state => state.user?.data);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [name, setName] = useState(user?.name || '');
+    const [name, setName] = useState(user?.fname || '');
+    const [lname, setLname] = useState(user?.lname || '');
     const [email, setEmail] = useState(user?.email || '');
-    const [birthDate, setBirthDate] = useState(user?.birth_date || '');
+    const [birthDate, setBirthDate] = useState(user?.birth_jalali || '');
     const [datePickerModal, setDatePickerModal] = useState(false);
     const [gender, setGender] = useState(user?.gender || '');
+    const [showCalender, setShowCalender] = useState(false)
 
     const upload = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images', 'videos'],
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [4, 4],
-            quality: 1,
+            quality: 0.5,
         });
         if (result.canceled) {
             return;
@@ -62,6 +65,7 @@ export default function Profile() {
                         : t('An unexpected error occurred!')
                     : t('Network error!');
                 showToastOrAlert(message);
+                setLoading(false)
             })
     }
 
@@ -112,7 +116,7 @@ export default function Profile() {
     const changeInformation = async () => {
         setLoading(true);
         try {
-            const response = await axios.post(`${uri}/changeInformation`, { name: name, email: email, gender: gender }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
+            const response = await axios.post(`${uri}/changeInformation`, { fname: name, lname:lname, email: email, birthDate: birthDate }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             if (response.status === 200) {
                 const message = t('Your changes have been applied.')
                 showToastOrAlert(message);
@@ -132,12 +136,14 @@ export default function Profile() {
     }
 
     return (
-        <SafeAreaView style={NewStyles.container}>
+        <SafeAreaView edges={{ top: 'off', bottom: 'maximum' }} style={NewStyles.container}>
             <CustomStatusBar />
-            <ScrollView refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}>
+            {/* <ScrollView  refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}> */}
+            <KeyboardAwareScrollView keyboardShouldPersistTaps="always" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}>
+
                 <ImageBackground style={[styles.imageBackground, NewStyles.center]} blurRadius={5} source={{ uri: `${imageUri}/${user?.profile_photo_path}` }} contentFit="cover" transition={1000}>
                     <Pressable onPress={() => { upload() }}>
-                        {user?.profile_photo_path ? (<Image style={[styles.profileImage, NewStyles.border100]} source={{ uri: `${imageUri}/${user?.profile_photo_path}`, }} contentFit="cover" transition={1000} />) : (<View style={[styles.profileImage, NewStyles.border100, NewStyles.center]}><Text style={[styles.profileImageThumbnail]}>{user?.name?.[0]}</Text></View>)}
+                        {user?.profile_photo_path ? (<Image style={[styles.profileImage, NewStyles.border100]} source={{ uri: `${imageUri}/${user?.profile_photo_path}`, }} contentFit="cover" transition={1000} />) : (<View style={[styles.profileImage, NewStyles.border100, NewStyles.center]}><Text style={[styles.profileImageThumbnail]}>{user?.fname?.[0]}</Text></View>)}
                         {user?.profile_photo_path && <Pressable style={{ position: 'absolute' }} onPress={() => { removeProfilePhotoPath() }}>
                             <Ionicons name="close-circle-sharp" size={30} color={themeColor6.bgColor(1)} />
                         </Pressable>}
@@ -148,39 +154,32 @@ export default function Profile() {
                 </ImageBackground>
                 <View style={styles.wrapper}>
                     <Text style={NewStyles.text}>{t('You have entered with mobile number {{phone}}.', { phone: user?.phone })}</Text>
-                    <Text style={NewStyles.text}>{t('Please enter your Full Name.')}</Text>
-                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10]} keyboardType='default' placeholderTextColor={themeColor0.bgColor(1)} placeholder={`${t('Full Name')}`} value={name} onChangeText={(text) => setName(text)} />
-                    <Text style={NewStyles.text}>{t('Please enter your Email Address.')}</Text>
-                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10]} keyboardType='default' placeholderTextColor={themeColor0.bgColor(1)} placeholder={`${t('Email Address')}`} value={email} onChangeText={(text) => setEmail(text)} />
-                    <Text style={NewStyles.text}>لطفا جنسیت خود را مشخص کنید</Text>
-                    <Dropdown
-                        style={[NewStyles.textInput, NewStyles.border10, { marginVertical: 10 }]}
-                        placeholderStyle={styles.textStyle}
-                        selectedTextStyle={styles.textStyle}
-                        itemTextStyle={styles.textStyle}
-                        containerStyle={styles.containerStyle}
-                        itemContainerStyle={styles.itemContainerStyle}
-                        activeColor={themeColor0.bgColor(0.2)}
-                        data={[{ 'title': 'زن', id: 'female' }, { title: 'مرد', id: 'male' }]}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        autoScroll={false}
-                        labelField="title"
-                        valueField="id"
-                        placeholder={"انتخاب کنید"}
-                        showsVerticalScrollIndicator={false}
-                        renderRightIcon={() => (
-                            <Ionicons name='search-outline' size={24} color={themeColor0.bgColor(1)} />
-                        )}
+                    <Text style={NewStyles.text}>{t('Name')} <Text style={NewStyles.text6}>*</Text></Text>
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Name')}`} value={name} onChangeText={(text) => setName(text)} />
+                    <Text style={NewStyles.text}>{t('Last Name')} <Text style={NewStyles.text6}>*</Text></Text>
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Last Name')}`} value={lname} onChangeText={(text) => setLname(text)} />
+                    <Text style={NewStyles.text}>{t('Email')}</Text>
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Email Address')}`} value={email} onChangeText={(text) => setEmail(text)} />
+                    <Text style={NewStyles.text}>{t('Date Of Birth')}</Text>
+                    <Pressable style={[NewStyles.textInput, NewStyles.border10, NewStyles.center, { alignItems: 'flex-end' }, NewStyles.shadow]} onPress={() => {
+                        setDatePickerModal(true)
+                    }}>
+                        <Text style={[NewStyles.text, !birthDate && { color: themeColor3.bgColor(0.5) }]}>{birthDate ? birthDate : t('Date Of Birth')}</Text>
+                    </Pressable>
+                    <Button title={`${t('Change Information')}`} loading={loading} onPress={() => {
+                        if(name && lname) {
 
-                        renderLeftIcon={() => (
-                            <MaterialIcons name="keyboard-arrow-down" size={24} color={themeColor0.bgColor(1)} />
-                        )}
-                        value={gender}
-                        onChange={(item) => { setGender(item?.id) }}
-                    />
-                    <Button title={`${t('Change Information')}`} loading={loading} onPress={() => { changeInformation() }} />
+                            changeInformation()
+                        }else{
+                            showToastOrAlert(t('First and last name are required.'))
+                        }
+                         }} />
                 </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
+            {/* </ScrollView> */}
+            <View>
+                <DatePickerModal birthDate={birthDate} setBirthDate={setBirthDate} setDatePickerModal={setDatePickerModal} datePickerModal={datePickerModal} />
+            </View>
         </SafeAreaView>
     )
 }
@@ -188,13 +187,13 @@ export default function Profile() {
 const styles = StyleSheet.create({
     imageBackground: {
         width: '100%',
-        height: deviceHeight * 0.35,
-        backgroundColor: themeColor0.bgColor(0.1)
+        height: deviceHeight * 0.25,
+        backgroundColor: themeColor1.bgColor(0.1)
     },
     profileImage: {
         height: 100,
         width: 100,
-        backgroundColor: themeColor3.bgColor(1),
+        backgroundColor: themeColor1.bgColor(0.5),
     },
     inputSearchStyle: {
         fontSize: 14,
