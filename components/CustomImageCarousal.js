@@ -51,7 +51,7 @@ export default function CustomImageCarousal({ data }) {
                     _offSet = Math.floor(_offSet + SIZE);
                 }
                 scrollViewRef.current.scrollTo({ x: _offSet, y: 0 });
-            }, 7000);
+            }, 5000);
         } else {
             clearInterval(interval.current);
         }
@@ -71,6 +71,7 @@ export default function CustomImageCarousal({ data }) {
                 onMomentumScrollEnd={() => {
                     setIsAutoPlay(true);
                 }}
+                scrollEnabled={false}
                 scrollEventThrottle={16}
                 decelerationRate='normal'
                 snapToInterval={SIZE}

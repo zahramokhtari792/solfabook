@@ -21,6 +21,13 @@ export function formatBytes(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + units[i];
 }
 
+export function filterByFirstLetter(arr, letter) {
+  return arr.filter(item => 
+    typeof item?.word === "string" && item?.word.charAt(0).toLowerCase() === letter.toLowerCase()
+  );
+}
+
+
 
 export const appVersion = () => {
     return Constants?.expoConfig?.version;

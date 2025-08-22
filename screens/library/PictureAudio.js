@@ -8,6 +8,11 @@ import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
 import NewStyles from '../../styles/NewStyles';
 import AudioPlayer from '../../components/AudioPlayer';
+import ModalPlayer from './ModalPlayer';
+import { TouchableOpacity } from 'react-native';
+import AlbumIcon from '../../assets/svg/AlbumIcon';
+import { themeColor0 } from '../../theme/Color';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 
 const PictureAudio = ({ route }) => {
     const params = route?.params;
@@ -19,9 +24,10 @@ const PictureAudio = ({ route }) => {
     const [lastPage, setLastPage] = useState(1);
     const [musicIndex, setMusicIndex] = useState(0);
     const [playing, setPlaying] = useState(false);
-
-
-
+    const [visible, setVisible] = useState(false);
+    const [playNow, setPlayNow] = useState(false);
+    usePreventScreenCapture()
+    
     const fetchFiles = () => {
         axios.post(`${uri}/fetchFiles`, { id: id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
@@ -41,7 +47,7 @@ const PictureAudio = ({ route }) => {
         fetchFiles()
     }, []))
 
-    
+
     if (loader) {
         return (<Loader />)
     }
@@ -49,11 +55,21 @@ const PictureAudio = ({ route }) => {
         <SafeAreaView style={NewStyles.container}>
             {
                 audio?.length > 0 &&
-                <AudioPlayer audio={audio} playing={playing} setPlaying={setPlaying} index={musicIndex} setIndex={setMusicIndex} />
+                <View>
+                    <TouchableOpacity style={{ padding: 5, marginHorizontal: 15, marginTop: 5, alignSelf: 'flex-end' }} onPress={() => {
+                        setVisible(true)
+                    }}>
+                        <AlbumIcon color={themeColor0.bgColor(1)} />
+                    </TouchableOpacity>
+                    <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 10, paddingHorizontal: 10 }]}>{audio?.[musicIndex]?.title}</Text>
+                    <AudioPlayer audio={audio} playing={playing} setPlaying={setPlaying} index={musicIndex} setIndex={setMusicIndex} playNow={playNow} />
+                </View>
             }
             <View style={{ flex: 1 }}>
-                <Image style={{height:'100%', width:'100%', resizeMode:'contain'}} source={{uri:`${dlUrl}/${data?.[0]?.file_path}`}} />
+                <Image style={{ height: '100%', width: '100%', resizeMode: 'contain' }} source={{ uri: `${dlUrl}/${data?.[0]?.file_path}` }} />
             </View>
+            <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow} />
+
         </SafeAreaView>
     )
 }

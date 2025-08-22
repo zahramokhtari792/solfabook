@@ -1,8 +1,8 @@
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform } from 'react-native'
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import NewStyles from '../../styles/NewStyles'
 import axios from 'axios';
-import { dlUrl, imageUri, uri } from '../../services/URL';
+import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,7 +13,7 @@ import HeartIcon from './../../assets/svg/HeartIcon';
 import BookmarkFillIcon from './../../assets/svg/BookmarkFillIcon';
 import BookmarkIcon from './../../assets/svg/BookmarkIcon';
 import Share from 'react-native-share';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLoginModal } from '../../context/LoginProvider';
 import { useTranslation } from 'react-i18next';
 import Button from '../../components/Button';
@@ -33,6 +33,8 @@ import ConfirmationModal from './../../components/ConfirmationModal';
 import Avatar from '../../components/Avatar';
 import PaymentModal from '../../components/PaymentModal';
 import AlertModal from '../../components/AlertModal';
+import { fetchUser } from '../../slices/userSlice';
+import * as FileSystem from 'expo-file-system';
 
 const FileDetail = ({ route, navigation }) => {
     const params = route?.params;
@@ -40,11 +42,12 @@ const FileDetail = ({ route, navigation }) => {
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const [loader, setLoader] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
     const [data, setData] = useState()
     const [score, setScore] = useState(0)
     const [message, setemessage] = useState('');
     const insets = useSafeAreaInsets();
-
+    const [isMine, setIsMine] = useState(false)
     const { t } = useTranslation()
     const mood = [{ id: 1, name: t("Usefull") }, { id: 2, name: t("Fruitful") }, { id: 3, name: t("Fascinating") }, { id: 4, name: t('Informative') }]
     const [useful, setUseful] = useState(0);
@@ -63,20 +66,49 @@ const FileDetail = ({ route, navigation }) => {
     const { showModal } = useLoginModal();
     const [comments, setComments] = useState([])
     const [myComment, setMyComments] = useState()
-    const redirectUrl = Linking.createURL("/?");
+    const dispatch = useDispatch()
 
-    const _addLinkingListenerWallet = (event) => {
+    const redirectUrl = Linking.createURL("/?");
+    const shareFile = async () => {
+        try {
+            // فقط اسم فایل رو بگیر
+            const fileName = data?.image_gallery?.image_path.split('/').pop(); // 👉 918211752756797.webp
+            const localPath = `${FileSystem.cacheDirectory}${fileName}`;
+
+            // encode URL (برای اطمینان)
+            const fromUrl = encodeURI(`${dlUrl}/${data?.image_gallery?.image_path}`);
+
+            // دانلود فایل توی cache
+            const { uri } = await FileSystem.downloadAsync(fromUrl, localPath);
+
+            // share
+            await Share.open({
+                title: 'اشتراک گذاری',
+                message: `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                url: uri,                // expo برمی‌گردونه مثل file:///...
+                // type: 'image/webp',      // چون پسوند webp هست
+            });
+        } catch (error) {
+            console.log('Error =>', error);
+        }
+    };
+
+
+
+    const handleRedirect = (event) => {
         const { queryParams } = Linking.parse(event?.url);
-        if (queryParams?.status == 'OK') {
+        if (queryParams?.status == 'OK' && queryParams?.type == 'file_buy') {
 
             setText('خرید فایل با موفقیت انجام شد');
             setTextBtn('فایل های من')
 
             setVisible(true)
-        } else if (queryParams?.status == 'NOK') {
+        } else if (queryParams?.status == 'NOK' && queryParams?.type == 'file_buy') {
             showToastOrAlert(t('The payment encountered an error.'))
         }
     }
+
+
 
     const gateWayPayment = async () => {
         setPayModal(false)
@@ -97,7 +129,6 @@ const FileDetail = ({ route, navigation }) => {
         setLoader(true)
         axios.post(`${uri}/walletPayment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
-                console.log(res?.data);
                 showToastOrAlert('خرید فایل با موفقیت انجام شد.')
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyFiles' } })
             })
@@ -105,7 +136,8 @@ const FileDetail = ({ route, navigation }) => {
                 handleError(err)
             })
             .finally(() => {
-                setLoader(false)
+                setLoader(false);
+                dispatch(fetchUser(userToken));
             })
     }
 
@@ -247,10 +279,17 @@ const FileDetail = ({ route, navigation }) => {
                 } else {
                     setSaved(false)
                 }
+                if (res?.data?.is_mine == 1) {
+                    setIsMine(true)
+                } else {
+                    setIsMine(false)
+                }
 
                 setMyComments(res?.data?.comment)
             })
             .catch((err) => {
+                console.log(err, 'ss');
+
                 handleError(err)
             })
     }
@@ -307,6 +346,7 @@ const FileDetail = ({ route, navigation }) => {
             })
             .finally(() => {
                 setLoader(false)
+                setRefreshing()
             })
     }
 
@@ -331,13 +371,19 @@ const FileDetail = ({ route, navigation }) => {
             checkLikedSaved();
         }
     }, [userToken])
-    useEffect(() => {
-        const listener = Linking.addEventListener('url', _addLinkingListenerWallet);
 
-        return () => {
-            listener.remove(); // موقع unmount شدن کامپوننت، لیسنر حذف میشه
-        };
-    }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const subscription = Linking.addEventListener('url', handleRedirect);
+
+            return () => {
+                subscription.remove();
+            };
+        }, [handleRedirect])
+    );
+
+
     useFocusEffect(useCallback(() => {
         fetchFileDetail()
         fetchFileComment()
@@ -352,7 +398,14 @@ const FileDetail = ({ route, navigation }) => {
             <KeyboardAvoidingView behavior={'padding'}
                 keyboardVerticalOffset={Platform.OS === 'android' ? insets.bottom + 20 : insets.bottom + 60}
                 style={{ flex: 1 }} >
-                <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode='none' >
+                <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
+                    setRefreshing(true)
+                    fetchFileDetail()
+                    fetchFileComment()
+                    if (userToken) {
+                        checkLikedSaved();
+                    }
+                }} />} showsVerticalScrollIndicator={false} keyboardDismissMode='none' >
 
 
                     <View style={[{ width: '100%', backgroundColor: themeColor1.bgColor(0.2), paddingTop: 10, paddingBottom: 25 }, NewStyles.row]}>
@@ -373,12 +426,16 @@ const FileDetail = ({ route, navigation }) => {
                                     {like ? <HeartIconFill color={themeColor0.bgColor(1)} /> : <HeartIcon color={themeColor0.bgColor(1)} />}
                                 </TouchableOpacity>
                                 <TouchableOpacity style={{ padding: 8 }} onPress={() => {
-                                    if (data?.base64) {
-                                        Share.open({
-                                            title: `اشتراک گذاری`,
-                                            message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
-                                            url: data?.base64
-                                        })
+                                    if (Platform.OS === 'ios') {
+                                        if (data?.base64) {
+                                            Share.open({
+                                                title: `اشتراک گذاری`,
+                                                message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                                                url: data?.base64
+                                            })
+                                        }
+                                    } else {
+                                        shareFile()
                                     }
                                 }}>
                                     <ShareIcon color={themeColor0.bgColor(1)} />
@@ -388,7 +445,7 @@ const FileDetail = ({ route, navigation }) => {
                     </View>
                     <View>
 
-                        <Text style={[NewStyles.title10, { textAlign: 'center', marginTop: 20, marginBottom: 10 }]}>{data?.title}</Text>
+                        <Text style={[NewStyles.title10, { textAlign: 'center', marginTop: 20, marginBottom: 10, paddingHorizontal: '5%' }]}>{data?.title}</Text>
                         <View style={[NewStyles.row, NewStyles.center]}>
                             {data?.writer?.name &&
                                 <TouchableOpacity onPress={() => {
@@ -441,8 +498,8 @@ const FileDetail = ({ route, navigation }) => {
                         <View style={{ paddingHorizontal: '5%' }}>
 
                             {data?.sample_files?.length > 0 &&
-                                <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8, { backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }]} onPress={()=>{
-                                    
+                                <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8, { backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }]} onPress={() => {
+                                    navigation.navigate('SamplePDFReader', { sample_files: data?.sample_files })
                                 }}>
                                     <View style={[NewStyles.row, { gap: 5 }]}>
                                         <Text style={NewStyles.text}>
@@ -453,11 +510,15 @@ const FileDetail = ({ route, navigation }) => {
                                 </Pressable>
                             }
 
-                            <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
-                                if (finalPrice == 0) {
-                                    walletPayment()
+                            {!isMine && <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
+                                if (user && userToken) {
+                                    if (finalPrice == 0) {
+                                        walletPayment()
+                                    } else {
+                                        setPayModal(true)
+                                    }
                                 } else {
-                                    setPayModal(true)
+                                    showModal()
                                 }
                             }}>
                                 {finalPrice == 0 && <Text style={[NewStyles.title4]}>{t("Get free")}</Text>}
@@ -473,9 +534,32 @@ const FileDetail = ({ route, navigation }) => {
                                             <Text style={NewStyles.text4}>{t('currency')}</Text>
                                         </View>
                                     </View>}
-                            </Pressable>
+
+                            </Pressable>}
+                            {isMine &&
+                                <Button
+                                    customStyle={{ marginTop: 0 }}
+                                    title={t("Veiw File")}
+                                    onPress={() => {
+                                        if (data?.file_type == 2 || data?.file_type == 5) {
+                                            navigation.navigate('PDFReader', { id: data?.id })
+                                        }
+                                        if (data?.file_type == 1) {
+                                            navigation.navigate('MusicPlayer', { file: data })
+                                        }
+                                        if (data?.file_type == 6) {
+                                            navigation.navigate('VideoPlayer', { file: data })
+                                        }
+                                        if (data?.file_type == 3 || data?.file_type == 4) {
+                                            navigation.navigate('PictureAudio', { id: data?.id })
+                                        }
+                                    }}
+                                />
+                            }
                             {/* لینکش رو نذاشتم هنوز */}
-                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} textStyle={{ color: themeColor0.bgColor(1) }} />}
+                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
+                                Linking.openURL(`${mainUri}/product/${fileId}`)
+                            }} textStyle={{ color: themeColor0.bgColor(1) }} />}
                             <View style={{ alignItems: 'flex-end' }}>
                                 <Text style={[styles.sectiontitle, { marginVertical: 10 }]}>{t("About the book")}</Text>
                                 <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), width: '100%', padding: 10, borderRadius: 8 }}>
@@ -522,7 +606,7 @@ const FileDetail = ({ route, navigation }) => {
                                 <View style={{ alignItems: 'center' }}>
                                     <View style={{ alignItems: 'center' }}>
                                         <FolderCloudIcon color={data?.file_galleries_sum_file_size ? themeColor0.color : themeColor3.bgColor(1)} />
-                                        <Text style={[styles.tinyText, { color: data?.file_galleries_sum_file_size ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size)}` : '-'}</Text>
+                                        <Text style={[styles.tinyText, { color: data?.file_galleries_sum_file_size ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size * 1024)}` : '-'}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -574,7 +658,7 @@ const FileDetail = ({ route, navigation }) => {
                                 <View style={{ paddingVertical: 20 }}>
                                     <FlatList style={{ paddingVertical: 10 }} contentContainerStyle={{ gap: 5 }} showsHorizontalScrollIndicator={false} inverted horizontal={true} data={mood} renderItem={renderMoodItem} />
                                 </View>
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: 'iransans', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right' }} verticalAlign='top' placeholder={t('My opinion about this book...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: 'iransans', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this book...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -682,7 +766,7 @@ const FileDetail = ({ route, navigation }) => {
                 <AlertModal visible={visible}
                     text={text}
                     actionMoal={() => {
-                        navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyAlbum' } })
+                        navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyFiles' } })
                         setVisible(false)
                     }}
                     setVisible={setVisible}

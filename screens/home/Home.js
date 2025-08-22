@@ -10,6 +10,8 @@ import CustomImageCarousal from './../../components/CustomImageCarousal';
 import HomeProductList from './HomeProductList'
 import ShowAlbumHome from './ShowAlbumHome'
 import Blogs from './Blogs'
+import DictionaryHome from './DictionaryHome'
+import MusicalHomeSection from '../musicalinstrument/MusicalHomeSection'
 
 
 const Home = () => {
@@ -59,6 +61,7 @@ const Home = () => {
           homeData()
         }} />}
         renderItem={({ item }) => {
+          
 
           return (
             <View>
@@ -68,7 +71,9 @@ const Home = () => {
                 </View>}
               {item?.type == 'File' && <HomeProductList data={item?.data} title={item?.title} />}
               {item?.type == 'Album' && <ShowAlbumHome data={item?.data} title={item?.title} />}
+              {item?.type == 'Dictionary' && <DictionaryHome data={item?.data} title={item?.title} />}
               {item?.type == 'Blog' && <Blogs data={item?.data} title={item?.title} />}
+              {item?.type == 'MusicalInstrument' && item?.data?.length > 0 && <MusicalHomeSection data={item} title={item?.title} />}
             </View>
           )
         }}

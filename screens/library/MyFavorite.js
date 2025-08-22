@@ -44,7 +44,7 @@ const MyFavorite = () => {
     )
   }
   return (
-    <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
+    <SafeAreaView edges={{ top: 'off', bottom: 'off' }} style={NewStyles.container}>
       <FlatList
         data={data}
         showsVerticalScrollIndicator={false}
@@ -62,7 +62,7 @@ const MyFavorite = () => {
         columnWrapperStyle={{ gap: 20, justifyContent: 'flex-end' }}
         renderItem={({ item }) => {
           return (
-            <FilesProduct item={item?.file} type={'vertical'} />
+            <FilesProduct explore={true} item={item?.file} type={'vertical'} />
           )
         }}
       />

@@ -11,8 +11,11 @@ import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color';
 import Loader from '../../components/Loader';
 import AudioPlayer from '../../components/AudioPlayer';
 import { Ionicons } from '@expo/vector-icons';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 
 const MusicPlayer = ({ route }) => {
+    usePreventScreenCapture();
+
     const params = route?.params;
     const file = params?.file
     const [galleries, setGallery] = useState([])
@@ -37,13 +40,12 @@ const MusicPlayer = ({ route }) => {
             .finally(() => {
                 setLoader(false)
             })
-    }
+    } 
 
     useFocusEffect(useCallback(() => {
         fetchFiles()
     }, []))
     useEffect(() => {
-
         if (galleries?.length < 2) return;
 
         const interval = setInterval(() => {
@@ -76,12 +78,12 @@ const MusicPlayer = ({ route }) => {
     }
     return (
         <SafeAreaView style={[NewStyles.container]} edges={{ top: 'off', bottom: 'additive' }}>
-            <ImageBackground style={{ flex:1, paddingTop: 65 }} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
+            <ImageBackground style={{ flex: 1, paddingTop: 65 }} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
                 <Animated.Image
                     source={{ uri: `${dlUrl}/${galleries[currentIndex]?.image_path}` }}
                     style={[{ aspectRatio: 1, width: '80%', objectFit: 'contain', borderRadius: 17, alignSelf: 'center', marginTop: 10, opacity: fadeAnim }]}
                 />
-                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 }]}>{audio?.[musicIndex]?.title}</Text>
+                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 , paddingHorizontal:'5%'}]}>{audio?.[musicIndex]?.title}</Text>
                 {
                     audio && <AudioPlayer audio={audio} setIndex={setMusicIndex} index={musicIndex} playing={playing} setPlaying={setPlaying} playNow={playNow} />
                 }
@@ -102,11 +104,11 @@ const MusicPlayer = ({ route }) => {
                                 if (index == musicIndex) { setPlayNow(!playing); } else { setPlayNow(true); }
                             }} style={[NewStyles.row, { width: '90%', alignSelf: 'center', paddingHorizontal: 10, alignItems: 'center', paddingBottom: 15, marginTop: 20, gap: 35 }]}>
                                 <Text style={[NewStyles.text10, { flex: 1, textAlign: 'left' }]}>{item?.title}</Text>
-                                <View style={[NewStyles.rowWrapper, { gap: 35 }]}>
-                                    <View >
+                                <View style={[NewStyles.rowWrapper, { gap: 35, width: '25%' }]}>
+                                    <View style={{ width: 20, aspectRatio: 1 }}>
                                         <Ionicons name={(index == musicIndex && playing) ? 'pause' : 'play'} color={themeColor10.bgColor(1)} size={20} />
                                     </View>
-                                    <Text style={NewStyles.text10}>{index + 1}</Text>
+                                    <Text style={[NewStyles.text10, { minWidth: 30, textAlign: 'left' }]}>{index + 1}</Text>
                                 </View>
                             </TouchableOpacity>
                         )

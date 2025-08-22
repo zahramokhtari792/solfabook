@@ -22,6 +22,7 @@ export default function WithdrawalItem({ item }) {
         <View style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]}>
             {renderRow(`شناسه: ${item?.id ?? '---'}`, formatDateTime(item?.created_at))}
             {renderRow('Amount', `${formatPrice(item?.price)} ${t('T')}`)}
+            {renderRow('IBAN', `${item?.iban}`)}
             {renderRow('Status', item?.status == 0 ? 'در حال رسیدگی' : item?.status == 1 ? 'تأیید شده' : item?.status == 3 ? 'تکمیل شده' : 'رد شده', item?.status == 0 ? NewStyles.text1 : item?.status == 1 ? NewStyles.text7 : item?.status == 3 ? NewStyles.text7 : NewStyles.text6)}
             {item?.file_path && renderRow('رسید پرداخت', `مشاهده`, NewStyles.text, () => Linking.openURL(`${imageUri}/${item?.file_path}`))}
             {item?.updated_at && item?.status==3 && renderRow('تاریخ پایان', formatDateTime(item?.updated_at))}

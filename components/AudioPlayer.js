@@ -52,7 +52,7 @@ export default function AudioPlayer({ audio, index, setIndex, playing, setPlayin
         setPlaying(status.playing);
 
         if (status.didJustFinish || status.currentTime >= status.duration) {
-            setPlaying(false);
+            // setPlaying(false);
         }
     }, [status]);
 
@@ -103,7 +103,7 @@ export default function AudioPlayer({ audio, index, setIndex, playing, setPlayin
                 </TouchableOpacity>}
                 {(!playing) &&
                     <TouchableOpacity onPress={() => {
-                        playSound(); setPlaying(true);
+                        playSound(); 
                     }}>
                         <Ionicons name="play-circle" size={40} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>

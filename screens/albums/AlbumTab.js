@@ -6,23 +6,23 @@ import axios from 'axios'
 import { uri } from '../../services/URL'
 import Loader from '../../components/Loader'
 import { useFocusEffect } from '@react-navigation/native'
-import CategoriItem from './CategoriItem'
 import { RefreshControl } from 'react-native'
 import BlankScreen from '../../components/BlankScreen'
+import AlbumCategoryItem from './AlbumCategoryItem'
 
-const Categories = ({ route }) => {
+const AlbumTab = ({ route }) => {
   const params = route?.params;
   const parentId = params?.parentId
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const fetchCategories = () => { 
-    axios.post(`${uri}/fetchCategories`, { parent_id: parentId })
+  const fetchAlbumCategories = () => {
+    axios.post(`${uri}/fetchAlbumCategories`, { parent_id: parentId })
       .then((res) => {
         setData(res?.data)
       })
       .catch((err) => {
-        console.log(err, 'fetchCategories');
+        console.log(err, 'fetchAlbumCategories');
       })
       .finally(() => {
         setLoading(false)
@@ -30,7 +30,7 @@ const Categories = ({ route }) => {
       })
   }
   useFocusEffect(useCallback(() => {
-    fetchCategories()
+    fetchAlbumCategories()
   }, [parentId]))
   if (loading) return (<Loader />)
   return (
@@ -49,10 +49,10 @@ const Categories = ({ route }) => {
             </View>
           )
         }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchCategories() }} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchAlbumCategories() }} />}
         renderItem={({ item }) => {
           return (
-            <CategoriItem item={item} />
+            <AlbumCategoryItem item={item} />
           )
         }}
       />
@@ -60,6 +60,6 @@ const Categories = ({ route }) => {
   )
 }
 
-export default Categories
+export default AlbumTab
 
 const styles = StyleSheet.create({})

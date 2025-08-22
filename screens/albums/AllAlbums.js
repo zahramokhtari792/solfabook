@@ -12,9 +12,9 @@ import { ActivityIndicator } from 'react-native';
 import { themeColor0 } from '../../theme/Color';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const AllFiles = ({ route }) => {
+const AllAlbums = ({route}) => {
   const params = route?.params;
-
+console.log(params?.categoryId)
   const [data, setData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,16 +38,16 @@ const AllFiles = ({ route }) => {
     setLoader(true); // این لودر برای اولین بارگذاری صفحه است
 
     try {
-      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, id: params?.categoryId, type:'file' });
+      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, album_category_id:params?.categoryId, type:'album' });
       const newFiles = response.data.data;
-
+      
       setData(prevData => reset ? newFiles : [...prevData, ...newFiles]);
       setHasMore(newFiles?.length > 0);
       if (newFiles?.length > 0) {
         setPage(prevPage => prevPage + 1);
       }
     } catch (err) {
-      console.log(err);
+      console.log(err); 
       handleError(err);
     } finally {
       setIsLoading(false);
@@ -74,7 +74,7 @@ const AllFiles = ({ route }) => {
 
   const renderEmptyComponent = () => {
     if (loader) return null; // اگر هنوز در حال بارگذاری اولیه هستیم، BlankScreen را نشان نده
-    return <View style={{ flex: 1 }}><BlankScreen /></View>;
+    return <View style={[{ flex: 1 }]}><BlankScreen /></View>;
   };
 
   return (
@@ -87,7 +87,7 @@ const AllFiles = ({ route }) => {
         keyExtractor={(item) => item?.id?.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         columnWrapperStyle={{ justifyContent: 'center', gap: 10 }}
-        contentContainerStyle={[{ paddingHorizontal: '5%' }, data?.length === 0 && { flex: 1 }]}
+        contentContainerStyle={[{ paddingHorizontal: '5%' }, data?.length === 0 && { flex: 1 }, data?.length === 0 && NewStyles.center]}
         renderItem={({ item }) => <FilesProduct item={item} type={"vertical"} />}
         ListEmptyComponent={renderEmptyComponent}
         onEndReached={() => {
@@ -102,6 +102,6 @@ const AllFiles = ({ route }) => {
   );
 };
 
-export default AllFiles;
+export default AllAlbums;
 
 const styles = StyleSheet.create({});

@@ -1,4 +1,4 @@
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import NewStyles from '../../styles/NewStyles'
@@ -22,8 +22,8 @@ const Account = ({ navigation }) => {
   const [modal, setModal] = useState(false)
   const dispatch = useDispatch()
   return (
-    <View style={[NewStyles.container, {}]}>
-      <ScrollView contentContainerStyle={{ padding: '5%' }} refreshControl={<RefreshControl refreshing={userLoading} onRefresh={() => {
+    <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={[NewStyles.container, {}]}>
+      <ScrollView contentContainerStyle={{ padding: '5%' }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={userLoading} onRefresh={() => {
         dispatch(fetchUser(userToken))
       }} />}>
         <View style={[{ backgroundColor: themeColor4.bgColor(1), width: '100%', padding: 15 }, NewStyles.rowWrapper, NewStyles.shadow, NewStyles.border10]}>
@@ -35,18 +35,24 @@ const Account = ({ navigation }) => {
           <View style={NewStyles.row}>
             <View style={{ padding: 10, gap: 5, alignItems: 'flex-start' }}>
               <Text style={NewStyles.text10}>{user?.fname} {user?.lname}</Text>
-              <View style={[NewStyles.row, { gap: 5 }]}>
+              {/* <View style={[NewStyles.row, { gap: 5 }]}>
                 <Text style={NewStyles.text10}>{user?.phone}</Text>
                 <View style={[styles.box, NewStyles.border5]}>
                   <Ionicons name='call' color={themeColor0.bgColor(1)} size={16} />
                 </View>
-              </View>
+              </View> */}
               <View style={[NewStyles.row, { gap: 5 }]}>
                 <Text style={NewStyles.text10}>{formatPrice(user?.wallet)} {t('currency')}</Text>
                 <View style={[styles.box, NewStyles.border5]}>
                   <Ionicons name='wallet' color={themeColor0.bgColor(1)} size={16} />
                 </View>
               </View>
+              {user?.remaining_days > 0 && <View style={[NewStyles.row, { gap: 5 }]}>
+                <Text style={NewStyles.text10}>{t("{{num}} days left", {num:parseInt(user?.remaining_days)})}</Text>
+                <View style={[styles.box, NewStyles.border5]}>
+                  <Ionicons name='diamond' color={themeColor0.bgColor(1)} size={16} />
+                </View>
+              </View>}
             </View>
             <Image source={{ uri: user?.profile_photo_path ? `${imageUri}/${user?.profile_photo_path}` : `${mainUri}/images/user.png` }} style={[{ height: 85, width: 85 }, NewStyles.border100]} />
           </View>
@@ -62,17 +68,24 @@ const Account = ({ navigation }) => {
             <OptionsComponents txt={t('Transactions')} icon={'reorder-four'} onPress={() => { navigation.navigate('Transactions') }} />
           </View>
         </View>
+        <OptionsComponents txt={t('Bookmarked words')} icon={'bookmarks'} onPress={() => { navigation.navigate('BookmarkedWords') }} />
         <OptionsComponents txt={t('Withdraw Requests')} icon={'arrow-up-circle'} onPress={() => { navigation.navigate('Decrease') }} />
         <OptionsComponents txt={t('Settings')} icon={'settings'} onPress={() => { navigation.navigate('Settings') }} />
-        <OptionsComponents txt={t('About Us')} icon={'information-circle'} />
-        <OptionsComponents txt={t('Contact Us')} icon={'help-circle'} />
-        <OptionsComponents txt={t('Terms & Conditions')} icon={'shield-checkmark'} />
-        <OptionsComponents txt={t('Privacy Policy')} icon={'shield-half'} />
+        <OptionsComponents txt={t('About Us')} icon={'information-circle'} onPress={() => { Linking.openURL(`${mainUri}/about-us`) }} />
+        <OptionsComponents txt={t('Contact Us')} icon={'help-circle'} onPress={() => {
+          Linking.openURL(`${mainUri}/contact-us`)
+        }} />
+        <OptionsComponents txt={t('Terms & Conditions')} icon={'shield-checkmark'} onPress={() => {
+          Linking.openURL(`${mainUri}/terms`)
+        }} />
+        <OptionsComponents txt={t('Privacy Policy')} icon={'shield-half'} onPress={() => {
+          Linking.openURL(`${mainUri}/privacies`)
+        }} />
       </ScrollView>
       <View>
         <Wallet modal={modal} setModal={setModal} />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

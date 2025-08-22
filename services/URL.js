@@ -1,5 +1,5 @@
-export const mainUri = 'http://192.168.21.123:8000';
-export const uri = 'http://192.168.21.123:8000/api';
-export const imageUri = 'http://192.168.21.123:8000/storage';
-export const staticUri = 'http://192.168.21.123:8000/assets';
-export const dlUrl = 'https://dl.solfabook.com';
+export const mainUri = 'https://laravel.solfabook.com';
+export const uri = 'https://laravel.solfabook.com/api';
+export const imageUri = 'https://laravel.solfabook.com/storage';
+export const staticUri = 'https://laravel.solfabook.com/assets';
+export const dlUrl = 'https://dl.solfabook.com/files';

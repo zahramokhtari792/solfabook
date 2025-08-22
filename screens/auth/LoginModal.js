@@ -46,14 +46,7 @@ export default function LoginModal() {
         }
     };
 
-    const validatePassword = () => {
-        const pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
-        if (password.match(pattern)) {
-            return true;
-        } else {
-            return false;
-        }
-    };
+    
 
     const sendVerificationCode = async () => {
         try {
@@ -66,10 +59,6 @@ export default function LoginModal() {
             }
         } catch (error) {
             handleError(error)
-            console.log('====================================');
-            console.log(error);
-            console.log('====================================');
-            // Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
         } finally {
             setLoading(false);
         }
@@ -122,7 +111,6 @@ export default function LoginModal() {
             }
         } catch (error) {
             handleError(error)
-            // Platform.OS === 'android' ? ToastAndroid.show(`${t('Something went wrong!')}`, ToastAndroid.SHORT) : alert(`${t('Something went wrong!')}`)
         } finally {
             setLoading(false);
         }
@@ -130,8 +118,8 @@ export default function LoginModal() {
 
 
     return (
-        <Modal animationType='fade' style={{ backgroundColor: 'red' }} transparent={true} visible={loginModal} onRequestClose={() => { hideModal() }}>
-            <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0} style={{ flex: 1 }}>
+        <Modal animationType='fade' style={{ }} transparent={true} visible={loginModal} onRequestClose={() => { hideModal() }}>
+            <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={0} style={{ flex: 1 }}>
                 <View style={[styles.container, NewStyles.center]}>
                     <View style={[styles.modalView, NewStyles.border10]}>
                         <View style={[NewStyles.rowWrapper]}>

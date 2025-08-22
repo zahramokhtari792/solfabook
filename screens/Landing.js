@@ -56,7 +56,7 @@ export default function Landing() {
     useEffect(() => {
         loadLanguage();
         fetchUserToken();
-        dispatch(fetchContacts());
+        // dispatch(fetchContacts());
         navigation.navigate('MainLayout');
     }, []);
 

@@ -51,6 +51,7 @@ export default function Decrease({ navigation }) {
             handleError(error)
         } finally {
             setRefreshing(false);
+            dispatch(fetchUser(token))
         }
     };
     useEffect(() => {
@@ -59,7 +60,7 @@ export default function Decrease({ navigation }) {
 
     return (
         <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:Platform.OS==='ios' ? 'off' :'additive'}}>
-            <ScrollView contentContainerStyle={styles.contentContainerStyle} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.contentContainerStyle} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
                 <Text style={NewStyles.text}>{t('Enter your desired amount in Tomans.')} <Text style={NewStyles.title6}>*</Text></Text>
                 <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, NewStyles.shadow]} keyboardType='number-pad' placeholder={t('Amount in Tomans')} placeholderTextColor={themeColor3.bgColor(1)} maxLength={10} value={amount?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => { setAmount(text?.replace(/,/g, "")) }} />
                 <Text style={NewStyles.text}>{t('Enter your IBAN number.')} <Text style={NewStyles.title6}>*</Text></Text>
@@ -73,7 +74,7 @@ export default function Decrease({ navigation }) {
                             <BlankScreen/>
                         )
                     }}
-                    refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}
+                    
                     data={data}
                     keyExtractor={(item) => item?.id?.toString()}
                     ListHeaderComponent={data.length > 0 ? <Text style={NewStyles.title}>درخواست‌های شما</Text> : null}

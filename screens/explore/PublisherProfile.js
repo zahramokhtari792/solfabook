@@ -1,4 +1,4 @@
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import axios from 'axios';
 import { imageUri, uri } from '../../services/URL';
@@ -23,6 +23,7 @@ const PublisherProfile = ({ route, navigation }) => {
   const publisher = params?.publisher;
   const [showFullText, setShowFullText] = useState(false);
   const [textShown, setTextShown] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [modal, setModal] = useState(false);
   const userToken = useSelector(state => state?.auth?.token);
   const { showModal } = useLoginModal();
@@ -42,7 +43,7 @@ const PublisherProfile = ({ route, navigation }) => {
     axios.post(`${uri}/checkRated`, { id: publisher?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
       .then((res) => {
         setRated(res?.data?.rated)
-       
+
       })
       .catch((err) => {
         console.log(err);
@@ -54,7 +55,7 @@ const PublisherProfile = ({ route, navigation }) => {
     axios.post(`${uri}/fetchPublisherProfile`, { id: publisher?.id })
       .then((res) => {
         setData(res?.data?.data)
-         setPublisher_rate_avg_rate(res?.data?.publisher_rate_avg_rate)
+        setPublisher_rate_avg_rate(res?.data?.publisher_rate_avg_rate)
         setPublisher_rate_count(res?.data?.publisher_rate_count)
       })
       .catch((err) => {
@@ -63,6 +64,7 @@ const PublisherProfile = ({ route, navigation }) => {
       .finally(() => {
 
         setLoader(false)
+        setRefreshing(false)
       })
   }
   useFocusEffect(useCallback(() => {
@@ -92,12 +94,12 @@ const PublisherProfile = ({ route, navigation }) => {
                 <Text style={[NewStyles.title, { textAlign: 'center' }]}>{publisher?.name}</Text>
                 <View style={[NewStyles.row, { gap: 5, alignSelf: 'center' }]}>
                   <StarIcon color={themeColor12.bgColor(1)} height='12' width='12' />
-                  {!publisher_rate_avg_rate && <Text style={NewStyles.text10}>{(parseFloat(publisher?.publisher_rate_avg_rate)).toFixed(1) ?? '0'} <Text style={[NewStyles.text1, { fontSize: 11 }]}>({t("From {{num}} rates", { num: publisher?.publisher_rate_count })})</Text></Text>}
+                  {!publisher_rate_avg_rate && <Text style={NewStyles.text10}>{(parseFloat(publisher?.publisher_rate_avg_rate ?? 0)).toFixed(1) ?? '0'} <Text style={[NewStyles.text1, { fontSize: 11 }]}>({t("From {{num}} rates", { num: publisher?.publisher_rate_count })})</Text></Text>}
                   {publisher_rate_avg_rate && <Text style={NewStyles.text10}>{(parseFloat(publisher_rate_avg_rate)).toFixed(1) ?? '0'} <Text style={[NewStyles.text1, { fontSize: 11 }]}>({t("From {{num}} rates", { num: publisher_rate_count })})</Text></Text>}
                 </View>
 
                 {publisher.about && <Text style={[NewStyles.text10, { marginTop: 10, }]} numberOfLines={showFullText ? undefined : 2}
-                  onTextLayout={handleTextLayout}>{publisher.about}</Text>} 
+                  onTextLayout={handleTextLayout}>{publisher.about}</Text>}
                 {textShown && !showFullText && <TouchableOpacity style={[NewStyles.row, NewStyles.center]} onPress={() => {
                   setShowFullText(true)
                 }}>
@@ -120,14 +122,17 @@ const PublisherProfile = ({ route, navigation }) => {
             </View>
           )
         }}
-
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
+          setRefreshing(true);
+          fetchPublisherFiles()
+        }} />}
         renderItem={({ item }) => {
           return (
             <View style={{ marginTop: 20 }}>
               <View style={[NewStyles.rowWrapper, { paddingHorizontal: '5%' }]}>
                 <Text style={NewStyles.text}>{item?.title}</Text>
                 <Pressable style={{ paddingHorizontal: 5 }} onPress={() => {
-                  navigation.navigate('ShowFileByWho', { role_id: publisher?.id, role: 'publisher', role_name: publisher?.name })
+                  navigation.navigate('ShowFileByWho', { role_id: publisher?.id, role: 'publisher', role_name: publisher?.name, orderBy:item?.order_by })
                 }}>
                   <Ionicons name='chevron-back' color={themeColor0.bgColor(1)} size={20} />
                 </Pressable>
@@ -140,7 +145,7 @@ const PublisherProfile = ({ route, navigation }) => {
                 inverted
                 renderItem={({ item }) => {
                   return (
-                    <FilesProduct item={item} />
+                    <FilesProduct explore={true} item={item} />
                   )
                 }}
               />
@@ -150,7 +155,7 @@ const PublisherProfile = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
       />
       <View>
-        <RatingModal modal={modal} setModal={setModal} publisher_id={publisher?.id} action={()=>{
+        <RatingModal modal={modal} setModal={setModal} publisher_id={publisher?.id} action={() => {
           checkRated();
           fetchPublisherFiles()
         }} />

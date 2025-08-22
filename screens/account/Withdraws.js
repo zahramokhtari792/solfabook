@@ -54,13 +54,8 @@ export default function Withdraws({ navigation }) {
             <BackHeader title={'درخواست‌های برداشت'} />
             <FlatList
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl onRefresh={() => {
-                    setRefreshing(true)
-                    dispatch(fetchUser(userToken))
-                    fetchData()
-                }}
-                    refreshing={refreshing} />}
-                style={{ flex: 1, }}
+                refreshControl={<RefreshControl onRefresh={() => { setRefreshing(true); dispatch(fetchUser(userToken)); fetchData() }} refreshing={refreshing} />}
+                // style={{ flex: 1, }}
                 data={data}
 
                 ListEmptyComponent={() => {
@@ -70,42 +65,42 @@ export default function Withdraws({ navigation }) {
                     return (
                         <View style={{ alignItems: 'center' }}>
                             <View style={[styles.providerWrapper, { alignItems: 'center' }]} >
-                                <View style={[NewStyles.providerItemProfileWrapper,{marginBottom:10}]} onPress={() => { }}>
+                                <View style={[NewStyles.providerItemProfileWrapper, { marginBottom: 10 }]} onPress={() => { }}>
                                     <View style={[NewStyles.rowWrapper]}>
                                         <Text style={NewStyles.text1}>درخواست برداشت {item.id}
                                         </Text>
                                         <Ionicons name="wallet-outline" size={24} color={themeColor0.bgColor(1)} style={NewStyles.ml5} />
                                     </View>
                                 </View>
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>تاریخ ارسال درخواست</Text>
                                     <Text style={NewStyles.text1}>{jalaali.toJalaali(new Date(item?.created_at)).jy}/{jalaali.toJalaali(new Date(item?.created_at)).jm}/{jalaali.toJalaali(new Date(item?.created_at)).jd}  {formatToLocalTime(item?.created_at).substring(11, 19)}</Text>
                                 </View>
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>وضعیت درخواست</Text>
                                     <Text style={[NewStyles.text1, item.status == 0 && { color: themeColor11.bgColor(1) }, item.status == 3 && { color: themeColor7.bgColor(1) }, item.status == 2 && { color: themeColor6.bgColor(1) }]}>{item.status == 0 && 'در حال بررسی'}{item.status == 1 && 'تأیید شده'}{item.status == 2 && 'رد شده'}{item.status == 3 && 'پایان یافته'}</Text>
                                 </View>
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>نام صاحب حساب</Text>
-                                    <Text style={[NewStyles.text1,{flex:1, textAlign:'left'}]}>{item.account_name}</Text>
+                                    <Text style={[NewStyles.text1, { flex: 1, textAlign: 'left' }]}>{item.account_name}</Text>
                                 </View>
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>شماره کارت</Text>
-                                    <Text style={[NewStyles.text1,{flex:1, textAlign:'left' }]}>{item.card_no}</Text>
+                                    <Text style={[NewStyles.text1, { flex: 1, textAlign: 'left' }]}>{item.card_no}</Text>
                                 </View>
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>شماره شبا</Text>
-                                    <Text style={[NewStyles.text1,{flex:1,  textAlign:'left'}]}>{item.iban}</Text>
+                                    <Text style={[NewStyles.text1, { flex: 1, textAlign: 'left' }]}>{item.iban}</Text>
                                 </View>
-                                {(item?.updated_at && item?.status == 3) && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                {(item?.updated_at && item?.status == 3) && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>تاریخ پایان درخواست</Text>
-                                    <Text style={[NewStyles.text1,{}]}>{jalaali.toJalaali(new Date(item?.updated_at)).jy}/{jalaali.toJalaali(new Date(item?.updated_at)).jm}/{jalaali.toJalaali(new Date(item?.updated_at)).jd}  {formatToLocalTime(item?.updated_at).substring(11, 19)}</Text>
+                                    <Text style={[NewStyles.text1, {}]}>{jalaali.toJalaali(new Date(item?.updated_at)).jy}/{jalaali.toJalaali(new Date(item?.updated_at)).jm}/{jalaali.toJalaali(new Date(item?.updated_at)).jd}  {formatToLocalTime(item?.updated_at).substring(11, 19)}</Text>
                                 </View>}
-                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>مبلغ</Text>
-                                    <Text style={[NewStyles.text1,{flex:1, textAlign:'left' }]}>{formatPrice(item?.price)} تومان</Text>
+                                    <Text style={[NewStyles.text1, { flex: 1, textAlign: 'left' }]}>{formatPrice(item?.price)} تومان</Text>
                                 </View>
-                                {item?.file_path && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                {item?.file_path && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>فیش واریزی</Text>
                                     <Pressable onPress={() => {
                                         Linking.openURL(`${imageUri}/${item?.file_path}`)
@@ -113,9 +108,9 @@ export default function Withdraws({ navigation }) {
                                         <Text style={NewStyles.text1}>مشاهده فیش</Text>
                                     </Pressable>
                                 </View>}
-                                {item?.response && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%',gap:5 }]}>
+                                {item?.response && <View style={[NewStyles.rowWrapper, { marginBottom: 10, width: '100%', gap: 5 }]}>
                                     <Text style={NewStyles.text10}>توضیحات</Text>
-                                    <Text style={[NewStyles.text1,{flex:1, textAlign:'left' }]}>{item.response}</Text>
+                                    <Text style={[NewStyles.text1, { flex: 1, textAlign: 'left' }]}>{item.response}</Text>
                                 </View>}
                             </View>
                         </View>

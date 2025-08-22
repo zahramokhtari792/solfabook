@@ -31,6 +31,10 @@ export default function TransactionItem({ item }) {
             return 'Pay for the order through the payment gateway';
         } else if (item?.type == 6) {
             return 'Pay for the order from your wallet';
+        }else if (item?.type == 7) {
+            return 'Pay for the subscription from your wallet';
+        }else if (item?.type == 8) {
+            return 'Pay for the subscription through the payment gateway';
         }
     } 
 

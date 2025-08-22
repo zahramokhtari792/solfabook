@@ -7,7 +7,7 @@ export const fetchContacts = createAsyncThunk('contact/contact', async () => {
         .get(`${uri}/contact`)
         .then(response => response.data)
         .catch(error => {
-            console.log(error);
+            console.log(error,'*');
             throw new Error(error.response?.data?.message || error.message);
         })
 })

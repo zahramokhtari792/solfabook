@@ -1,8 +1,8 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Linking, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import NewStyles, { deviceHeight, deviceWidth } from '../../styles/NewStyles'
 import { TouchableOpacity } from 'react-native'
-import { imageUri } from '../../services/URL'
+import { imageUri, mainUri } from '../../services/URL'
 import { Image } from 'expo-image'
 import { formatDate } from '../../helpers/Common'
 import { themeColor3, themeColor4 } from '../../theme/Color'
@@ -23,7 +23,7 @@ const Blogs = ({ title, data }) => {
                 renderItem={({ item }) => {
                     return (
                         <TouchableOpacity style={{ width: '95%', backgroundColor: themeColor4.bgColor(1), alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
-
+                            Linking.openURL(`${mainUri}/blog/${item?.id}`)
                         }}>
                             <View style={[NewStyles.row, { width: '100%', aspectRatio:2.8 }]}>
 

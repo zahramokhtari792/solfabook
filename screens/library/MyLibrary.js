@@ -34,7 +34,7 @@ const MyLibrary = () => {
       }}>
         <Tab.Screen name="MyFiles" component={MyFiles} options={{ title: t('File') }} />
         <Tab.Screen name="MyAlbum" component={MyAlbum} options={{ title: t('Album') }} />
-        <Tab.Screen name="Bookmarks" component={Bookmarks} options={{ title: t('Bookmarked') }} />
+        <Tab.Screen name="Bookmarks" component={Bookmarks} options={{ title: t('Saved') }} />
         <Tab.Screen name="MyFavorite" component={MyFavorite} options={{ title: t('Favorite') }} />
       </Tab.Navigator>
     </SafeAreaView>

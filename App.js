@@ -40,6 +40,19 @@ import MusicPlayer from './screens/library/MusicPlayer';
 import VideoPlayer from './screens/library/VideoPlayer';
 import PictureAudio from './screens/library/PictureAudio';
 import AlbumDetail from './screens/albums/AlbumDetail';
+import SamplePDFReader from './screens/explore/SamplePDFReader';
+import AlbumTab from './screens/albums/AlbumTab';
+import AllAlbums from './screens/albums/AllAlbums';
+import Dictionary from './screens/dictionary/Dictionary';
+import WordDetail from './screens/dictionary/WordDetail';
+import Subscription from './screens/dictionary/Subscription';
+import BookmarkedWords from './screens/account/BookmarkedWords';
+import { SearchProvider } from './context/SearchProvider';
+import SearchModal from './screens/explore/SearchModal';
+import SearchResult from './screens/explore/SearchResult';
+import MusicalInstrumentIntro from './screens/musicalinstrument/MusicalInstrumentIntro';
+import MusicalInstrument from './screens/musicalinstrument/MusicalInstrument';
+import InstrumentDetail from './screens/musicalinstrument/InstrumentDetail';
 
 
 i18n
@@ -79,45 +92,61 @@ export default function App() {
               <KeyboardProvider>
                 <Provider store={store}>
                   <LoginProvider>
-                    <Stack.Navigator>
-                      <Stack.Screen name='Landing' component={Landing} options={{ headerShown: false, gestureEnabled: false }} />
-                      <Stack.Screen name='MainLayout' component={MainLayout} options={{ headerShown: false, gestureEnabled: false , headerShadowVisible:false}} />
-                      <Stack.Screen name='Categories' component={Categories} options={{ headerShown: false }} />
-                      <Stack.Screen name='Account' component={Account} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='Profile' component={Profile} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='AllFiles' component={AllFiles} options={{ headerShown: false }} />
-                      <Stack.Screen name='Transactions' component={Transactions} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='Decrease' component={Decrease} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='Settings' component={Settings} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='FileDetail' component={FileDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='ChangePassword' component={ChangePassword} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='PDFReader' component={PDFReader} options={{ header : () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header : () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header : () => { return (<BackHeader />) } }} />
-                      <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header : () => { return (<BackHeader transparent={true} />) } }} />
-                      <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header : () => { return (<BackHeader transparent={true} />) } }} />
-                      <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={{
-                        headerShown: false,
-                        presentation: 'formSheet',
-                        sheetGrabberVisible: true,
-                        sheetCornerRadius: 25,
-                        sheetAllowedDetents: [0.25, 0.5, 0.75],
-                        contentStyle: {
-                          backgroundColor: themeColor4.bgColor(1),
-                        },
-                      }} />
-                      <Stack.Screen name='MoreAboutFile' component={MoreAboutFile} options={{
-                        header: () => { return (<BackHeader />) }
-                      }}/>
-                      <Stack.Screen name='FullDescription' component={FullDescription} options={{
-                        header: () => { return (<BackHeader />) }
-                      }} />
+                    <SearchProvider>
+                      <Stack.Navigator>
+                        <Stack.Screen name='Landing' component={Landing} options={{ headerShown: false, gestureEnabled: false }} />
+                        <Stack.Screen name='MainLayout' component={MainLayout} options={{ headerShown: false, gestureEnabled: false, headerShadowVisible: false }} />
+                        <Stack.Screen name='Categories' component={Categories} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='AlbumTab' component={AlbumTab} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Account' component={Account} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Profile' component={Profile} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='AllFiles' component={AllFiles} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Transactions' component={Transactions} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Decrease' component={Decrease} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Settings' component={Settings} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='FileDetail' component={FileDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='ChangePassword' component={ChangePassword} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='PDFReader' component={PDFReader} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Dictionary' component={Dictionary} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='WordDetail' component={WordDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Subscription' component={Subscription} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='BookmarkedWords' component={BookmarkedWords} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='SearchResult' component={SearchResult} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='MusicalInstrumentIntro' component={MusicalInstrumentIntro} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='MusicalInstrument' component={MusicalInstrument} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                        <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                        <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={{
+                          headerShown: false,
+                          presentation: 'formSheet',
+                          sheetGrabberVisible: true,
+                          sheetCornerRadius: 25,
+                          sheetAllowedDetents: [0.25, 0.5, 0.75],
+                          contentStyle: {
+                            backgroundColor: themeColor4.bgColor(1),
+                          },
+                        }} />
+                        <Stack.Screen name='MoreAboutFile' component={MoreAboutFile} options={{
+                          header: () => { return (<BackHeader />) }
+                        }} />
+                        <Stack.Screen name='FullDescription' component={FullDescription} options={{
+                          header: () => { return (<BackHeader />) }
+                        }} />
+                        <Stack.Screen name='SamplePDFReader' component={SamplePDFReader} options={{
+                          header: () => { return (<BackHeader />) }
+                        }} />
 
-                    </Stack.Navigator>
-                    <LoginModal />
+                      </Stack.Navigator>
+                      <LoginModal />
+                      <SearchModal />
+                    </SearchProvider>
                   </LoginProvider>
                 </Provider>
               </KeyboardProvider>

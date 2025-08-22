@@ -1,5 +1,5 @@
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Linking from "expo-linking";
 import { themeColor0, themeColor1, themeColor10, themeColor4 } from '../theme/Color';
 import NewStyles from '../styles/NewStyles';
@@ -48,7 +48,6 @@ const Wallet = ({ modal, setModal }) => {
 
     const increaseWallet = async () => {
         try {
-            _addLinkingListenerWallet()
             let result = await Linking.openURL(`${uri}/wallet/increase?linkingUri=${redirectUrl}&amount=${price}&userId=${user?.id}`);
             let redirectData;
             if (result.url) {
@@ -60,6 +59,28 @@ const Wallet = ({ modal, setModal }) => {
 
         }
     }
+
+    const handleRedirect = (event) => {
+        const { queryParams } = Linking.parse(event?.url);
+        
+        if (queryParams?.status == 'success') {
+            dispatch(fetchUser(userToken))
+            showToastOrAlert(t('Your wallet has been successfully topped up.'))
+            setLoading(false);
+        } else if (queryParams?.status == 'failed') {
+            showToastOrAlert(t('The payment encountered an error.'))
+            setLoading(false);
+        }
+        setModal(false)
+    };
+
+    useEffect(() => {
+        const listener = Linking.addEventListener('url', handleRedirect);
+
+        return () => {
+            listener.remove(); // موقع unmount شدن کامپوننت، لیسنر حذف میشه
+        };
+    }, []);
     return (
         <Modal animationType='slide' visible={modal} transparent={true} onRequestClose={() => {
             setModal(false)
@@ -89,7 +110,7 @@ const Wallet = ({ modal, setModal }) => {
                                     if (price >= 10000) {
                                         increaseWallet()
                                     } else {
-                                        showToastOrAlert('The minimum allowed amount is 10,000 Tomans.')
+                                        showToastOrAlert(t('The minimum allowed amount is 10,000 Tomans.'))
                                     }
                                 }
                                 } />

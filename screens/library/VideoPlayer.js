@@ -1,4 +1,4 @@
-import { FlatList, ImageBackground,  StyleSheet, Text, View } from 'react-native'
+import { FlatList, ImageBackground, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import NewStyles from '../../styles/NewStyles'
 import Loader from '../../components/Loader'
@@ -12,7 +12,10 @@ import { themeColor0, themeColor4 } from '../../theme/Color'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { TouchableOpacity } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { usePreventScreenCapture } from 'expo-screen-capture'
 const VideoPlayer = ({ route }) => {
+  
+  usePreventScreenCapture();
   const params = route?.params;
   const file = params?.file;
   const [data, setData] = useState([])
@@ -47,8 +50,8 @@ const VideoPlayer = ({ route }) => {
   }
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{top: 'off', bottom: 'additive'}}>
-      <ImageBackground style={[{flex:1, paddingTop: 65 }]} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+      <ImageBackground style={[{ flex: 1, paddingTop: 65 }]} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
         <VideoView onFullscreenEnter={() => {
           ScreenOrientation.unlockAsync();
         }}

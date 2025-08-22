@@ -15,6 +15,8 @@ import LibararyIcon from '../assets/svg/LibararyIcon';
 import Header from '../components/Header';
 import Categories from './category/Categories';
 import MyFiles from './library/MyFiles';
+import AlbumTab from './albums/AlbumTab';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -54,10 +56,10 @@ export default function MainLayout() {
                     
                 }}
             />
-            <Tab.Screen name='MusicalInstruments' component={MusicalInstruments}
+            <Tab.Screen name='AlbumTab' component={AlbumTab}
                 options={{
-                    title: `${t('SolfaSaz')}`,
-                    tabBarIcon: ({ color }) => { return <MusicIcon color={color} /> },
+                    title: `${t('Albums')}`,
+                    tabBarIcon: ({ color }) => { return <Ionicons name="albums" size={28} color={color} /> },
                 }}
             />
             <Tab.Screen name='Explore' component={Explore}

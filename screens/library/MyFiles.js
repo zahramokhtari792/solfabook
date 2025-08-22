@@ -45,6 +45,7 @@ const MyFiles = () => {
     axios.get(`${uri}/fetchMyFiles`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
       .then((res) => {
         setData(res?.data);
+        
       })
       .catch((err) => {
         console.log(err);

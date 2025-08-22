@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from './../../services/URL';
@@ -12,6 +12,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioPlayer from '../../components/AudioPlayer';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { usePreventScreenCapture } from 'expo-screen-capture';
+import AlbumIcon from '../../assets/svg/AlbumIcon';
+import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import ModalPlayer from './ModalPlayer';
 
 const PDFReader = ({ route }) => {
     const params = route?.params;
@@ -22,7 +28,11 @@ const PDFReader = ({ route }) => {
     const [loader, setLoader] = useState(true)
     const [lastPage, setLastPage] = useState(1);
     const [musicIndex, setMusicIndex] = useState(0);
+    const [visible, setVisible] = useState(false);
     const [playing, setPlaying] = useState(false);
+    const [playNow, setPlayNow] = useState(false);
+    usePreventScreenCapture();
+
 
 
 
@@ -31,7 +41,6 @@ const PDFReader = ({ route }) => {
             .then((res) => {
                 setData(res?.data?.file_pdf)
                 setAudio(res?.data?.file_audio)
-
             })
             .catch((err) => {
                 handleError(err)
@@ -59,7 +68,7 @@ const PDFReader = ({ route }) => {
         await AsyncStorage.setItem('file_id', id?.toString());
     }
 
-   
+
     useEffect(() => {
         // وقتی صفحه باز شد → اجازه چرخش بده
         ScreenOrientation.unlockAsync();
@@ -69,7 +78,7 @@ const PDFReader = ({ route }) => {
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
         };
     }, []);
-    
+
     if (loader) {
         return (<Loader />)
     }
@@ -77,13 +86,24 @@ const PDFReader = ({ route }) => {
         <SafeAreaView style={NewStyles.container}>
             {
                 audio?.length > 0 &&
-                <AudioPlayer audio={audio} playing={playing} setPlaying={setPlaying} index={musicIndex} setIndex={setMusicIndex} />
+                <View style={{}}>
+                    <TouchableOpacity style={{ padding: 5, marginHorizontal: 15, marginTop: 5, alignSelf: 'flex-end' }} onPress={() => {
+                        setVisible(true)
+                    }}>
+                        <AlbumIcon color={themeColor0.bgColor(1)} />
+                    </TouchableOpacity>
+                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 , paddingHorizontal:'5%'}]}>{audio?.[musicIndex]?.title}</Text>
+
+                    <AudioPlayer audio={audio} playing={playing} setPlaying={setPlaying} index={musicIndex} setIndex={setMusicIndex} playNow={playNow} />
+
+                </View>
             }
             <View style={{ flex: 1 }}>
                 <Pdf maxScale={10} showsVerticalScrollIndicator enablePaging singlePage={false} trustAllCerts={false} page={lastPage} onPageChanged={(val) => { setCoockie(val.toString()); }} source={{ uri: `${dlUrl}/${data?.[0]?.file_path}`, cache: false }} onLoadComplete={() => {
                     setLoader(false);
-                }} style={{ flex: 1, width: '100%' }} />
+                }} style={{ flex: 1, width: '100%', backgroundColor: themeColor5.bgColor(1) }} />
             </View>
+            <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow}/>
         </SafeAreaView>
     )
 }

@@ -15,8 +15,9 @@ const ShowFileByWho = ({ route }) => {
     const [loader, setLoader] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [data, setData] = useState()
+    
     const fetchFilesByWho = () => {
-        axios.post(`${uri}/fetchFilesByWho`, { role_id: params?.role_id, role: params?.role })
+        axios.post(`${uri}/fetchFilesByWho`, { role_id: params?.role_id, role: params?.role, orderBy:params?.orderBy })
             .then((res) => {
                 setData(res?.data)
             })
@@ -47,9 +48,9 @@ const ShowFileByWho = ({ route }) => {
                 numColumns={2}
                 keyExtractor={(item) => item?.id?.toString()}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                columnWrapperStyle={{ justifyContent: 'center', gap: 10 }}
+                columnWrapperStyle={{ justifyContent: 'center', gap: 10 , flexDirection:'row-reverse'}}
                 contentContainerStyle={[{ paddingHorizontal: '5%' }, data?.length === 0 && { flex: 1 }]}
-                renderItem={({ item }) => <FilesProduct item={item} type={"vertical"} />}
+                renderItem={({ item }) => <FilesProduct explore={true} item={item} type={"vertical"} />}
                 ListEmptyComponent={()=>{
                     return(
                         <BlankScreen/>

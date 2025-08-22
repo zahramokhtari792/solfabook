@@ -84,7 +84,7 @@ const Explore = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         columnWrapperStyle={{ justifyContent: 'center', gap: 10 }}
         contentContainerStyle={[{ paddingHorizontal: '5%' }, data?.length === 0 && { flex: 1 }]}
-        renderItem={({ item }) => <FilesProduct item={item} type={"vertical"} />}
+        renderItem={({ item }) => <FilesProduct item={item} type={"vertical"} explore={true} />}
         ListEmptyComponent={renderEmptyComponent}
         onEndReached={() => {
           if (!isLoading && hasMore) { // فقط در صورتی که لودینگ نیست و داده بیشتری هست، load کن
