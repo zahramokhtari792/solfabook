@@ -12,9 +12,11 @@ import ShowAlbumHome from './ShowAlbumHome'
 import Blogs from './Blogs'
 import DictionaryHome from './DictionaryHome'
 import MusicalHomeSection from '../musicalinstrument/MusicalHomeSection'
+import { useTranslation } from 'react-i18next'
 
 
 const Home = () => {
+  const { t } = useTranslation()
   const [data, setData] = useState([])
   const [loader, setLoader] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -24,7 +26,16 @@ const Home = () => {
         setData(res?.data)
       })
       .catch((err) => {
-        console.log(err);
+        // Detailed logging to help diagnose network errors (message, code, config, request, response)
+        try {
+          console.log('AXIOS ERROR message:', err?.message);
+          console.log('AXIOS ERROR code:', err?.code);
+          console.log('AXIOS ERROR config:', err?.config);
+          console.log('AXIOS ERROR request:', err?.request);
+          console.log('AXIOS ERROR response:', err?.response);
+        } catch (e) {
+          console.log('Error logging axios error', e);
+        }
       })
       .finally(() => {
         setRefreshing(false)
@@ -61,7 +72,7 @@ const Home = () => {
           homeData()
         }} />}
         renderItem={({ item }) => {
-          
+
 
           return (
             <View>
@@ -69,11 +80,11 @@ const Home = () => {
                 <View style={{ marginBottom: 20 }}>
                   <CustomImageCarousal data={item?.data} />
                 </View>}
-              {item?.type == 'File' && <HomeProductList data={item?.data} title={item?.title} />}
-              {item?.type == 'Album' && <ShowAlbumHome data={item?.data} title={item?.title} />}
-              {item?.type == 'Dictionary' && <DictionaryHome data={item?.data} title={item?.title} />}
-              {item?.type == 'Blog' && <Blogs data={item?.data} title={item?.title} />}
-              {item?.type == 'MusicalInstrument' && item?.data?.length > 0 && <MusicalHomeSection data={item} title={item?.title} />}
+              {item?.type == 'File' && <HomeProductList data={item?.data} title={t(item?.title)} />}
+              {item?.type == 'Album' && <ShowAlbumHome data={item?.data} title={t(item?.title)} />}
+              {item?.type == 'Dictionary' && <DictionaryHome data={item?.data} title={t(item?.title)} />}
+              {item?.type == 'Blog' && <Blogs data={item?.data} title={t(item?.title)} />}
+              {item?.type == 'MusicalInstrument' && item?.data?.length > 0 && <MusicalHomeSection data={item} title={t(item?.title)} />}
             </View>
           )
         }}

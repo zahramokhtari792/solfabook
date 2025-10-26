@@ -5,14 +5,16 @@ import NewStyles from '../../styles/NewStyles';
 import FilesProduct from '../../components/FilesProduct';
 import CategoriItem from '../category/CategoriItem';
 import AlbumCategoryItem from '../albums/AlbumCategoryItem';
+import { useTranslation } from 'react-i18next';
+import MyFileComponent from '../library/MyFileComponent';
 
 const SearchResult = ({ route }) => {
     const params = route?.params;
-
+    const { t } = useTranslation()
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <View style={{ paddingVertical: 15 }}>
-                <Text style={[NewStyles.title10, { textAlign: 'center' }]}>نتایج جست و جو در <Text style={NewStyles.title}>{params?.search}</Text></Text>
+                <Text style={[NewStyles.title10, { textAlign: 'center' }]}>{t("Search results in")} <Text style={NewStyles.title}>{params?.search}</Text></Text>
             </View>
 
             <FlatList
@@ -24,7 +26,7 @@ const SearchResult = ({ route }) => {
                     return (
                         <View>
                             <View style={{ paddingHorizontal: '5%' }}>
-                                <Text style={NewStyles.text10}>{item?.title}</Text>
+                                <Text style={NewStyles.text10}>{t(item?.title)}</Text>
                             </View>
                             {
                                 item?.type == 'file' &&
@@ -77,6 +79,25 @@ const SearchResult = ({ route }) => {
                                     }}
                                 />
                             }
+                            {
+                                (item?.type == 'my_file' || item?.type=='my_album') &&
+                                <FlatList
+                                    horizontal
+                                    inverted
+                                    maxToRenderPerBatch={3}
+                                    windowSize={4}
+                                    contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
+                                    showsHorizontalScrollIndicator={false}
+                                    data={item?.data}
+                                    renderItem={({ item: subItem }) => {
+                                        
+                                        return (
+                                            <MyFileComponent showTrash={false} item={subItem.file} />
+                                        )
+                                    }}
+                                />
+                            }
+                            
                         </View>
                     )
                 }}

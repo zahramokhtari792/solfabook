@@ -300,8 +300,8 @@ const AlbumDetail = ({ route, navigation }) => {
 
             // share
             await Share.open({
-                title: 'اشتراک گذاری',
-                message: `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                title: lang === 'fa' ? 'اشتراک گذاری' : 'Share',
+                message: lang === 'fa' ? `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://ios.laravel.solfabook.com/product/${fileId}` : `${data?.title} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/${fileId}`,
                 url: uri,                // expo برمی‌گردونه مثل file:///...
                 // type: 'image/webp',      // چون پسوند webp هست
             });
@@ -370,7 +370,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                         if (data?.base64) {
                                             Share.open({
                                                 title: `اشتراک گذاری`,
-                                                message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                                                message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://ios.laravel.solfabook.com/product/${fileId}`,
                                                 url: data?.base64
                                             })
                                         }

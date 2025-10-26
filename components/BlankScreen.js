@@ -1,17 +1,20 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useRef } from 'react';
 
 import NewStyles from '../styles/NewStyles';
 import LottieView from 'lottie-react-native';
 import { themeColor0 } from '../theme/Color';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 export default function BlankScreen() {
 
     const animation = useRef();
-
+    const lang = useSelector(state => state?.language?.lang);
+    const { t } = useTranslation()
     return (
         <View style={[styles.animationContainer, NewStyles.center]}>
-            <LottieView
+            {Platform.OS != 'web' && <LottieView
                 autoPlay
                 loop
                 ref={animation}
@@ -20,7 +23,7 @@ export default function BlankScreen() {
                     height: 100,
                 }}
                 colorFilters={[
-                    
+
                     {
                         keypath: "line 1 Outlines",
                         color: themeColor0.bgColor(1),
@@ -51,10 +54,10 @@ export default function BlankScreen() {
                     }
                 ]}
                 source={require('../assets/svg/blank.json')}
-            />
+            />}
             <View style={[styles.buttonContainer, { alignItems: 'center' }]}>
-                <Text style={NewStyles.text10}>نتیجه‌ای برای نمایش وجود ندارد.</Text>
-                <Text style={[NewStyles.text3, { textAlign: 'center' }]}>
+                <Text style={NewStyles.text10}>{t("There are no results to display.")}</Text>
+                {lang == 'fa' && <Text style={[NewStyles.text3, { textAlign: 'center' }]}>
                     چون  نیست  ز  هرچه  هست  جز  باد  به  دست
                     {'\n'}
                     چون هست  به هرچه هست  نقصان  و  شکست
@@ -64,7 +67,7 @@ export default function BlankScreen() {
                     پندار    که     هرچه    نیست    در   عالم    هست
                     {'\n'}{'\n'}
                     حکیم عمر خیام
-                </Text>
+                </Text>}
             </View>
         </View>
     )

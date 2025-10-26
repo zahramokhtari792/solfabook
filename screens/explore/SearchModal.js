@@ -10,17 +10,21 @@ import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
 import NewStyles from '../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 const SearchModal = () => {
+    const { t } = useTranslation()
     const navigation = useNavigation()
     const { searchModal, hideSearchModal } = useSearchModal();
     const [value, setValue] = useState();
     const [loader, setLoader] = useState(false)
+    const user = useSelector(state => state?.user?.data)
     const search = () => {
         setLoader(true)
-        axios.post(`${uri}/searchInAll`, { search: value })
+        axios.post(`${uri}/searchInAll`, { search: value, user_id: user?.id })
             .then((res) => {
-                navigation.navigate('SearchResult', { data: res?.data, search:value })
+                navigation.navigate('SearchResult', { data: res?.data, search: value })
                 hideSearchModal()
                 setValue()
             })
@@ -50,7 +54,7 @@ const SearchModal = () => {
                         }}>
                             <Ionicons name='search' color={themeColor0.bgColor(1)} size={24} />
                         </TouchableOpacity>
-                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={styles.searchText} placeholder='جستجو...' placeholderTextColor={themeColor1.bgColor(1)}
+                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={styles.searchText} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
                             onEndEditing={() => {
                                 if (value && value?.trim()) {
                                     search()

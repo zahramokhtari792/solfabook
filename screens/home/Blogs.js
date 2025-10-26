@@ -6,8 +6,10 @@ import { imageUri, mainUri } from '../../services/URL'
 import { Image } from 'expo-image'
 import { formatDate } from '../../helpers/Common'
 import { themeColor3, themeColor4 } from '../../theme/Color'
+import { useNavigation } from '@react-navigation/native'
 
 const Blogs = ({ title, data }) => {
+    const navigation = useNavigation()
     return (
         <View>
             <Text style={[NewStyles.title10, { paddingHorizontal: 10, marginTop: 20, marginBottom: 30 }]}>{title}</Text>
@@ -23,7 +25,8 @@ const Blogs = ({ title, data }) => {
                 renderItem={({ item }) => {
                     return (
                         <TouchableOpacity style={{ width: '95%', backgroundColor: themeColor4.bgColor(1), alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
-                            Linking.openURL(`${mainUri}/blog/${item?.id}`)
+                            // Linking.openURL(`${mainUri}/blog/${item?.id}`)
+                            navigation.navigate('Blog',{data:item})
                         }}>
                             <View style={[NewStyles.row, { width: '100%', aspectRatio:2.8 }]}>
 

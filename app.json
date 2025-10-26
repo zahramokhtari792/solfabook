@@ -2,7 +2,7 @@
   "expo": {
     "name": "solfabook",
     "slug": "solfabook",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "expo.solfabook.with-webbrowser-redirect",
@@ -16,6 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.solfabook.app",
+      "icon": {
+        "dark": "./assets/ios-dark.png",
+        "light": "./assets/ios-light.png",
+        "tinted": "./assets/ios-tinted.png"
+      },
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
           "fb",
@@ -29,7 +34,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "monochromeImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
       "blockedPermissions": [
@@ -38,7 +44,7 @@
         "android.permission.SYSTEM_ALERT_WINDOW"
       ],
       "package": "com.zahra27_7.solfabook",
-      "versionCode": 5,
+      "versionCode": 10,
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -105,7 +111,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "66069161-91a6-430e-ad2f-96dbd6554072"
+        "projectId": "a059143a-6ae4-477e-9524-9d842701a74a"
       }
     }
   }

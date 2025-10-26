@@ -12,7 +12,7 @@ const OptionsComponents = ({ icon, txt, onPress, }) => {
                 <View style={[NewStyles.center, { backgroundColor: themeColor1.bgColor(0.2), padding: 7 }, NewStyles.border5]}>
                     <Ionicons name={icon} color={themeColor0.bgColor(1)} size={18} />
                 </View>
-                <Text style={[NewStyles.text10, { paddingHorizontal: 10 }]}>{txt}</Text>
+                <Text style={[NewStyles.text10, { paddingHorizontal: 10, }]}>{txt}</Text>
             </View>
             <Ionicons name='chevron-back' color={themeColor0.bgColor(1)} size={20} />
         </TouchableOpacity>

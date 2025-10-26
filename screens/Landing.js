@@ -37,7 +37,7 @@ export default function Landing() {
                 dispatch(setLanguage(language));
                 i18n.changeLanguage(language);
             } else {
-                i18n.changeLanguage('fa');
+                i18n.changeLanguage('en');
             }
         } catch (error) {
             console.error('Error loading language', error);
@@ -49,7 +49,7 @@ export default function Landing() {
             const userToken = await AsyncStorage.getItem('userToken');
             dispatch(setToken(userToken));
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching user token', error);
         }
     };
 

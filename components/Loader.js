@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useRef } from 'react';
 
 import NewStyles from '../styles/NewStyles';
@@ -11,7 +11,7 @@ export default function Loader() {
 
     return (
         <View style={[styles.animationContainer, NewStyles.center]}>
-            <LottieView
+            {Platform.OS != 'web' && <LottieView
                 autoPlay
                 loop
                 ref={animation}
@@ -26,8 +26,8 @@ export default function Loader() {
                     }
                 ]}
                 source={require('../assets/svg/loader.json')}
-            />
-          
+            />}
+
         </View>
     )
 }

@@ -40,7 +40,23 @@ export const chunkArray = (array, size) => {
   }
   return result;
 };
+export const validateEmail = (email) => {
 
+        if (email.match(
+            /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        )) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+export const validatePhone = (phone) => {
+        if (phone.match(/^09\d{9}$/)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
 export const getColumnsCount = () => {
     if (deviceWidth >= 1024) {
         //desktop

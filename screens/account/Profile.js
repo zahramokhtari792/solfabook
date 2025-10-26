@@ -160,12 +160,12 @@ export default function Profile() {
                     <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Last Name')}`} value={lname} onChangeText={(text) => setLname(text)} />
                     <Text style={NewStyles.text}>{t('Email')}</Text>
                     <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Email Address')}`} value={email} onChangeText={(text) => setEmail(text)} />
-                    <Text style={NewStyles.text}>{t('Date Of Birth')}</Text>
-                    <Pressable style={[NewStyles.textInput, NewStyles.border10, NewStyles.center, { alignItems: 'flex-end' }, NewStyles.shadow]} onPress={() => {
+                    {user?.apple_check != 1 && <Text style={NewStyles.text}>{t('Date Of Birth')}</Text>}
+                    {user?.apple_check != 1 && <Pressable style={[NewStyles.textInput, NewStyles.border10, NewStyles.center, { alignItems: 'flex-end' }, NewStyles.shadow]} onPress={() => {
                         setDatePickerModal(true)
                     }}>
                         <Text style={[NewStyles.text, !birthDate && { color: themeColor3.bgColor(0.5) }]}>{birthDate ? birthDate : t('Date Of Birth')}</Text>
-                    </Pressable>
+                    </Pressable>}
                     <Button title={`${t('Change Information')}`} loading={loading} onPress={() => {
                         if(name && lname) {
 

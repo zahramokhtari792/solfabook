@@ -53,6 +53,11 @@ import SearchResult from './screens/explore/SearchResult';
 import MusicalInstrumentIntro from './screens/musicalinstrument/MusicalInstrumentIntro';
 import MusicalInstrument from './screens/musicalinstrument/MusicalInstrument';
 import InstrumentDetail from './screens/musicalinstrument/InstrumentDetail';
+import TermsAndConditions from './screens/resources/TermsAndConditions';
+import PrivacyPolicy from './screens/resources/PrivacyPolicy';
+import AboutUs from './screens/resources/AboutUs';
+import Contact from './screens/resources/Contact';
+import Blog from './screens/resources/Blog';
 
 
 i18n
@@ -97,6 +102,11 @@ export default function App() {
                         <Stack.Screen name='Landing' component={Landing} options={{ headerShown: false, gestureEnabled: false }} />
                         <Stack.Screen name='MainLayout' component={MainLayout} options={{ headerShown: false, gestureEnabled: false, headerShadowVisible: false }} />
                         <Stack.Screen name='Categories' component={Categories} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='TermsAndConditions' component={TermsAndConditions} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Blog' component={Blog} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='Contact' component={Contact} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='PrivacyPolicy' component={PrivacyPolicy} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='AboutUs' component={AboutUs} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='AlbumTab' component={AlbumTab} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='Account' component={Account} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='Profile' component={Profile} options={{ header: () => { return (<BackHeader />) } }} />

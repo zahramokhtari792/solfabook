@@ -41,14 +41,14 @@ const Account = ({ navigation }) => {
                   <Ionicons name='call' color={themeColor0.bgColor(1)} size={16} />
                 </View>
               </View> */}
-              <View style={[NewStyles.row, { gap: 5 }]}>
+              {user?.apple_check != 1 && <View style={[NewStyles.row, { gap: 5 }]}>
                 <Text style={NewStyles.text10}>{formatPrice(user?.wallet)} {t('currency')}</Text>
                 <View style={[styles.box, NewStyles.border5]}>
                   <Ionicons name='wallet' color={themeColor0.bgColor(1)} size={16} />
                 </View>
-              </View>
-              {user?.remaining_days > 0 && <View style={[NewStyles.row, { gap: 5 }]}>
-                <Text style={NewStyles.text10}>{t("{{num}} days left", {num:parseInt(user?.remaining_days)})}</Text>
+              </View>}
+              {user?.apple_check != 1 && user?.remaining_days > 0 && <View style={[NewStyles.row, { gap: 5 }]}>
+                <Text style={NewStyles.text10}>{t("{{num}} days left", { num: parseInt(user?.remaining_days) })}</Text>
                 <View style={[styles.box, NewStyles.border5]}>
                   <Ionicons name='diamond' color={themeColor0.bgColor(1)} size={16} />
                 </View>
@@ -58,7 +58,7 @@ const Account = ({ navigation }) => {
           </View>
 
         </View>
-        <View style={[NewStyles.row, { gap: 10 }]}>
+        {user?.apple_check != 1 && <View style={[NewStyles.row, { gap: 10 }]}>
           <View style={{ flex: 1 }}>
             <OptionsComponents txt={t('Wallet')} icon={'wallet'} onPress={() => {
               setModal(true)
@@ -67,19 +67,19 @@ const Account = ({ navigation }) => {
           <View style={{ flex: 1 }}>
             <OptionsComponents txt={t('Transactions')} icon={'reorder-four'} onPress={() => { navigation.navigate('Transactions') }} />
           </View>
-        </View>
-        <OptionsComponents txt={t('Bookmarked words')} icon={'bookmarks'} onPress={() => { navigation.navigate('BookmarkedWords') }} />
-        <OptionsComponents txt={t('Withdraw Requests')} icon={'arrow-up-circle'} onPress={() => { navigation.navigate('Decrease') }} />
+        </View>}
+        {user?.apple_check != 1 && <OptionsComponents txt={t('Bookmarked words')} icon={'bookmarks'} onPress={() => { navigation.navigate('BookmarkedWords') }} />}
+        {user?.apple_check != 1 && <OptionsComponents txt={t('Withdraw Requests')} icon={'arrow-up-circle'} onPress={() => { navigation.navigate('Decrease') }} />}
         <OptionsComponents txt={t('Settings')} icon={'settings'} onPress={() => { navigation.navigate('Settings') }} />
-        <OptionsComponents txt={t('About Us')} icon={'information-circle'} onPress={() => { Linking.openURL(`${mainUri}/about-us`) }} />
+        <OptionsComponents txt={t('About Us')} icon={'information-circle'} onPress={() => { navigation.navigate('AboutUs') }} />
         <OptionsComponents txt={t('Contact Us')} icon={'help-circle'} onPress={() => {
-          Linking.openURL(`${mainUri}/contact-us`)
+          navigation.navigate('Contact')
         }} />
         <OptionsComponents txt={t('Terms & Conditions')} icon={'shield-checkmark'} onPress={() => {
-          Linking.openURL(`${mainUri}/terms`)
+          navigation.navigate('TermsAndConditions')
         }} />
         <OptionsComponents txt={t('Privacy Policy')} icon={'shield-half'} onPress={() => {
-          Linking.openURL(`${mainUri}/privacies`)
+          navigation.navigate('PrivacyPolicy')
         }} />
       </ScrollView>
       <View>

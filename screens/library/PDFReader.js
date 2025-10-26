@@ -1,7 +1,7 @@
-import { FlatList, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios';
-import { dlUrl, imageUri, mainUri, uri } from './../../services/URL';
+import { dlUrl, uri } from './../../services/URL';
 import { useSelector } from 'react-redux';
 import { handleError } from '../../helpers/Common';
 import Loader from '../../components/Loader';
@@ -10,13 +10,10 @@ import NewStyles from '../../styles/NewStyles';
 import Pdf from 'react-native-pdf';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioPlayer from '../../components/AudioPlayer';
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { usePreventScreenCapture } from 'expo-screen-capture';
 import AlbumIcon from '../../assets/svg/AlbumIcon';
-import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+import { themeColor0, themeColor5 } from '../../theme/Color';
 import ModalPlayer from './ModalPlayer';
 
 const PDFReader = ({ route }) => {
@@ -92,7 +89,7 @@ const PDFReader = ({ route }) => {
                     }}>
                         <AlbumIcon color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
-                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 , paddingHorizontal:'5%'}]}>{audio?.[musicIndex]?.title}</Text>
+                    <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10, paddingHorizontal: '5%' }]}>{audio?.[musicIndex]?.title}</Text>
 
                     <AudioPlayer audio={audio} playing={playing} setPlaying={setPlaying} index={musicIndex} setIndex={setMusicIndex} playNow={playNow} />
 
@@ -103,7 +100,7 @@ const PDFReader = ({ route }) => {
                     setLoader(false);
                 }} style={{ flex: 1, width: '100%', backgroundColor: themeColor5.bgColor(1) }} />
             </View>
-            <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow}/>
+            <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow} />
         </SafeAreaView>
     )
 }

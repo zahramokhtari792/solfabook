@@ -67,6 +67,7 @@ const FileDetail = ({ route, navigation }) => {
     const [comments, setComments] = useState([])
     const [myComment, setMyComments] = useState()
     const dispatch = useDispatch()
+    const lang = useSelector(state => state.lang?.lang)
 
     const redirectUrl = Linking.createURL("/?");
     const shareFile = async () => {
@@ -83,8 +84,8 @@ const FileDetail = ({ route, navigation }) => {
 
             // share
             await Share.open({
-                title: 'اشتراک گذاری',
-                message: `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                title: lang === 'fa' ? 'اشتراک گذاری' : 'Share',
+                message: lang === 'fa' ? `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/product/${fileId}` : `${data?.title} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://ios.laravel.solfabook.com/product/${fileId}`,
                 url: uri,                // expo برمی‌گردونه مثل file:///...
                 // type: 'image/webp',      // چون پسوند webp هست
             });
@@ -129,7 +130,12 @@ const FileDetail = ({ route, navigation }) => {
         setLoader(true)
         axios.post(`${uri}/walletPayment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
-                showToastOrAlert('خرید فایل با موفقیت انجام شد.')
+                if (finalPrice == 0) {
+                    showToastOrAlert(t("The operation was successful."))
+                } else {
+
+                    showToastOrAlert('خرید فایل با موفقیت انجام شد.')
+                }
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyFiles' } })
             })
             .catch((err) => {
@@ -248,7 +254,7 @@ const FileDetail = ({ route, navigation }) => {
         axios.post(`${uri}/submitRate`, { rate: score, comment: message, file_id: fileId, useful: useful, attractive: attractive, weighty: weighty, informative: informative }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
 
-                showToastOrAlert(res?.data?.message);
+                showToastOrAlert(t(res?.data?.message));
                 checkLikedSaved();
                 setScore(null)
                 setemessage(null)
@@ -354,7 +360,7 @@ const FileDetail = ({ route, navigation }) => {
         setLoader(true)
         axios.post(`${uri}/deleteFileComment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
-                showToastOrAlert(res?.data?.message)
+                showToastOrAlert(t(res?.data?.message))
             })
             .catch((err) => {
                 handleError(err);
@@ -429,8 +435,8 @@ const FileDetail = ({ route, navigation }) => {
                                     if (Platform.OS === 'ios') {
                                         if (data?.base64) {
                                             Share.open({
-                                                title: `اشتراک گذاری`,
-                                                message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/file-detail/${fileId}`,
+                                                title: t('Share'),
+                                                message: lang == 'fa' ? `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://ios.laravel.solfabook.com/product/${fileId}` : `${data?.title}`,
                                                 url: data?.base64
                                             })
                                         }
@@ -614,7 +620,7 @@ const FileDetail = ({ route, navigation }) => {
                                 navigation.navigate('MoreAboutFile', { data: data })
                             }} >
                                 <MoreIcon color={themeColor0.bgColor(1)} />
-                                <Text style={styles.tinyText}>بیشتر</Text>
+                                <Text style={styles.tinyText}>{t("More")}</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={{ paddingHorizontal: '5%' }}>
