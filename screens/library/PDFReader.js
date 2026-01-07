@@ -7,7 +7,7 @@ import { handleError } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
 import NewStyles from '../../styles/NewStyles';
-import Pdf from 'react-native-pdf';
+import PDFReaderWebView from './PDFReaderWebView';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioPlayer from '../../components/AudioPlayer';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -96,9 +96,14 @@ const PDFReader = ({ route }) => {
                 </View>
             }
             <View style={{ flex: 1 }}>
-                <Pdf maxScale={10} showsVerticalScrollIndicator enablePaging singlePage={false} trustAllCerts={false} page={lastPage} onPageChanged={(val) => { setCoockie(val.toString()); }} source={{ uri: `${dlUrl}/${data?.[0]?.file_path}`, cache: false }} onLoadComplete={() => {
-                    setLoader(false);
-                }} style={{ flex: 1, width: '100%', backgroundColor: themeColor5.bgColor(1) }} />
+                <PDFReaderWebView 
+                    route={{ 
+                        params: { 
+                            pdfUrl: `${dlUrl}/${data?.[0]?.file_path}`, 
+                            id: id 
+                        } 
+                    }} 
+                />
             </View>
             <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow} />
         </SafeAreaView>

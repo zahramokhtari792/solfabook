@@ -26,6 +26,7 @@ const MyFileComponent = ({ item, onLongPress, showTrash = true }) => {
             if (item?.file_type == 3 || item?.file_type == 4) {
                 navigation.navigate('PictureAudio', { id: item?.id })
             }
+            // navigation.navigate('PDFReaderWebView', {id: item?.id})
         }}>
             <ImageBackground source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={[{ height: '100%', width: '100%', alignItems: 'flex-start' }, NewStyles.border8]} imageStyle={NewStyles.border8} >
                 {showTrash && <TouchableOpacity style={[{ padding: 10, backgroundColor: themeColor4.bgColor(0.8), margin: 5, }, NewStyles.border100]} onPress={() => {

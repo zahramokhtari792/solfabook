@@ -58,6 +58,7 @@ import PrivacyPolicy from './screens/resources/PrivacyPolicy';
 import AboutUs from './screens/resources/AboutUs';
 import Contact from './screens/resources/Contact';
 import Blog from './screens/resources/Blog';
+import PDFReaderWebView from './screens/library/PDFReaderWebView';
 
 
 i18n
@@ -119,7 +120,8 @@ export default function App() {
                         <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
-                        <Stack.Screen name='PDFReader' component={PDFReader} options={{ header: () => { return (<BackHeader />) } }} />
+                        <Stack.Screen name='PDFReader' component={PDFReader} options={{ headerShown: false }} />
+                        <Stack.Screen name='PDFReaderWebView' component={PDFReaderWebView} options={{ headerShown: false }} />
                         <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
                         <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
