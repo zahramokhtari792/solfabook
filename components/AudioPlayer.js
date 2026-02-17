@@ -34,6 +34,8 @@ export default function AudioPlayer({
     playing,
     setPlaying,
     maxPreviewSeconds,
+    preferLocalMap,
+    downloadedTracks,
 }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
@@ -43,6 +45,7 @@ export default function AudioPlayer({
     const isSeekingRef = useRef(false);
     const wasPlayingRef = useRef(false);
     const currentSourceRef = useRef('remote');
+    const [sourceType, setSourceType] = useState('remote');
 
     // Per instance stable key (for global single-play)
     const instanceKeyRef = useRef(`ap_${Math.random().toString(16).slice(2)}_${Date.now()}`);
@@ -70,8 +73,10 @@ export default function AudioPlayer({
     const trackId = audio?.[index]?.id ?? audio?.[index]?.file_gallery_id ?? index;
     const safeFileName = fileName ? `${trackId}_${fileName}` : `${trackId}.bin`;
     const localPath = `${cacheDir}${safeFileName}`;
+    const localDonePath = `${localPath}.complete`;
     const [localUri, setLocalUri] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isBuffering, setIsBuffering] = useState(false);
     const limitMs = Number.isFinite(maxPreviewSeconds) && maxPreviewSeconds > 0
         ? maxPreviewSeconds * 1000
         : null;
@@ -106,6 +111,7 @@ export default function AudioPlayer({
         setLoadingErr(null);
         seekTargetRef.current = null;
         currentSourceRef.current = 'remote';
+        setSourceType('remote');
         setLocalUri(null);
         setIsDownloading(false);
         setPendingPlay(false);
@@ -121,7 +127,8 @@ export default function AudioPlayer({
             try {
                 await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
                 const info = await FileSystem.getInfoAsync(localPath);
-                if (active && info.exists) {
+                const doneInfo = await FileSystem.getInfoAsync(localDonePath);
+                if (active && info.exists && doneInfo.exists) {
                     setLocalUri(info.uri);
                 }
             } catch (e) {
@@ -131,6 +138,24 @@ export default function AudioPlayer({
 
         return () => { active = false; };
     }, [cacheDir, localPath]);
+
+    // Refresh local cache state when a track is downloaded externally
+    useEffect(() => {
+        let active = true;
+        if (!downloadedTracks || !downloadedTracks[trackId] || !localPath) return () => { active = false; };
+        (async () => {
+            try {
+                const info = await FileSystem.getInfoAsync(localPath);
+                const doneInfo = await FileSystem.getInfoAsync(localDonePath);
+                if (active && info.exists && doneInfo.exists) {
+                    setLocalUri(info.uri);
+                }
+            } catch (e) {
+                // ignore
+            }
+        })();
+        return () => { active = false; };
+    }, [downloadedTracks, trackId, localPath, localDonePath]);
 
     // Global single-play: when another player starts, pause this
     useEffect(() => {
@@ -193,7 +218,8 @@ export default function AudioPlayer({
         try {
             await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
             const info = await FileSystem.getInfoAsync(localPath);
-            if (info.exists) {
+            const done = await FileSystem.getInfoAsync(localDonePath);
+            if (info.exists && done.exists) {
                 console.log('[AudioPlayer] Cache hit', {
                     index,
                     remotePath,
@@ -204,6 +230,10 @@ export default function AudioPlayer({
                 setLocalUri(info.uri);
                 return true;
             }
+            // Not a valid completed cache -> remove stale marker before download
+            if (done.exists) {
+                await FileSystem.deleteAsync(localDonePath, { idempotent: true });
+            }
 
             const encoded = encodeURI(remoteUri);
             const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
@@ -213,6 +243,7 @@ export default function AudioPlayer({
                 localPath,
                 downloadedUri,
             });
+            await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setLocalUri(downloadedUri);
             return true;
         } catch (e) {
@@ -222,6 +253,12 @@ export default function AudioPlayer({
                 localPath,
                 error: e?.message ?? e,
             });
+            try {
+                await FileSystem.deleteAsync(localPath, { idempotent: true });
+                await FileSystem.deleteAsync(localDonePath, { idempotent: true });
+            } catch (cleanupErr) {
+                // ignore cleanup errors
+            }
             setLoadingErr('Audio download error');
             return false;
         } finally {
@@ -233,6 +270,26 @@ export default function AudioPlayer({
             });
             setIsDownloading(false);
         }}, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
+
+    const shouldUseLocal = !!localUri && (preferLocalMap ? preferLocalMap[trackId] === true : true);
+
+    // Enforce local playback when user prefers local (even if play is triggered externally)
+    useEffect(() => {
+        if (!playing) return;
+        if (preferLocalMap && preferLocalMap[trackId] === true) {
+            if (!localUri) {
+                if (!pendingPlay) setPendingPlay(true);
+                setPlaying(false);
+                return;
+            }
+            if (sourceType !== 'local') {
+                setPlaying(false);
+                currentSourceRef.current = 'local';
+                setSourceType('local');
+                setPendingPlay(true);
+            }
+        }
+    }, [playing, preferLocalMap, trackId, localUri, sourceType, pendingPlay, setPlaying]);
 
     const handlePlayPress = useCallback(async () => {
         console.log('[AudioPlayer] Play pressed', {
@@ -248,13 +305,20 @@ export default function AudioPlayer({
             pendingPlay,
             playing,
         });
-        setPendingPlay(true);
-        currentSourceRef.current = localUri ? 'local' : 'remote';
-        playSound();
-        if (!localUri) {
-            void ensureLocalUri();
+        if (shouldUseLocal) {
+            if (!localUri) {
+                setPendingPlay(true);
+                return;
+            }
+            currentSourceRef.current = 'local';
+            setSourceType('local');
+            playSound();
+            return;
         }
-    }, [ensureLocalUri]);
+        currentSourceRef.current = 'remote';
+        setSourceType('remote');
+        playSound();
+    }, [shouldUseLocal, localUri, playSound]);
 
     // Start playback once localUri becomes available
     useEffect(() => {
@@ -266,6 +330,8 @@ export default function AudioPlayer({
             localPath,
             localUri,
         });
+        currentSourceRef.current = 'local';
+        setSourceType('local');
         playSound();
         setPendingPlay(false);
     }, [localUri, pendingPlay, playSound]);
@@ -285,9 +351,9 @@ export default function AudioPlayer({
     return (
         <View>
             <Video
-                key={currentSourceRef.current === 'local' && localUri ? localUri : remoteUri} // force new native instance per track
+                key={sourceType === 'local' && localUri ? localUri : remoteUri} // force new native instance per track
                 ref={playerRef}
-                source={{ uri: currentSourceRef.current === 'local' && localUri ? localUri : remoteUri }}
+                source={{ uri: sourceType === 'local' && localUri ? localUri : remoteUri }}
                 audioOnly
                 paused={!playing}
                 playInBackground
@@ -301,14 +367,31 @@ export default function AudioPlayer({
                     console.log('[AudioPlayer] onLoad', {
                         index,
                         remotePath,
-                        source: localUri ? 'LOCAL' : 'REMOTE',
-                        uri: localUri ?? remoteUri,
+                        source: sourceType === 'local' ? 'LOCAL' : 'REMOTE',
+                        uri: sourceType === 'local' && localUri ? localUri : remoteUri,
                         durationMs: safe,
                         cappedMs: capped,
                     });
                     setTotal(capped);
                     setIsLoaded(true);
                     setLoadingErr(null);
+                }}
+                onBuffer={(b) => {
+                    const buffering = !!b?.isBuffering;
+                    setIsBuffering(buffering);
+                    if (buffering) {
+                        console.log('[AudioPlayer] onBuffer start', {
+                            index,
+                            remotePath,
+                            source: sourceType,
+                        });
+                    } else {
+                        console.log('[AudioPlayer] onBuffer end', {
+                            index,
+                            remotePath,
+                            source: sourceType,
+                        });
+                    }
                 }}
                 onProgress={(p) => {
                     if (!isLoaded) return;
@@ -352,8 +435,8 @@ export default function AudioPlayer({
                     console.log('[AudioPlayer] onError', {
                         index,
                         remotePath,
-                        source: localUri ? 'LOCAL' : 'REMOTE',
-                        uri: localUri ?? remoteUri,
+                        source: sourceType === 'local' ? 'LOCAL' : 'REMOTE',
+                        uri: sourceType === 'local' && localUri ? localUri : remoteUri,
                         error: e?.error ?? e,
                     });
                     setPlaying(false);
@@ -443,7 +526,7 @@ export default function AudioPlayer({
                         }}
                         disabled={!!loadingErr || !remoteUri || remoteUri.endsWith('/') || isDownloading}
                     >
-                        {isDownloading ? (
+                        {(isDownloading || isBuffering) ? (
                             <ActivityIndicator size={"large"} color={themeColor0.bgColor(1)} />
                         ) : (
                             <Ionicons
@@ -457,7 +540,11 @@ export default function AudioPlayer({
 
                 {(playing && !(!isLoaded && !loadingErr)) && (
                     <TouchableOpacity onPress={pauseSound}>
-                        <Ionicons name="pause-circle" size={40} color={themeColor0.bgColor(1)} />
+                        {isBuffering ? (
+                            <ActivityIndicator size={"large"} color={themeColor0.bgColor(1)} />
+                        ) : (
+                            <Ionicons name="pause-circle" size={40} color={themeColor0.bgColor(1)} />
+                        )}
                     </TouchableOpacity>
                 )}
 
