@@ -157,7 +157,7 @@ const MusicPlayer = ({ route }) => {
                                 }
                             }} style={[NewStyles.row, { width: '90%', alignSelf: 'center', paddingHorizontal: 10, alignItems: 'center', paddingBottom: 15, marginTop: 20, gap: 35 }]}>
                                 <Text style={[NewStyles.text10, { flex: 1, textAlign: 'left' }]}>{item?.title}</Text>
-                                <View style={[NewStyles.rowWrapper, { gap: 35, width: '25%' }]}>
+                                <View style={[NewStyles.rowWrapper, { gap: 35,  }]}>
                                     <TouchableOpacity
                                         disabled={isDownloadingTrack}
                                         onPress={async () => {
@@ -226,7 +226,7 @@ const MusicPlayer = ({ route }) => {
                                     <View style={{ width: 20, aspectRatio: 1 }}>
                                         <Ionicons name={(index == musicIndex && playing) ? 'pause' : 'play'} color={themeColor10.bgColor(1)} size={20} />
                                     </View>
-                                    <Text style={[NewStyles.text10, { minWidth: 30, textAlign: 'left' }]}>{index + 1}</Text>
+                                    <Text style={[NewStyles.text10, {  textAlign: 'left' }]}>{index + 1}</Text>
                                 </View>
                             </TouchableOpacity>
                         )
