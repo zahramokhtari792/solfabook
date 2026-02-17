@@ -9,9 +9,9 @@ import { useFocusEffect } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { themeColor0, themeColor4 } from '../../theme/Color'
-import { useVideoPlayer, VideoView } from 'expo-video'
+import Video from 'react-native-video'
 import { TouchableOpacity } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { usePreventScreenCapture } from 'expo-screen-capture'
 import { useTranslation } from 'react-i18next'
 const VideoPlayer = ({ route }) => {
@@ -26,7 +26,15 @@ const VideoPlayer = ({ route }) => {
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
-  const player = useVideoPlayer(`${dlUrl}/${data[videoIndex]?.file_path}`);
+  const currentVideo = data?.[videoIndex];
+  const videoUri = currentVideo?.file_path ? `${dlUrl}/${currentVideo.file_path}` : null;
+  const videoSource = useMemo(() => {
+    if (!videoUri) return undefined;
+    return {
+      uri: encodeURI(videoUri),
+      headers: userToken ? { 'Authorization': `Bearer ${userToken}` } : undefined,
+    };
+  }, [videoUri, userToken]);
   const fetchFiles = () => {
     axios.post(`${uri}/fetchFiles`, { id: file?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
       .then((res) => {
@@ -46,6 +54,13 @@ const VideoPlayer = ({ route }) => {
     fetchFiles()
   }, []))
 
+  useEffect(() => {
+    if (!data?.length) return;
+    if (videoIndex >= data.length) {
+      setVideoIndex(0);
+    }
+  }, [data, videoIndex]);
+
   if (loader) {
     return (
       <Loader />
@@ -55,12 +70,28 @@ const VideoPlayer = ({ route }) => {
   return (
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <ImageBackground style={[{ flex: 1, paddingTop: 65 }]} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
-        <VideoView onFullscreenEnter={() => {
-          ScreenOrientation.unlockAsync();
-        }}
-          onFullscreenExit={() => {
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-          }} style={{ aspectRatio: 1, width: '100%' }} player={player} contentFit='contain' allowsFullscreen allowsPictureInPicture />
+        {
+          videoSource ? (
+            <Video
+              key={videoUri ?? 'video'}
+              source={videoSource}
+              style={{ aspectRatio: 1, width: '100%' }}
+              resizeMode="contain"
+              controls
+              paused={false}
+              onFullscreenPlayerWillPresent={() => {
+                ScreenOrientation.unlockAsync();
+              }}
+              onFullscreenPlayerDidDismiss={() => {
+                ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+              }}
+            />
+          ) : (
+            <View style={{ aspectRatio: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={[NewStyles.text10, { textAlign: 'center' }]}>No video available</Text>
+            </View>
+          )
+        }
         <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 20 }]}>{data[videoIndex]?.title}</Text>
         <FlatList
           data={data}
