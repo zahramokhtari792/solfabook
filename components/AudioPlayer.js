@@ -405,7 +405,7 @@ export default function AudioPlayer({
                 </View>
             </View>
 
-            <View style={[NewStyles.row, NewStyles.center, { gap: 10 }]}>
+            <View style={[NewStyles.row, NewStyles.center, { gap: 10, flexDirection:'row-reverse' }]}>
                 {audio?.length > 1 && (
                     <TouchableOpacity
                         onPress={next}
