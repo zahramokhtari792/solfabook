@@ -40,6 +40,8 @@ export default function AudioPlayer({
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
     const playerRef = useRef(null);
+    const isSeekingRef = useRef(false);
+    const wasPlayingRef = useRef(false);
 
     // Per instance stable key (for global single-play)
     const instanceKeyRef = useRef(`ap_${Math.random().toString(16).slice(2)}_${Date.now()}`);
@@ -95,6 +97,7 @@ export default function AudioPlayer({
         setWidth(0);
         setTempWidth(0);
         setIsSeeking(false);
+        isSeekingRef.current = false;
         setIsLoaded(false);
         setLoadingErr(null);
         seekTargetRef.current = null;
@@ -142,12 +145,23 @@ export default function AudioPlayer({
         // pause others
         notifyPlaying(instanceKey);
 
-        console.log('[AudioPlayer] playSound source:', localUri ? 'LOCAL' : 'REMOTE', localUri ?? remoteUri);
+        console.log('[AudioPlayer] playSound', {
+            source: localUri ? 'LOCAL' : 'REMOTE',
+            uri: localUri ?? remoteUri,
+            index,
+            remotePath,
+            localPath,
+            localUri,
+            total,
+            width,
+            isLoaded,
+        });
 
         // restart if near end
         if (total > 0 && width >= total - 1500) {
             seekTargetRef.current = 0;
             setIsSeeking(true);
+            isSeekingRef.current = true;
             playerRef.current?.seek(0);
             setWidth(0);
             setTempWidth(0);
@@ -162,31 +176,72 @@ export default function AudioPlayer({
         if (localUri) return true;
         if (isDownloading) return false;
 
+        console.log('[AudioPlayer] Download start', {
+            index,
+            remotePath,
+            remoteUri,
+            localPath,
+        });
         setIsDownloading(true);
         setLoadingErr(null);
         try {
             await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
             const info = await FileSystem.getInfoAsync(localPath);
             if (info.exists) {
-                console.log('[AudioPlayer] Cache hit:', info.uri);
+                console.log('[AudioPlayer] Cache hit', {
+                    index,
+                    remotePath,
+                    localPath,
+                    uri: info.uri,
+                    size: info.size,
+                });
                 setLocalUri(info.uri);
                 return true;
             }
 
             const encoded = encodeURI(remoteUri);
             const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
-            console.log('[AudioPlayer] Downloaded to:', downloadedUri);
+            console.log('[AudioPlayer] Download complete', {
+                index,
+                remotePath,
+                localPath,
+                downloadedUri,
+            });
             setLocalUri(downloadedUri);
             return true;
         } catch (e) {
+            console.log('[AudioPlayer] Download error', {
+                index,
+                remotePath,
+                localPath,
+                error: e?.message ?? e,
+            });
             setLoadingErr('Audio download error');
             return false;
         } finally {
+            console.log('[AudioPlayer] Download end', {
+                index,
+                remotePath,
+                localPath,
+                isDownloading: false,
+            });
             setIsDownloading(false);
         }}, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
 
     const handlePlayPress = useCallback(async () => {
-        console.log('[AudioPlayer] Play pressed. localUri:', localUri, 'remoteUri:', remoteUri);
+        console.log('[AudioPlayer] Play pressed', {
+            index,
+            remotePath,
+            remoteUri,
+            cacheDir,
+            fileName,
+            localPath,
+            localUri,
+            isDownloading,
+            isLoaded,
+            pendingPlay,
+            playing,
+        });
         setPendingPlay(true);
         const ok = await ensureLocalUri();
         if (!ok) {
@@ -198,6 +253,12 @@ export default function AudioPlayer({
     useEffect(() => {
         if (!pendingPlay) return;
         if (!localUri) return;
+        console.log('[AudioPlayer] pendingPlay resolved -> start', {
+            index,
+            remotePath,
+            localPath,
+            localUri,
+        });
         playSound();
         setPendingPlay(false);
     }, [localUri, pendingPlay, playSound]);
@@ -227,6 +288,14 @@ export default function AudioPlayer({
                     const dMs = (meta?.duration ?? 0) * 1000;
                     const safe = Number.isFinite(dMs) ? dMs : 0;
                     const capped = limitMs ? Math.min(safe, limitMs) : safe;
+                    console.log('[AudioPlayer] onLoad', {
+                        index,
+                        remotePath,
+                        source: localUri ? 'LOCAL' : 'REMOTE',
+                        uri: localUri ?? remoteUri,
+                        durationMs: safe,
+                        cappedMs: capped,
+                    });
                     setTotal(capped);
                     setIsLoaded(true);
                     setLoadingErr(null);
@@ -244,7 +313,7 @@ export default function AudioPlayer({
                     }
 
                     // While seeking or right after seek: ignore until reaching target
-                    if (isSeeking) {
+                    if (isSeekingRef.current || isSeeking) {
                         const target = seekTargetRef.current;
 
                         // If we're dragging (target null) -> don't update from progress
@@ -254,6 +323,7 @@ export default function AudioPlayer({
                         if (Math.abs(v - target) <= SEEK_EPSILON_MS) {
                             seekTargetRef.current = null;
                             setIsSeeking(false);
+                            isSeekingRef.current = false;
                             setWidth(v);
                             setTempWidth(v);
                         }
@@ -267,6 +337,13 @@ export default function AudioPlayer({
                     setPlaying(false);
                 }}
                 onError={(e) => {
+                    console.log('[AudioPlayer] onError', {
+                        index,
+                        remotePath,
+                        source: localUri ? 'LOCAL' : 'REMOTE',
+                        uri: localUri ?? remoteUri,
+                        error: e?.error ?? e,
+                    });
                     setPlaying(false);
                     setIsLoaded(false);
                     setLoadingErr(e?.error ?? 'Audio load error');
@@ -290,6 +367,9 @@ export default function AudioPlayer({
 
                         // enter seeking mode; while dragging we don't accept progress updates
                         setIsSeeking(true);
+                        isSeekingRef.current = true;
+                        wasPlayingRef.current = playing;
+                        if (playing) setPlaying(false);
                         seekTargetRef.current = null; // dragging, no target yet
                         setTempWidth(width);
                     }}
@@ -303,12 +383,14 @@ export default function AudioPlayer({
 
                         // stay seeking until onProgress reaches this target
                         setIsSeeking(true);
+                        isSeekingRef.current = true;
                         const capped = limitMs ? Math.min(value, limitMs) : value;
                         setTempWidth(capped);
                         setWidth(capped);
 
                         seekTargetRef.current = capped; // ms
                         playerRef.current?.seek(capped / 1000);
+                        if (wasPlayingRef.current) setPlaying(true);
                     }}
                 />
 
