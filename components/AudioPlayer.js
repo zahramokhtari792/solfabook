@@ -271,7 +271,10 @@ export default function AudioPlayer({
             setIsDownloading(false);
         }}, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
 
-    const shouldUseLocal = !!localUri && (preferLocalMap ? preferLocalMap[trackId] === true : true);
+    const shouldUseLocal = !!localUri && (
+        (preferLocalMap && preferLocalMap[trackId] === true) ||
+        (downloadedTracks && downloadedTracks[trackId] === true)
+    );
 
     // Enforce local playback when user prefers local (even if play is triggered externally)
     useEffect(() => {

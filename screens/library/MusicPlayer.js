@@ -147,6 +147,9 @@ const MusicPlayer = ({ route }) => {
                         return (
                             <TouchableOpacity onPress={() => {
                                 setMusicIndex(index);
+                                if (isDownloaded) {
+                                    setPreferLocalMap((prev) => ({ ...prev, [trackId]: true }));
+                                }
                                 if (index == musicIndex) {
                                     setPlaying((p) => !p);
                                 } else {
