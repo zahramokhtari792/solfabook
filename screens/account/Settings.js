@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import OptionsComponents from '../../components/OptionsComponents'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
@@ -16,7 +16,10 @@ import { removeToken } from '../../slices/authSlice'
 const Settings = ({ navigation }) => {
     const { t } = useTranslation()
     const userToken = useSelector(state => state?.auth?.token);
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const [modal, setModal] = useState(false)
     const [loader, setLoader] = useState(false)
     const dispatch = useDispatch()
@@ -29,7 +32,7 @@ const Settings = ({ navigation }) => {
                 dispatch(emptyUser())
                 dispatch(removeToken())
                 showToastOrAlert(t(res?.data?.message))
-                navigation.navigate('MainLayout', {screen:'Home'})
+                navigation.navigate('MainLayout', { screen: 'Home' })
             })
             .catch((err) => {
                 handleError(err)
@@ -47,7 +50,7 @@ const Settings = ({ navigation }) => {
                 <OptionsComponents txt={t('Change Password')} icon={'lock-open'} onPress={() => {
                     navigation.navigate('ChangePassword')
                 }} />
-                <OptionsComponents txt={t('Device information')} icon={'phone-portrait'}  onPress={() => {
+                <OptionsComponents txt={t('Device information')} icon={'phone-portrait'} onPress={() => {
                     navigation.navigate('ActiveDevice')
                 }} />
                 <OptionsComponents txt={t('Log Out')} icon={'log-out'} onPress={() => {

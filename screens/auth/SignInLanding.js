@@ -1,9 +1,9 @@
 import { View, Text } from 'react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
 import { useLoginModal } from '../../context/LoginProvider';
@@ -12,7 +12,9 @@ export default function SignInLanding() {
 
     const { t } = useTranslation();
     const userToken = useSelector(state => state?.auth?.token);
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const { showModal } = useLoginModal();
     useFocusEffect(
         useCallback(() => {
@@ -29,7 +31,7 @@ export default function SignInLanding() {
             <View style={{ width: '80%' }}>
                 <Button title={`${t('Sign In')}`} onPress={() => { showModal() }} />
             </View>
-            
+
         </View>
     )
 }

@@ -1,6 +1,6 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useCallback, useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import CustomStatusBar from '../../components/CustomStatusBar'
 import axios from 'axios'
 import { uri } from '../../services/URL'
@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import CategoriItem from './CategoriItem'
 import { RefreshControl } from 'react-native'
 import BlankScreen from '../../components/BlankScreen'
+import { useTranslation } from 'react-i18next'
 
 const Categories = ({ route }) => {
   const params = route?.params;
@@ -16,7 +17,10 @@ const Categories = ({ route }) => {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const fetchCategories = () => { 
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const fetchCategories = () => {
     axios.post(`${uri}/fetchCategories`, { parent_id: parentId })
       .then((res) => {
         setData(res?.data)
@@ -40,12 +44,12 @@ const Categories = ({ route }) => {
         data={data}
         showsVerticalScrollIndicator={false}
         numColumns={2}
-        contentContainerStyle={[{ gap: 20, paddingVertical: 10, alignItems: 'center' }, data?.length==0 && {flex:1}]}
+        contentContainerStyle={[{ gap: 20, paddingVertical: 10, alignItems: 'center' }, data?.length == 0 && { flex: 1 }]}
         columnWrapperStyle={{ gap: 20 }}
-        ListEmptyComponent={()=>{
-          return(
-            <View style={[{flex:1}, NewStyles.center]}>
-              <BlankScreen/>
+        ListEmptyComponent={() => {
+          return (
+            <View style={[{ flex: 1 }, NewStyles.center]}>
+              <BlankScreen />
             </View>
           )
         }}

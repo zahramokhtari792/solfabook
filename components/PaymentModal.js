@@ -1,9 +1,9 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Button from './Button';
 import { themeColor0, themeColor4 } from '../theme/Color';
 import { Ionicons } from '@expo/vector-icons';
-import NewStyles from '../styles/NewStyles';
+import makeStyles from '../styles/NewStyles';
 import { useSelector } from 'react-redux';
 import { formatPrice } from '../helpers/Common';
 import { useTranslation } from 'react-i18next';
@@ -12,16 +12,20 @@ import { useTranslation } from 'react-i18next';
 const PaymentModal = ({ modal, setModal, payment, wallet }) => {
     const user = useSelector(state => state.user?.data);
     const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Modal animationType='slide' visible={modal} transparent={true}>
 
             <TouchableWithoutFeedback onPress={() => { setModal(false); }}>
                 <View style={{ height: '100%', width: '100%', backgroundColor: 'rgba(0,0,0,0.2)' }}>
                     <View style={styles.modal}>
-                        <Text style={[NewStyles.title,{textAlign:'center'}]}>
+                        <Text style={[NewStyles.title, { textAlign: 'center' }]}>
                             {t("Payment")}
                         </Text>
-                        <View style={[NewStyles.row,{gap:10}]}>
+                        <View style={[NewStyles.row, { gap: 10 }]}>
                             <View style={[{ backgroundColor: themeColor0.bgColor(0.3), paddingVertical: 7, paddingHorizontal: 8, borderRadius: 6 }, NewStyles.center]}>
                                 <Ionicons name='wallet' color={themeColor0.bgColor(1)} size={25} />
                             </View>
@@ -133,23 +137,5 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
 
-    textinput: {
-        width: '90%',
-        height: 50,
-        paddingRight: 20,
-        borderRadius: 10,
-        backgroundColor: 'rgba(255, 255, 255, 1)',
-        textAlign: 'right',
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#544FA2',
-
-        elevation: 2,
-        shadowColor: '#000',
-        shadowRadius: 5,
-        shadowOpacity: 0.3,
-        shadowOffset: { x: 2, y: -2 },
-        overflow: 'hidden',
-    },
-
+    
 })

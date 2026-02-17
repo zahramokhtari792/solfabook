@@ -1,17 +1,18 @@
 import { Animated, FlatList, Image, ImageBackground, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { dlUrl, uri } from '../../services/URL';
 import { useSelector } from 'react-redux';
 import { handleError } from '../../helpers/Common';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color';
 import Loader from '../../components/Loader';
 import AudioPlayer from '../../components/AudioPlayer';
 import { Ionicons } from '@expo/vector-icons';
 import { usePreventScreenCapture } from 'expo-screen-capture';
+import { useTranslation } from 'react-i18next';
 
 const MusicPlayer = ({ route }) => {
     usePreventScreenCapture();
@@ -27,12 +28,15 @@ const MusicPlayer = ({ route }) => {
     const [playNow, setPlayNow] = useState(false);
     const userToken = useSelector(state => state.auth?.token);
     const fadeAnim = useRef(new Animated.Value(1)).current;
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const fetchFiles = () => {
         axios.post(`${uri}/fetchFiles`, { id: file?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
                 setAudio(res?.data?.file_audio)
                 setGallery(res?.data?.galleries)
+                
             })
             .catch((err) => {
                 handleError(err)
@@ -40,7 +44,7 @@ const MusicPlayer = ({ route }) => {
             .finally(() => {
                 setLoader(false)
             })
-    } 
+    }
 
     useFocusEffect(useCallback(() => {
         fetchFiles()
@@ -83,7 +87,7 @@ const MusicPlayer = ({ route }) => {
                     source={{ uri: `${dlUrl}/${galleries[currentIndex]?.image_path}` }}
                     style={[{ aspectRatio: 1, width: '80%', objectFit: 'contain', borderRadius: 17, alignSelf: 'center', marginTop: 10, opacity: fadeAnim }]}
                 />
-                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 , paddingHorizontal:'5%'}]}>{audio?.[musicIndex]?.title}</Text>
+                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10, paddingHorizontal: '5%' }]}>{audio?.[musicIndex]?.title}</Text>
                 {
                     audio && <AudioPlayer audio={audio} setIndex={setMusicIndex} index={musicIndex} playing={playing} setPlaying={setPlaying} playNow={playNow} />
                 }
@@ -101,7 +105,11 @@ const MusicPlayer = ({ route }) => {
                         return (
                             <TouchableOpacity onPress={() => {
                                 setMusicIndex(index);
-                                if (index == musicIndex) { setPlayNow(!playing); } else { setPlayNow(true); }
+                                if (index == musicIndex) {
+                                    setPlaying((p) => !p);
+                                } else {
+                                    setPlaying(true);
+                                }
                             }} style={[NewStyles.row, { width: '90%', alignSelf: 'center', paddingHorizontal: 10, alignItems: 'center', paddingBottom: 15, marginTop: 20, gap: 35 }]}>
                                 <Text style={[NewStyles.text10, { flex: 1, textAlign: 'left' }]}>{item?.title}</Text>
                                 <View style={[NewStyles.rowWrapper, { gap: 35, width: '25%' }]}>

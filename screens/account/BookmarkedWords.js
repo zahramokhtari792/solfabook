@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import NewStyles from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
@@ -14,6 +14,7 @@ import { themeColor0, themeColor3, themeColor4 } from '../../theme/Color'
 import BlankScreen from '../../components/BlankScreen'
 import { LinearGradient } from 'expo-linear-gradient'
 import Button from '../../components/Button'
+import { useTranslation } from 'react-i18next'
 
 const BookmarkedWords = ({ navigation }) => {
     const userToken = useSelector(state => state.auth?.token);
@@ -26,6 +27,11 @@ const BookmarkedWords = ({ navigation }) => {
     const [refreshing, setRefreshing] = useState(false);
     const player = useAudioPlayer(`${dlUrl}/${audioPath}`);
     const status = useAudioPlayerStatus(player);
+
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     useEffect(() => {
         if (!status) return;
 

@@ -17,7 +17,8 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
     const [score2, setScore2] = useState(0);
     const { t } = useTranslation()
     const userToken = useSelector(state => state?.auth?.token);
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const setScore = () => {
         axios.post(`${uri}/ratePublisher`, { rate: (score0 + score1 + score2) / 3, publisher_id: publisher_id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then(response => {
@@ -36,12 +37,12 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
             <TouchableWithoutFeedback onPress={() => { setModal(false); }}>
                 <View style={{ height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: themeColor10.bgColor(0.2) }}>
                     <View style={styles.modal}>
-                        <Text style={{ fontSize: 16, color: themeColor0.bgColor(1), paddingHorizontal: 30, textAlign: 'center', fontFamily: 'iransans' }}>
+                        <Text style={{ fontSize: 16, color: themeColor0.bgColor(1), paddingHorizontal: 30, textAlign: 'center', fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
                             {t('Share your opinion with us.')}
                         </Text>
 
                         <View style={{ width: '100%', alignItems: 'center', }}>
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: 'iransans' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Content quality")}
                             </Text>
                             <Slider
@@ -56,7 +57,7 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
                                 onValueChange={(value) => { setScore0(value) }}
                             />
 
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: 'iransans' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Credibility and history")}
                             </Text>
                             <Slider
@@ -71,7 +72,7 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
                                 onValueChange={(value) => { setScore1(value) }}
                             />
 
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: 'iransans' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Trustworthiness")}
                             </Text>
                             <Slider

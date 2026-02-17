@@ -1,12 +1,13 @@
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import NewStyles, { deviceHeight, deviceWidth } from '../styles/NewStyles';
+import makeStyles, { deviceHeight, deviceWidth } from '../styles/NewStyles';
 import { imageUri } from '../services/URL';
 import { themeColor0, themeColor4 } from '../theme/Color';
 import { ImageBackground } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 
 export default function CustomImage({ item, x, index, size, spacer }) {
 
@@ -36,7 +37,10 @@ export default function CustomImage({ item, x, index, size, spacer }) {
     if (!item?.image_path) {
         return <View style={{ width: spacer }} key={index} />;
     }
-    
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
     return (
         <View style={{ overflow: 'hidden', width: size }} key={index}>
@@ -60,7 +64,7 @@ const styles = StyleSheet.create({
         width: '100%',
         // height: deviceWidth >= 768 ? deviceHeight*0.4 : deviceHeight * 0.29,
         padding: '2.5%',
-        aspectRatio:1.6,
+        aspectRatio: 1.6,
         alignItems: 'flex-start',
         justifyContent: 'flex-end'
     },

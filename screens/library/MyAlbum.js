@@ -1,12 +1,12 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { useFocusEffect } from '@react-navigation/native';
 import FilesProduct from '../../components/FilesProduct';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import MyFileComponent from './MyFileComponent';
 import Loader from '../../components/Loader';
 import SignInLanding from '../auth/SignInLanding';
@@ -24,6 +24,9 @@ const MyAlbum = () => {
   const [modal, setModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
   const { t } = useTranslation()
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   const deleteFile = () => {
     setModal(false);
     setLoader(true)

@@ -1,5 +1,5 @@
 import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, TextInput, Platform, ToastAndroid, Pressable, Linking, KeyboardAvoidingView } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell, } from 'react-native-confirmation-code-field';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,7 +13,7 @@ import Button from '../../components/Button';
 import TransparentButton from '../../components/TransparentButton';
 import { setToken } from '../../slices/authSlice';
 import { useTranslation } from 'react-i18next';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { handleError, showToastOrAlert } from '../../helpers/Common';
 import { useLoginModal } from '../../context/LoginProvider';
@@ -22,7 +22,9 @@ export default function LoginModal() {
     const { loginModal, hideModal, } = useLoginModal();
     const { t } = useTranslation();
     const dispatch = useDispatch();
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const [loading, setLoading] = useState(false);
     const [loginWithPassword, setLoginWithPassword] = useState(false);
     const [phone, setPhone] = useState('');
@@ -46,7 +48,7 @@ export default function LoginModal() {
         }
     };
 
-    
+
 
     const sendVerificationCode = async () => {
         try {
@@ -118,7 +120,7 @@ export default function LoginModal() {
 
 
     return (
-        <Modal animationType='fade' style={{ }} transparent={true} visible={loginModal} onRequestClose={() => { hideModal() }}>
+        <Modal animationType='fade' style={{}} transparent={true} visible={loginModal} onRequestClose={() => { hideModal() }}>
             <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={0} style={{ flex: 1 }}>
                 <View style={[styles.container, NewStyles.center]}>
                     <View style={[styles.modalView, NewStyles.border10]}>
@@ -182,7 +184,7 @@ export default function LoginModal() {
                                         renderCell={({ index, symbol, isFocused }) => (
                                             <Text
                                                 key={index}
-                                                style={[styles.cell, NewStyles.border10]}
+                                                style={[styles.cell, NewStyles.border10, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}
                                                 onLayout={getCellOnLayoutHandler(index)}>
                                                 {symbol || (isFocused ? <Cursor /> : null)}
                                             </Text>
@@ -230,7 +232,6 @@ const styles = StyleSheet.create({
         backgroundColor: themeColor3.bgColor(0.2),
         fontSize: 20,
         color: themeColor3.bgColor(1),
-        fontFamily: 'VazirLight',
         textAlign: 'center',
         lineHeight: 40,
     },

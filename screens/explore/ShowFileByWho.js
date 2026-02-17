@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useState } from 'react'
-import NewStyles from '../../styles/NewStyles';
+import React, { useCallback, useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
@@ -9,15 +9,18 @@ import { useFocusEffect } from '@react-navigation/native';
 import FilesProduct from '../../components/FilesProduct';
 import BlankScreen from '../../components/BlankScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 const ShowFileByWho = ({ route }) => {
     const params = route?.params;
     const [loader, setLoader] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [data, setData] = useState()
-    
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const fetchFilesByWho = () => {
-        axios.post(`${uri}/fetchFilesByWho`, { role_id: params?.role_id, role: params?.role, orderBy:params?.orderBy })
+        axios.post(`${uri}/fetchFilesByWho`, { role_id: params?.role_id, role: params?.role, orderBy: params?.orderBy })
             .then((res) => {
                 setData(res?.data)
             })
@@ -28,10 +31,10 @@ const ShowFileByWho = ({ route }) => {
                 setLoader(false)
             })
     }
-     const onRefresh = useCallback(() => {
+    const onRefresh = useCallback(() => {
         setRefreshing(true);
         fetchFilesByWho(true); // هنگام refresh، داده‌ها را reset کن
-      }, []);
+    }, []);
     useFocusEffect(useCallback(() => {
         fetchFilesByWho()
     }, []))
@@ -39,7 +42,7 @@ const ShowFileByWho = ({ route }) => {
         return (<Loader />)
     }
     return (
-        <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
+        <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
             <Text style={[NewStyles.text10, { marginVertical: 20, textAlign: 'center' }]}>بیشتر بخوانید از <Text style={[NewStyles.text, { fontSize: 16, textDecorationLine: 'underline' }]}>{params?.role_name}</Text></Text>
 
             <FlatList
@@ -48,15 +51,15 @@ const ShowFileByWho = ({ route }) => {
                 numColumns={2}
                 keyExtractor={(item) => item?.id?.toString()}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                columnWrapperStyle={{ justifyContent: 'center', gap: 10 , flexDirection:'row-reverse'}}
+                columnWrapperStyle={{ justifyContent: 'center', gap: 10, flexDirection: 'row-reverse' }}
                 contentContainerStyle={[{ paddingHorizontal: '5%' }, data?.length === 0 && { flex: 1 }]}
                 renderItem={({ item }) => <FilesProduct explore={true} item={item} type={"vertical"} />}
-                ListEmptyComponent={()=>{
-                    return(
-                        <BlankScreen/>
+                ListEmptyComponent={() => {
+                    return (
+                        <BlankScreen />
                     )
                 }}
-                
+
             />
         </SafeAreaView>
     )

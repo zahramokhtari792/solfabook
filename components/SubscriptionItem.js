@@ -3,15 +3,19 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { cleanText, formatPrice } from '../helpers/Common';
-import NewStyles, { deviceWidth } from '../styles/NewStyles';
+import makeStyles, { deviceWidth } from '../styles/NewStyles';
 import { themeColor1, themeColor10, themeColor4 } from '../theme/Color';
 import Button from './Button';
+import { useMemo } from 'react';
 
 export default function SubscriptionItem({ item, onPress }) {
 
     const { t } = useTranslation()
     const locale = useSelector(state => state?.locale?.data);
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Pressable style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]} onPress={() => { }}>
             <View style={[styles.label, NewStyles.center, { backgroundColor: themeColor1.bgColor(0.3) }]}>
@@ -21,7 +25,7 @@ export default function SubscriptionItem({ item, onPress }) {
                 <Text style={[NewStyles.title10, { fontSize: 20 }]}>{item?.title}</Text>
             </View>
             <View style={[NewStyles.center,]}>
-                <Text style={[NewStyles.title10, { fontSize: 20 }]}>{(item?.discounted_price && item?.discounted_price > 0) ? formatPrice(item?.discounted_price) : item?.discounted_price == 0 ? t('Free') : formatPrice(item?.price) + ' ' +t('currency unit')} <Text style={[NewStyles.text10, { fontSize: 14 }]}></Text></Text>
+                <Text style={[NewStyles.title10, { fontSize: 20 }]}>{(item?.discounted_price && item?.discounted_price > 0) ? formatPrice(item?.discounted_price) : item?.discounted_price == 0 ? t('Free') : formatPrice(item?.price) + ' ' + t('currency unit')} <Text style={[NewStyles.text10, { fontSize: 14 }]}></Text></Text>
                 {(item?.discounted_price && item?.discounted_price > 0) && <Text style={[NewStyles.title3, NewStyles.discountText]}>{formatPrice((item?.price))} {t('currency unit')}</Text>}
                 <Text style={[NewStyles.text10, { textAlign: 'center', marginTop: 10 }]}>{cleanText(item?.des)}</Text>
                 <View style={[NewStyles.row, { justifyContent: 'space-between' }]}>

@@ -1,22 +1,26 @@
 import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from './../../services/URL';
 import { useSelector } from 'react-redux';
 import { handleError } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import AudioPlayer from '../../components/AudioPlayer';
 import ModalPlayer from './ModalPlayer';
 import { TouchableOpacity } from 'react-native';
 import AlbumIcon from '../../assets/svg/AlbumIcon';
 import { themeColor0 } from '../../theme/Color';
 import { usePreventScreenCapture } from 'expo-screen-capture';
+import { useTranslation } from 'react-i18next';
 
 const PictureAudio = ({ route }) => {
     const params = route?.params;
     const id = params?.id;
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const userToken = useSelector(state => state.auth?.token);
     const [data, setData] = useState()
     const [audio, setAudio] = useState([])
@@ -27,7 +31,7 @@ const PictureAudio = ({ route }) => {
     const [visible, setVisible] = useState(false);
     const [playNow, setPlayNow] = useState(false);
     usePreventScreenCapture()
-    
+
     const fetchFiles = () => {
         axios.post(`${uri}/fetchFiles`, { id: id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {

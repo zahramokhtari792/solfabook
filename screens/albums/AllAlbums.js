@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback, useState } from 'react';
-import NewStyles from '../../styles/NewStyles';
+import React, { useCallback, useMemo, useState } from 'react';
+import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
 import { uri } from '../../services/URL';
@@ -11,17 +11,19 @@ import BlankScreen from '../../components/BlankScreen';
 import { ActivityIndicator } from 'react-native';
 import { themeColor0 } from '../../theme/Color';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
-const AllAlbums = ({route}) => {
+const AllAlbums = ({ route }) => {
   const params = route?.params;
-console.log(params?.categoryId)
   const [data, setData] = useState([]);
   const [loader, setLoader] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   // تابع fetchAllFiles را برای pagination بهینه کردیم
   const fetchAllFiles = async (reset = false) => {
     if (isLoading && !reset) return; // اگر در حال لود هستیم و reset نیست، از ادامه کار جلوگیری کن
@@ -38,16 +40,16 @@ console.log(params?.categoryId)
     setLoader(true); // این لودر برای اولین بارگذاری صفحه است
 
     try {
-      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, album_category_id:params?.categoryId, type:'album' });
+      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, album_category_id: params?.categoryId, type: 'album' });
       const newFiles = response.data.data;
-      
+
       setData(prevData => reset ? newFiles : [...prevData, ...newFiles]);
       setHasMore(newFiles?.length > 0);
       if (newFiles?.length > 0) {
         setPage(prevPage => prevPage + 1);
       }
     } catch (err) {
-      console.log(err); 
+      console.log(err);
       handleError(err);
     } finally {
       setIsLoading(false);
@@ -78,7 +80,7 @@ console.log(params?.categoryId)
   };
 
   return (
-    <SafeAreaView style={NewStyles.container} edges={{top:'off', bottom:'additive'}}>
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <CustomStatusBar />
       <FlatList
         data={data}

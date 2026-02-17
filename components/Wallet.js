@@ -1,8 +1,8 @@
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as Linking from "expo-linking";
 import { themeColor0, themeColor1, themeColor10, themeColor4 } from '../theme/Color';
-import NewStyles from '../styles/NewStyles';
+import makeStyles from '../styles/NewStyles';
 import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import TransparentButton from './TransparentButton';
@@ -14,6 +14,10 @@ import { showToastOrAlert } from '../helpers/Common';
 const Wallet = ({ modal, setModal }) => {
 
     const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const dispatch = useDispatch()
@@ -62,7 +66,7 @@ const Wallet = ({ modal, setModal }) => {
 
     const handleRedirect = (event) => {
         const { queryParams } = Linking.parse(event?.url);
-        
+
         if (queryParams?.status == 'success') {
             dispatch(fetchUser(userToken))
             showToastOrAlert(t('Your wallet has been successfully topped up.'))
@@ -93,13 +97,13 @@ const Wallet = ({ modal, setModal }) => {
                             {t('Recharge wallet')}
                         </Text>
                         <View style={{ height: 80, paddingVertical: 20, }}>
-                            <FlatList horizontal inverted style={{ paddingRight: 20 }} showsHorizontalScrollIndicator={false} key={items.id} keyExtractor={items.id} data={items} renderItem={item} />
+                            <FlatList horizontal inverted style={{}} showsHorizontalScrollIndicator={false} key={items.id} keyExtractor={items.id} data={items} renderItem={item} />
                         </View>
 
                         <Text style={NewStyles.text10}>
                             {t('Enter your desired amount.')}
                         </Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%' }]} keyboardType='phone-pad' placeholder='10,000 تومان' value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]} keyboardType='phone-pad' placeholder='10,000 تومان' value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
 
                         <View style={{ flexDirection: 'row', width: '70%', justifyContent: 'space-between' }}>
                             <View style={{ width: '48%' }}>
@@ -183,12 +187,11 @@ const styles = StyleSheet.create({
     textinput: {
         width: '90%',
         height: 50,
-        paddingRight: 20,
         borderRadius: 10,
         backgroundColor: 'rgba(255, 255, 255, 1)',
         textAlign: 'right',
         fontSize: 14,
-        fontFamily: 'iransans',
+
         color: '#000',
         shadowColor: "#000000",
         shadowOffset: {

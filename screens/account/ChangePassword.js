@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
 import { handleError, showToastOrAlert } from '../../helpers/Common';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { themeColor1, themeColor3, themeColor4 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ChangePassword() {
 
@@ -20,6 +21,8 @@ export default function ChangePassword() {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    const [showPassword, setShowPassword] = useState(false);
+    const [confitmShowPassword, setConfitmShowPassword] = useState(false);
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
 
@@ -60,15 +63,32 @@ export default function ChangePassword() {
             setLoading(false);
         }
     }
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <View style={NewStyles.container}>
             <CustomStatusBar />
             <ScrollView contentContainerStyle={styles.contentContainerStyle} refreshControl={<RefreshControl colors={[themeColor1.bgColor(1)]} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)); }} />}>
                 <Text style={NewStyles.text1}>{t('8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character.')}</Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10, NewStyles.shadow]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
+                <View style={[NewStyles.textInput, NewStyles.shadow, { justifyContent: 'center', paddingHorizontal: 'auto' }, NewStyles.border10, NewStyles.rowWrapper]}>
+                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }]} secureTextEntry={!showPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
+                    <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => {
+                        setShowPassword(pre => !pre)
+                    }}>
+                        <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color={themeColor1.bgColor(1)} />
+                    </TouchableOpacity>
+                </View>
                 <Text style={NewStyles.text1}>{t('Enter Password Confirmation.')}</Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text1, NewStyles.border10, NewStyles.shadow]} secureTextEntry={true} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
+                <View style={[NewStyles.textInput, NewStyles.shadow, { justifyContent: 'center', paddingHorizontal: 'auto' }, NewStyles.border10, NewStyles.rowWrapper]}>
+                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }]} secureTextEntry={!confitmShowPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
+                    <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => {
+                        setConfitmShowPassword(pre => !pre)
+                    }}>
+                        <Ionicons name={confitmShowPassword ? 'eye' : 'eye-off'} size={20} color={themeColor1.bgColor(1)} />
+                    </TouchableOpacity>
+                </View>
                 <Button title={`${t('Change Password')}`} loading={loading} onPress={changePassword} />
             </ScrollView>
         </View>

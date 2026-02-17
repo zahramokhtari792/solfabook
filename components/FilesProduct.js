@@ -2,7 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
 import { ImageBackground } from 'expo-image';
 import { dlUrl } from '../services/URL';
-import NewStyles, { deviceWidth, deviceWidthScreen } from '../styles/NewStyles';
+import makeStyles, { deviceWidth, deviceWidthScreen } from '../styles/NewStyles';
 import { Dimensions } from 'react-native';
 import { themeColor11, themeColor12, themeColor4 } from '../theme/Color';
 import StarIcon from '../assets/svg/StarIcon';
@@ -11,8 +11,15 @@ import { formatPrice } from '../helpers/Common';
 import { useNavigation } from '@react-navigation/native';
 
 const FilesProduct = ({ item, type, explore }) => {
+
     const navigation = useNavigation()
     const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+
+
     const cardConfig = useMemo(() => {
         if (type == 'horizontal') {
             return {
@@ -35,7 +42,7 @@ const FilesProduct = ({ item, type, explore }) => {
                 {type == 'horizontal' && <ImageBackground source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={{ height: '100%', width: '100%' }} imageStyle={[NewStyles.border8]}>
                     {((item?.discounted_price && item?.discounted_price != null)) &&
                         <View style={{ alignSelf: 'flex-end', height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
-                            <Text style={{ color: '#fff', fontFamily: 'iransans', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
+                            <Text style={{ color: '#fff', fontFamily: lang!='en' ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
                         </View>
                     }
                 </ImageBackground>}
@@ -54,7 +61,7 @@ const FilesProduct = ({ item, type, explore }) => {
             }}>
                 {((item?.discounted_price && item?.discounted_price != null)) &&
                     <View style={{ position: 'absolute', zIndex: 1, alignSelf: 'flex-end', height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
-                        <Text style={{ color: '#fff', fontFamily: 'iransans', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
+                        <Text style={{ color: '#fff', fontFamily: lang!='en' ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
                     </View>
                 }
                 <Image source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={[{ aspectRatio: 1, width: '100%' }, NewStyles.border8]} />
@@ -70,8 +77,8 @@ const FilesProduct = ({ item, type, explore }) => {
                         <StarIcon color={themeColor12.bgColor(1)} />
                     </View>
                     <View style={[{ alignItems: 'flex-start', width: '100%' }, item?.discounted_price && NewStyles.rowWrapper]}>
-                        {item?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text1, { fontSize: 11 }]}>{formatPrice(item?.price)} {t('currency')}</Text>}
-                        <Text style={NewStyles.text10}>{item?.price == 0 ? t('Free') : formatPrice(item?.discounted_price ?? item?.price) + ' ' + t('currency')}</Text>
+                        {item?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text1, { fontSize: 11 }]}>{formatPrice(item?.price)} {t('currency unit')}</Text>}
+                        <Text style={NewStyles.text10}>{item?.price == 0 ? t('Free') : formatPrice(item?.discounted_price ?? item?.price) + ' ' + t('currency unit')}</Text>
                     </View>
                 </View>
 
@@ -85,7 +92,7 @@ const FilesProduct = ({ item, type, explore }) => {
             }}>
                 {((item?.discounted_price && item?.discounted_price != null)) &&
                     <View style={{ position: 'absolute', zIndex: 1, alignSelf: 'flex-end', height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
-                        <Text style={{ color: '#fff', fontFamily: 'iransans', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
+                        <Text style={{ color: '#fff', fontFamily: lang!='en' ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
                     </View>
                 }
                 <Image source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={[{ aspectRatio: 1, width: '100%' }, NewStyles.border8]} />
@@ -103,8 +110,8 @@ const FilesProduct = ({ item, type, explore }) => {
                         </View>
                     </View>
                     <View style={[{ alignItems: 'flex-start', width: '100%' }, item?.discounted_price && NewStyles.rowWrapper]}>
-                        {item?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text1, { fontSize: 11 }]}>{formatPrice(item?.price)} {t('currency')}</Text>}
-                        <Text style={NewStyles.text10}>{item?.price == 0 ? t('Free') : formatPrice(item?.discounted_price ?? item?.price) + ' ' + t('currency')}</Text>
+                        {item?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text1, { fontSize: 11 }]}>{formatPrice(item?.price)} {t('currency unit')}</Text>}
+                        <Text style={NewStyles.text10}>{item?.price == 0 ? t('Free') : formatPrice(item?.discounted_price ?? item?.price) + ' ' + t('currency unit')}</Text>
                     </View>
                 </View>
 

@@ -1,16 +1,19 @@
 import { Animated, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useRef } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useEffect, useMemo, useRef } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import { TouchableOpacity } from 'react-native'
 import SpeackerIcon from '../../assets/svg/SpeackerIcon'
 import { themeColor0, themeColor1, themeColor10 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
 import { Easing } from 'react-native'
+import { useTranslation } from 'react-i18next'
 
 const WordItem = ({ item, playing, onPress, onPress1, audioPath }) => {
     const scaleAnim = useRef(new Animated.Value(1)).current
     const opacityAnim = useRef(new Animated.Value(0.6)).current
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     useEffect(() => {
         if (playing) {
             Animated.loop(
@@ -84,11 +87,11 @@ const WordItem = ({ item, playing, onPress, onPress1, audioPath }) => {
                     </View>
                 </TouchableOpacity>
             )}
-            <TouchableOpacity style={[!item?.audio_path && { width: '100%' },{flex:1}]} onPress={() => {
+            <TouchableOpacity style={[!item?.audio_path && { width: '100%' }, { flex: 1 }]} onPress={() => {
 
                 onPress1()
             }}>
-                <Text style={[NewStyles.text10, { textAlign: 'left',  textAlignVertical: 'center', }]}>{item?.word}</Text>
+                <Text style={[NewStyles.text10, { textAlign: 'left', textAlignVertical: 'center', }]}>{item?.word}</Text>
             </TouchableOpacity>
         </View>
     )

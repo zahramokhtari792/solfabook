@@ -1,19 +1,23 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { deviceWidth } from '../../styles/NewStyles'
 import { Image } from 'expo-image'
 import { imageUri } from '../../services/URL'
-import NewStyles from './../../styles/NewStyles';
+import makeStyles from './../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native'
 import { themeColor4 } from '../../theme/Color'
+import { useTranslation } from 'react-i18next'
 
 const CategoriItem = ({ item }) => {
     const navigation = useNavigation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Pressable style={[{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1) }, NewStyles.border10, NewStyles.shadow]} onPress={() => {
             if (item?.has_subcategory == 1) {
                 navigation.push('Categories', { parentId: item?.id })
-            }else{
+            } else {
                 navigation.push('AllFiles', { categoryId: item?.id })
 
             }

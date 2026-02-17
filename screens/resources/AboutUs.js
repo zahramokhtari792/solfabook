@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, ImageBackground, Linking, Platform, RefreshControl, ScrollView, StyleSheet, Text, ToastAndroid, View } from 'react-native';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { imageUri, mainUri, uri } from '../../services/URL';
 import { appVersion, cleanText, handleError } from '../../helpers/Common';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
@@ -20,14 +20,15 @@ export default function AboutUs() {
 
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const lang = useSelector(state => state?.lang?.lang);
-
+    const [refreshing, setRefreshing] = useState(false); 
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const [data, setData] = useState([]);
     const [socials, setSocials] = useState([]);
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${uri}/resources`);
+            const response = await axios.get(`${uri}/resources?lang=${lang}`);
             setData(response?.data?.abouts);
             setSocials(response?.data?.socials);
         } catch (error) {
@@ -77,7 +78,7 @@ export default function AboutUs() {
                     )
                 }}
             />
-            
+
         </SafeAreaView>
     )
 }

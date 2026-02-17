@@ -1,15 +1,19 @@
 import { FlatList, Linking, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import NewStyles, { deviceHeight, deviceWidth } from '../../styles/NewStyles'
+import React, { useMemo } from 'react'
+import makeStyles, { deviceHeight, deviceWidth } from '../../styles/NewStyles'
 import { TouchableOpacity } from 'react-native'
 import { imageUri, mainUri } from '../../services/URL'
 import { Image } from 'expo-image'
 import { formatDate } from '../../helpers/Common'
 import { themeColor3, themeColor4 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
+import { useTranslation } from 'react-i18next'
 
 const Blogs = ({ title, data }) => {
     const navigation = useNavigation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <View>
             <Text style={[NewStyles.title10, { paddingHorizontal: 10, marginTop: 20, marginBottom: 30 }]}>{title}</Text>
@@ -26,9 +30,9 @@ const Blogs = ({ title, data }) => {
                     return (
                         <TouchableOpacity style={{ width: '95%', backgroundColor: themeColor4.bgColor(1), alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
                             // Linking.openURL(`${mainUri}/blog/${item?.id}`)
-                            navigation.navigate('Blog',{data:item})
+                            navigation.navigate('Blog', { data: item })
                         }}>
-                            <View style={[NewStyles.row, { width: '100%', aspectRatio:2.8 }]}>
+                            <View style={[NewStyles.row, { width: '100%', aspectRatio: 2.8 }]}>
 
                                 <Image source={{ uri: `${imageUri}/${item.image_path}` }} style={{ width: '45%', height: '80%', borderRadius: 4 }} contentFit='cover' />
 

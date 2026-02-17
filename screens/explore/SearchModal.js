@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useSearchModal } from '../../context/SearchProvider';
 import { Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -20,6 +20,9 @@ const SearchModal = () => {
     const [value, setValue] = useState();
     const [loader, setLoader] = useState(false)
     const user = useSelector(state => state?.user?.data)
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const search = () => {
         setLoader(true)
         axios.post(`${uri}/searchInAll`, { search: value, user_id: user?.id })
@@ -54,7 +57,7 @@ const SearchModal = () => {
                         }}>
                             <Ionicons name='search' color={themeColor0.bgColor(1)} size={24} />
                         </TouchableOpacity>
-                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={styles.searchText} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
+                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, lang != 'en' ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
                             onEndEditing={() => {
                                 if (value && value?.trim()) {
                                     search()
@@ -100,8 +103,6 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'right',
         fontSize: 16,
-        paddingRight: 10,
-        color: themeColor0.bgColor(1),
-        fontFamily: 'iransans'
+        color: themeColor0.bgColor(1)
     },
 })

@@ -1,6 +1,6 @@
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useMemo } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import CustomStatusBar from '../../components/CustomStatusBar'
 import Loader from '../../components/Loader'
 import BlankScreen from '../../components/BlankScreen'
@@ -19,8 +19,10 @@ const MyLibrary = () => {
   const { t } = useTranslation()
   const userToken = useSelector(state => state.auth?.token);
   const user = useSelector(state => state.user?.data);
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
-  
   if (!userToken || !user) {
     return (
       <SignInLanding />

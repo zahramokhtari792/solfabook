@@ -1,10 +1,16 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-import NewStyles from '../styles/NewStyles';
+import makeStyles from '../styles/NewStyles';
 import { themeColor0, themeColor10 } from '../theme/Color';
+import { useTranslation } from 'react-i18next';
 
 export default function TransparentButton({ title, onPress, loading, color = themeColor10.bgColor(1) }) {
+
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Pressable style={[styles.button, NewStyles.center]} disabled={loading} onPress={onPress}>
             {!loading && <Text style={[NewStyles.text10, { color: color }]}>{title}</Text>}

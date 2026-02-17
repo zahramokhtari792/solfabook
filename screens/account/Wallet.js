@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomStatusBar from '../../components/CustomStatusBar';
 
@@ -16,7 +16,7 @@ import * as Linking from "expo-linking";
 import { uri } from '../../services/URL';
 import moment from 'moment-timezone';
 import { useFocusEffect } from '@react-navigation/native';
-import NewStyles, { deviceWidth } from '../../styles/NewStyles';
+import makeStyles, { deviceWidth } from '../../styles/NewStyles';
 import Button from '../../components/Button';
 import { formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import TransactionItem from '../../components/TransactionItem';
@@ -33,7 +33,10 @@ export default function Wallet({ navigation }) {
     const [transactionsLoading, settransactionsLoading] = useState(false)
     const [withdrawLoading, setWithdrawLoading] = useState(false)
     const [price, setPrice] = useState('');
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const dispatch = useDispatch()
 
     const [data, setData] = useState([]);
@@ -115,17 +118,17 @@ export default function Wallet({ navigation }) {
         try {
             const response = await axios.get(`${uri}/fetch_transactions`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             setData(response?.data);
-            
+
         } catch (error) {
-            
-            
+
+
             handleError(error)
         } finally {
             settransactionsLoading(false);
             setLoading(false);
         }
     };
-    
+
     return (
         <SafeAreaView style={NewStyles.container}>
             <CustomStatusBar />
@@ -134,7 +137,7 @@ export default function Wallet({ navigation }) {
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
                 style={{ flex: 1 }}
             >
-                <ScrollView refreshControl={<RefreshControl refreshing={transactionsLoading} onRefresh={() => { settransactionsLoading(true); fetchData(); dispatch(fetchUser(userToken))}} />}>
+                <ScrollView refreshControl={<RefreshControl refreshing={transactionsLoading} onRefresh={() => { settransactionsLoading(true); fetchData(); dispatch(fetchUser(userToken)) }} />}>
                     <View style={{ width: deviceWidth * 0.9, height: 230, backgroundColor: themeColor4.bgColor(1), elevation: 10, alignSelf: 'center', marginTop: 10, borderRadius: 10, shadowOpacity: 0.5, shadowColor: themeColor10.bgColor(0.5) }}>
                         <View style={{ flex: 1.5, backgroundColor: themeColor10.bgColor(1), borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
                             <LinearGradient colors={[themeColor0.bgColor(1), themeColor8.bgColor(1)]} style={{ height: '100%', width: '100%', borderTopRightRadius: 10, borderTopLeftRadius: 10, justifyContent: 'center', alignItems: 'center', }} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
@@ -199,13 +202,13 @@ export default function Wallet({ navigation }) {
                             }} />
                         </View>
                     </View>}
-                    {section == 'transactions' && <View style={{ marginTop: 10, width: deviceWidth , alignSelf: 'center', flex: 1 }}>
+                    {section == 'transactions' && <View style={{ marginTop: 10, width: deviceWidth, alignSelf: 'center', flex: 1 }}>
                         <FlatList
                             scrollEnabled={false}
-                            
+
                             showsVerticalScrollIndicator={false}
                             data={data}
-                            contentContainerStyle={{ gap: 10, paddingBottom: 10 , width:'100%', alignItems:'center'}}
+                            contentContainerStyle={{ gap: 10, paddingBottom: 10, width: '100%', alignItems: 'center' }}
                             ListEmptyComponent={() => {
                                 return (
                                     <BlankScreen message={'تراکنشی یافت نشد.'} customStyle={{ height: 'auto' }} />

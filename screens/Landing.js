@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -10,13 +10,18 @@ import { fetchUser } from '../slices/userSlice';
 import { fetchContacts } from '../slices/contactSlice';
 
 import DeviceInfo from 'react-native-device-info';
-import NewStyles from '../styles/NewStyles';
+import makeStyles from '../styles/NewStyles';
 import CustomStatusBar from '../components/CustomStatusBar';
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function Landing() {
 
     const dispatch = useDispatch();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const navigation = useNavigation();
     const userToken = useSelector(state => state?.auth?.token);
     const getDeviceId = async () => {

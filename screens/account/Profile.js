@@ -1,5 +1,5 @@
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
 import { imageUri, uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
-import NewStyles, { deviceHeight } from '../../styles/NewStyles';
+import makeStyles, { deviceHeight } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor12, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
@@ -23,6 +23,10 @@ export default function Profile() {
     const jalaali = require('jalaali-js');
 
     const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const dispatch = useDispatch();
     const userToken = useSelector(state => state?.auth?.token);
     const user = useSelector(state => state.user?.data);
@@ -116,7 +120,7 @@ export default function Profile() {
     const changeInformation = async () => {
         setLoading(true);
         try {
-            const response = await axios.post(`${uri}/changeInformation`, { fname: name, lname:lname, email: email, birthDate: birthDate }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
+            const response = await axios.post(`${uri}/changeInformation`, { fname: name, lname: lname, email: email, birthDate: birthDate }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             if (response.status === 200) {
                 const message = t('Your changes have been applied.')
                 showToastOrAlert(message);
@@ -167,13 +171,13 @@ export default function Profile() {
                         <Text style={[NewStyles.text, !birthDate && { color: themeColor3.bgColor(0.5) }]}>{birthDate ? birthDate : t('Date Of Birth')}</Text>
                     </Pressable>}
                     <Button title={`${t('Change Information')}`} loading={loading} onPress={() => {
-                        if(name && lname) {
+                        if (name && lname) {
 
                             changeInformation()
-                        }else{
+                        } else {
                             showToastOrAlert(t('First and last name are required.'))
                         }
-                         }} />
+                    }} />
                 </View>
             </KeyboardAwareScrollView>
             {/* </ScrollView> */}
@@ -217,8 +221,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'VazirLight',
         textAlign: 'right',
-        color: themeColor0.bgColor(1),
-        paddingRight: 10,
+        color: themeColor0.bgColor(1), 
     },
     containerStyle: {
         borderRadius: 8,

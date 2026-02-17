@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import NewStyles from '../../styles/NewStyles';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
 import { dlUrl, uri } from '../../services/URL';
@@ -38,6 +38,9 @@ const Dictionary = ({ navigation }) => {
   const userToken = useSelector(state => state?.auth?.token)
   const player = useAudioPlayer(`${dlUrl}/${audioPath}`);
   const status = useAudioPlayerStatus(player);
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   usePreventScreenCapture()
   useEffect(() => {
     if (!status) return;

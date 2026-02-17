@@ -1,8 +1,8 @@
 import { StyleSheet, View, ActivityIndicator, TouchableOpacity, Text, TextInput, Keyboard, Modal, Dimensions, ScrollView } from 'react-native'
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { WebView } from 'react-native-webview'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import NewStyles from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import { themeColor0, themeColor4, themeColor5, themeColor10 } from '../../theme/Color'
 import BackArrowIcon from '../../assets/svg/BackArrowIcon'
 import SearchIcon from '../../assets/svg/SearchIcon'
@@ -13,6 +13,7 @@ import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import { handleError } from '../../helpers/Common'
 import * as FileSystem from 'expo-file-system'
+import { useTranslation } from 'react-i18next'
 
 const { width: deviceWidth } = Dimensions.get('window');
 
@@ -37,7 +38,9 @@ const PDFReaderWebView = ({ route }) => {
     const params = route?.params;
     const userToken = useSelector(state => state.auth?.token);
     const [data, setData] = useState()
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const fetchFiles = () => {
         axios.post(`${uri}/fetchFiles`, { id: params?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
@@ -51,7 +54,8 @@ const PDFReaderWebView = ({ route }) => {
     }
 
     // Use provided PDF URL or fallback to sample PDF for testing
-    const pdfUrl = params?.pdfUrl || 'https://dl.solfabook.com/files/cUUOzJA7XTrc2n6Ca5Egv55hdGJ3WMt093x303vP.pdf';
+    // const pdfUrl = params?.pdfUrl || 'https://dl.solfabook.com/files/cUUOzJA7XTrc2n6Ca5Egv55hdGJ3WMt093x303vP.pdf';
+    const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
     const fileId = params?.id || 'test-pdf';
 
     const webViewRef = useRef(null);
@@ -84,6 +88,14 @@ const PDFReaderWebView = ({ route }) => {
     const [drawingColor, setDrawingColor] = useState('#ff0000');
     const [showColorPicker, setShowColorPicker] = useState(false);
     const drawingColors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff'];
+
+    // Highlight state
+    const [highlightMode, setHighlightMode] = useState(false);
+    const [highlightColor, setHighlightColor] = useState('#ffeb3b');
+    const [showHighlightColorPicker, setShowHighlightColorPicker] = useState(false);
+    const [showHighlightsModal, setShowHighlightsModal] = useState(false);
+    const [textSelected, setTextSelected] = useState(false);
+    const highlightColors = ['#ffeb3b', '#a5d6a7', '#90caf9', '#f48fb1', '#ce93d8', '#ffcc80', '#80deea', '#e6ee9c'];
 
     // Load saved highlights and bookmarks from AsyncStorage on mount
     useEffect(() => {
@@ -235,12 +247,48 @@ const PDFReaderWebView = ({ route }) => {
         webViewRef.current?.injectJavaScript('clearAllDrawings(); true;');
     };
 
+    // Highlight functions
+    const toggleHighlightMode = () => {
+        const newMode = !highlightMode;
+        setHighlightMode(newMode);
+        // Disable drawing mode when highlight mode is enabled
+        if (newMode && drawingMode) {
+            setDrawingMode(false);
+            webViewRef.current?.injectJavaScript(`setDrawingMode(false); true;`);
+        }
+        webViewRef.current?.injectJavaScript(`setHighlightMode(${newMode}); true;`);
+    };
+
+    const changeHighlightColor = (color) => {
+        setHighlightColor(color);
+        setShowHighlightColorPicker(false);
+        webViewRef.current?.injectJavaScript(`setHighlightColor('${color}'); true;`);
+    };
+
+    const removeHighlight = (highlightIndex) => {
+        const newHighlights = highlights.filter((_, index) => index !== highlightIndex);
+        setHighlights(newHighlights);
+        saveHighlights(newHighlights);
+        webViewRef.current?.injectJavaScript(`setHighlights(${JSON.stringify(newHighlights)}); true;`);
+    };
+
+    const goToHighlight = (highlight) => {
+        if (highlight.page && highlight.page !== currentPage) {
+            webViewRef.current?.injectJavaScript(`goToPage(${highlight.page}); true;`);
+        }
+        setShowHighlightsModal(false);
+    };
+
+    const applyHighlight = () => {
+        webViewRef.current?.injectJavaScript('highlightSelection(); true;');
+    };
+
     // Send PDF data in chunks to avoid memory crash with large files
     const sendPdfInChunks = async (base64Data) => {
         const totalChunks = Math.ceil(base64Data.length / CHUNK_SIZE);
-        
+
         console.log(`Sending PDF in ${totalChunks} chunks (total size: ${(base64Data.length / 1024 / 1024).toFixed(2)}MB)`);
-        
+
         // Send start signal with total chunks info
         webViewRef.current?.injectJavaScript(`
             window.pdfChunks = [];
@@ -248,19 +296,19 @@ const PDFReaderWebView = ({ route }) => {
             window.receivedChunks = 0;
             true;
         `);
-        
+
         // Send chunks with small delays to prevent overwhelming
         for (let i = 0; i < totalChunks; i++) {
             const start = i * CHUNK_SIZE;
             const end = Math.min(start + CHUNK_SIZE, base64Data.length);
             const chunk = base64Data.substring(start, end);
-            
+
             // Use setTimeout to add small delay between chunks
             await new Promise(resolve => setTimeout(resolve, 50));
-            
+
             // Escape the chunk for safe JavaScript injection
             const escapedChunk = chunk.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            
+
             webViewRef.current?.injectJavaScript(`
                 window.pdfChunks.push('${escapedChunk}');
                 window.receivedChunks++;
@@ -372,9 +420,27 @@ const PDFReaderWebView = ({ route }) => {
             color: transparent;
         }
         .highlight {
-            background-color: rgba(255, 235, 59, 0.6) !important;
             color: transparent !important;
             border-radius: 2px;
+        }
+        .highlight-mode-active .text-layer > span {
+            cursor: pointer !important;
+        }
+        .highlight-mode-indicator {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #961d5a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1001;
+            display: none;
+        }
+        .highlight-mode-indicator.visible {
+            display: block;
         }
         .search-match {
             background-color: rgba(255, 152, 0, 0.5) !important;
@@ -423,7 +489,7 @@ const PDFReaderWebView = ({ route }) => {
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #961d5a;
+            background: rgba(150, 29, 90, 0.95);
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
@@ -450,6 +516,7 @@ const PDFReaderWebView = ({ route }) => {
     <div id="loading">در حال بارگذاری...</div>
     <div id="page-loading">در حال بارگذاری صفحه...</div>
     <div id="error-msg" style="display:none; color:red; text-align:center; padding:20px;"></div>
+    <div id="highlight-mode-indicator" class="highlight-mode-indicator">حالت هایلایت فعال - روی متن کلیک کنید</div>
     <div id="pdf-container"></div>
     <div id="highlight-btn" class="highlight-toolbar" onclick="highlightSelection()">هایلایت</div>
 
@@ -487,7 +554,12 @@ const PDFReaderWebView = ({ route }) => {
         const container = document.getElementById('pdf-container');
         const highlightBtn = document.getElementById('highlight-btn');
         const loadingEl = document.getElementById('loading');
+        const highlightModeIndicator = document.getElementById('highlight-mode-indicator');
         let selectedSpans = [];
+
+        // Highlight mode state
+        let isHighlightMode = false;
+        let highlightColor = '#ffeb3b';
 
         // Drawing state
         let isDrawingMode = false;
@@ -503,10 +575,75 @@ const PDFReaderWebView = ({ route }) => {
         let isRendering = false; // Prevent concurrent renders
         let pendingPage = null; // Queue next page if user taps rapidly
 
+        // Convert hex color to rgba with opacity
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return \`rgba(\${r}, \${g}, \${b}, \${alpha})\`;
+        }
+
+        // Set highlight mode
+        function setHighlightMode(enabled) {
+            isHighlightMode = enabled;
+            if (enabled) {
+                container.classList.add('highlight-mode-active');
+                highlightModeIndicator.classList.add('visible');
+            } else {
+                container.classList.remove('highlight-mode-active');
+                highlightModeIndicator.classList.remove('visible');
+            }
+        }
+
+        // Set highlight color
+        function setHighlightColor(color) {
+            highlightColor = color;
+        }
+
+        // Handle click on text span in highlight mode
+        function handleSpanClick(span, pageNum) {
+            if (!isHighlightMode) return;
+            
+            const spanIndex = parseInt(span.dataset.index);
+            const text = span.textContent;
+            
+            // Check if already highlighted - toggle off
+            if (span.classList.contains('highlight')) {
+                span.classList.remove('highlight');
+                span.style.backgroundColor = '';
+                
+                // Remove from highlights array
+                highlights = highlights.filter(h => !(h.page === pageNum && h.spanIndex === spanIndex));
+            } else {
+                // Add highlight
+                span.classList.add('highlight');
+                span.style.backgroundColor = highlightColor;
+                
+                // Save highlight data with color
+                const highlightData = {
+                    page: pageNum,
+                    text: text,
+                    spanIndex: spanIndex,
+                    color: highlightColor
+                };
+                highlights.push(highlightData);
+            }
+            
+            // Send highlights to React Native
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'SAVE_HIGHLIGHTS',
+                highlights: highlights
+            }));
+        }
+
         // Track selection
         document.addEventListener('selectionchange', () => {
+            if (isHighlightMode) return; // Don't show selection toolbar in highlight mode
+            
             const selection = window.getSelection();
-            if (selection && selection.toString().trim().length > 0) {
+            const hasSelection = selection && selection.toString().trim().length > 0;
+            
+            if (hasSelection) {
                 highlightBtn.classList.add('visible');
                 // Track which spans are selected
                 selectedSpans = [];
@@ -520,6 +657,12 @@ const PDFReaderWebView = ({ route }) => {
                 highlightBtn.classList.remove('visible');
                 selectedSpans = [];
             }
+            
+            // Notify React Native about selection state
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'TEXT_SELECTED',
+                hasSelection: hasSelection
+            }));
         });
 
         // Highlight the selected text
@@ -541,15 +684,17 @@ const PDFReaderWebView = ({ route }) => {
 
             selectedSpans.forEach(span => {
                 span.classList.add('highlight');
+                span.style.backgroundColor = hexToRgba(highlightColor, 0.4);
                 
-                // Save highlight data
+                // Save highlight data with color
                 const pageWrapper = span.closest('.page-wrapper');
                 const pageNum = pageWrapper ? pageWrapper.dataset.page : 0;
                 const spanIndex = span.dataset.index || Array.from(span.parentNode.children).indexOf(span);
                 const highlightData = {
                     page: parseInt(pageNum),
                     text: span.textContent,
-                    spanIndex: parseInt(spanIndex)
+                    spanIndex: parseInt(spanIndex),
+                    color: highlightColor
                 };
                 
                 // Check if not already saved
@@ -585,11 +730,23 @@ const PDFReaderWebView = ({ route }) => {
             const spans = pageWrapper.querySelectorAll('.text-layer span');
             pageHighlights.forEach(h => {
                 // Find by data-index attribute first
-                const span = pageWrapper.querySelector('.text-layer span[data-index="' + h.spanIndex + '"]');
+                let span = pageWrapper.querySelector('.text-layer span[data-index="' + h.spanIndex + '"]');
+                if (!span && spans[h.spanIndex]) {
+                    span = spans[h.spanIndex];
+                }
                 if (span) {
                     span.classList.add('highlight');
-                } else if (spans[h.spanIndex]) {
-                    spans[h.spanIndex].classList.add('highlight');
+                    // Apply saved color with opacity or default
+                    const color = h.color || '#ffeb3b';
+                    span.style.backgroundColor = hexToRgba(color, 0.4);
+                    
+                    // Add click handler for highlight mode
+                    span.addEventListener('click', function(e) {
+                        if (isHighlightMode) {
+                            e.stopPropagation();
+                            handleSpanClick(span, pageNum);
+                        }
+                    });
                 }
             });
         }
@@ -701,6 +858,14 @@ const PDFReaderWebView = ({ route }) => {
                 }
                 
                 span.style.transform = 'scaleX(' + (item.transform[0] < 0 ? -1 : 1) + ')';
+                
+                // Add click handler for highlight mode
+                span.addEventListener('click', function(e) {
+                    if (isHighlightMode) {
+                        e.stopPropagation();
+                        handleSpanClick(span, pageNum);
+                    }
+                });
                 
                 textLayer.appendChild(span);
             });
@@ -1209,6 +1374,9 @@ const PDFReaderWebView = ({ route }) => {
                 case 'SAVE_DRAWINGS':
                     saveDrawings(data.drawings);
                     break;
+                case 'TEXT_SELECTED':
+                    setTextSelected(data.hasSelection);
+                    break;
             }
         } catch (err) {
             console.log('WebView message parse error:', err);
@@ -1292,7 +1460,7 @@ const PDFReaderWebView = ({ route }) => {
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, NewStyles.rowWrapper]}>
                 <View style={NewStyles.row}>
                     {/* Drawing Toggle Button */}
                     <TouchableOpacity
@@ -1316,6 +1484,32 @@ const PDFReaderWebView = ({ route }) => {
                                 <Text style={{ fontSize: 16 }}>🗑️</Text>
                             </TouchableOpacity>
                         </>
+                    )}
+
+                    {/* Apply Highlight Button - Shows when text is selected */}
+                    {textSelected && (
+                        <TouchableOpacity
+                            style={styles.highlightApplyButton}
+                            onPress={applyHighlight}
+                        >
+                            <Text style={styles.highlightApplyButtonText}>🖍️ هایلایت</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Highlight Color Picker Button */}
+                    <TouchableOpacity
+                        style={[styles.colorPickerBtn, { backgroundColor: highlightColor }]}
+                        onPress={() => setShowHighlightColorPicker(true)}
+                    />
+
+                    {/* View Highlights Button */}
+                    {highlights.length > 0 && (
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => setShowHighlightsModal(true)}
+                        >
+                            <Text style={{ fontSize: 16 }}>📋</Text>
+                        </TouchableOpacity>
                     )}
 
                     <TouchableOpacity style={styles.iconButton} onPress={() => setShowSearch(!showSearch)}>
@@ -1517,7 +1711,7 @@ const PDFReaderWebView = ({ route }) => {
             {/* Page Scroll Indicator (Side) */}
             {totalPages > 1 && !loading && (
                 <View style={styles.scrollIndicatorContainer}>
-                    
+
                     <Text style={styles.scrollPageText}>{currentPage}</Text>
                 </View>
             )}
@@ -1652,6 +1846,110 @@ const PDFReaderWebView = ({ route }) => {
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+            {/* Highlight Color Picker Modal */}
+            <Modal
+                visible={showHighlightColorPicker}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowHighlightColorPicker(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowHighlightColorPicker(false)}
+                >
+                    <View style={styles.colorPickerModalContent} onStartShouldSetResponder={() => true}>
+                        <Text style={styles.modalTitle}>انتخاب رنگ هایلایت</Text>
+                        <View style={styles.colorGrid}>
+                            {highlightColors.map((color) => (
+                                <TouchableOpacity
+                                    key={color}
+                                    style={[
+                                        styles.colorOption,
+                                        { backgroundColor: color },
+                                        highlightColor === color && styles.colorOptionSelected
+                                    ]}
+                                    onPress={() => changeHighlightColor(color)}
+                                />
+                            ))}
+                        </View>
+                        <TouchableOpacity
+                            style={styles.modalCancelBtn}
+                            onPress={() => setShowHighlightColorPicker(false)}
+                        >
+                            <Text style={styles.modalCancelText}>بستن</Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Highlights List Modal */}
+            <Modal
+                visible={showHighlightsModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowHighlightsModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowHighlightsModal(false)}
+                >
+                    <View style={styles.highlightsModalContent} onStartShouldSetResponder={() => true}>
+                        <Text style={styles.modalTitle}>هایلایت‌های ذخیره شده</Text>
+
+                        {highlights.length === 0 ? (
+                            <Text style={styles.noBookmarksText}>هیچ هایلایتی وجود ندارد</Text>
+                        ) : (
+                            <ScrollView style={styles.bookmarksList}>
+                                {highlights.map((highlight, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        style={[
+                                            styles.highlightItem,
+                                            { borderLeftColor: highlight.color || '#ffeb3b' }
+                                        ]}
+                                        onPress={() => goToHighlight(highlight)}
+                                    >
+                                        <View style={styles.highlightItemContent}>
+                                            <Text style={styles.highlightItemPage}>
+                                                صفحه {highlight.page}
+                                            </Text>
+                                            <Text style={styles.highlightItemText} numberOfLines={2}>
+                                                {highlight.text}
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            style={styles.removeBookmarkBtn}
+                                            onPress={() => removeHighlight(index)}
+                                        >
+                                            <Text style={styles.removeBookmarkText}>✕</Text>
+                                        </TouchableOpacity>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        )}
+
+                        <View style={styles.modalButtons}>
+                            {highlights.length > 0 && (
+                                <TouchableOpacity
+                                    style={[styles.modalCancelBtn, { backgroundColor: '#ffdddd' }]}
+                                    onPress={clearHighlights}
+                                >
+                                    <Text style={[styles.modalCancelText, { color: '#cc0000' }]}>پاک کردن همه</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity
+                                style={styles.modalCancelBtn}
+                                onPress={() => setShowHighlightsModal(false)}
+                            >
+                                <Text style={styles.modalCancelText}>بستن</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -1660,7 +1958,6 @@ export default PDFReaderWebView;
 
 const styles = StyleSheet.create({
     header: {
-        ...NewStyles.rowWrapper,
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderBottomWidth: 1,
@@ -1693,8 +1990,21 @@ const styles = StyleSheet.create({
     },
     clearButtonText: {
         color: themeColor0.bgColor(1),
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 12,
+    },
+    highlightApplyButton: {
+        backgroundColor: themeColor0.bgColor(1),
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 15,
+        marginRight: 5,
+    },
+    highlightApplyButtonText: {
+        color: themeColor5.bgColor(1),
+        fontFamily: 'VazirBold',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     searchContainer: {
         flexDirection: 'row',
@@ -1721,7 +2031,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 12,
         paddingVertical: 8,
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         textAlign: 'right',
         color: themeColor0.bgColor(1),
@@ -1735,7 +2045,7 @@ const styles = StyleSheet.create({
         gap: 5,
     },
     searchResultText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 12,
         color: themeColor0.bgColor(1),
         marginRight: 5,
@@ -1750,7 +2060,7 @@ const styles = StyleSheet.create({
         fontSize: 10,
     },
     noResultText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 12,
         color: themeColor0.bgColor(0.6),
     },
@@ -1759,7 +2069,7 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
     },
     closeSearchText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 12,
         color: themeColor0.bgColor(1),
     },
@@ -1824,7 +2134,7 @@ const styles = StyleSheet.create({
     },
     pageIndicatorText: {
         color: themeColor5.bgColor(1),
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         fontWeight: 'bold',
     },
@@ -1863,7 +2173,7 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 4,
         fontSize: 10,
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
     },
     // Page Modal Styles
     modalOverlay: {
@@ -1881,7 +2191,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalTitle: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 16,
         color: themeColor0.bgColor(1),
         marginBottom: 20,
@@ -1895,7 +2205,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         fontSize: 18,
         textAlign: 'center',
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         color: themeColor0.bgColor(1),
         marginBottom: 20,
     },
@@ -1911,7 +2221,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalCancelText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         color: themeColor0.bgColor(0.7),
     },
@@ -1923,7 +2233,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalConfirmText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         color: themeColor5.bgColor(1),
         fontWeight: 'bold',
@@ -1945,7 +2255,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     noBookmarksText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         color: themeColor4.bgColor(0.6),
         textAlign: 'center',
@@ -1971,7 +2281,7 @@ const styles = StyleSheet.create({
         borderColor: themeColor0.bgColor(0.3),
     },
     bookmarkItemText: {
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 14,
         color: themeColor0.bgColor(1),
     },
@@ -2009,5 +2319,42 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: themeColor0.bgColor(1),
         transform: [{ scale: 1.1 }],
+    },
+    // Highlights Modal styles
+    highlightsModalContent: {
+        backgroundColor: themeColor5.bgColor(1),
+        borderRadius: 15,
+        padding: 20,
+        width: deviceWidth * 0.9,
+        maxWidth: 400,
+        maxHeight: '75%',
+        alignItems: 'center',
+    },
+    highlightItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderRadius: 10,
+        backgroundColor: themeColor4.bgColor(0.1),
+        marginBottom: 8,
+        borderLeftWidth: 4,
+    },
+    highlightItemContent: {
+        flex: 1,
+        marginRight: 10,
+    },
+    highlightItemPage: {
+        fontFamily: 'VazirBold',
+        fontSize: 12,
+        color: themeColor0.bgColor(0.7),
+        marginBottom: 4,
+    },
+    highlightItemText: {
+        fontFamily: 'VazirBold',
+        fontSize: 14,
+        color: themeColor0.bgColor(1),
+        textAlign: 'right',
     },
 });

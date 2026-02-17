@@ -1,7 +1,7 @@
 import { Animated, Easing, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import NewStyles, { deviceHeight } from '../../styles/NewStyles'
+import makeStyles, { deviceHeight } from '../../styles/NewStyles'
 import axios from 'axios'
 import { dlUrl, imageUri, uri } from '../../services/URL'
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
@@ -14,6 +14,7 @@ import BookmarkFillIcon from './../../assets/svg/BookmarkFillIcon';
 import { handleError } from '../../helpers/Common'
 import { useLoginModal } from '../../context/LoginProvider'
 import { usePreventScreenCapture } from 'expo-screen-capture'
+import { useTranslation } from 'react-i18next'
 
 const WordDetail = ({ route }) => {
     const params = route?.params;
@@ -24,8 +25,11 @@ const WordDetail = ({ route }) => {
     const userToken = useSelector(state => state?.auth?.token);
     const [saved, setSaved] = useState(false)
     const { showModal } = useLoginModal();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     usePreventScreenCapture()
-    
+
     const bookmarked = () => {
         axios.post(`${uri}/bookmarkDictionary`, { dictionary_id: word?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {

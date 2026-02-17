@@ -1,6 +1,6 @@
 import { FlatList, ImageBackground, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import Loader from '../../components/Loader'
 import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
@@ -13,8 +13,9 @@ import { useVideoPlayer, VideoView } from 'expo-video'
 import { TouchableOpacity } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { usePreventScreenCapture } from 'expo-screen-capture'
+import { useTranslation } from 'react-i18next'
 const VideoPlayer = ({ route }) => {
-  
+
   usePreventScreenCapture();
   const params = route?.params;
   const file = params?.file;
@@ -22,7 +23,9 @@ const VideoPlayer = ({ route }) => {
   const [loader, setLoader] = useState(true)
   const userToken = useSelector(state => state.auth?.token)
   const [videoIndex, setVideoIndex] = useState(0);
-
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   const player = useVideoPlayer(`${dlUrl}/${data[videoIndex]?.file_path}`);
   const fetchFiles = () => {
     axios.post(`${uri}/fetchFiles`, { id: file?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })

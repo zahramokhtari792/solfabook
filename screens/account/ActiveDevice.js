@@ -1,15 +1,18 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import NewStyles from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import { formatDate } from '../../helpers/Common'
 import { useTranslation } from 'react-i18next'
 
 const ActiveDevice = () => {
     const user = useSelector(state => state.user?.data);
-    const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
-        <View style={{ padding: '5%', gap:10 }}>
+        <View style={{ padding: '5%', gap: 10 }}>
             <View style={[NewStyles.row, { gap: 5, justifyContent: 'flex-end' }]}>
                 <Text style={NewStyles.text10}>{user?.active_device?.device_id}</Text>
                 <Text style={NewStyles.title10}>Device ID:</Text>

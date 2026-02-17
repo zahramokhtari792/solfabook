@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import NewStyles from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import axios from 'axios'
 import { uri } from '../../services/URL'
 import { handleError, showToastOrAlert } from '../../helpers/Common'
@@ -29,6 +29,9 @@ const Subscription = ({ navigation }) => {
     const { showModal } = useLoginModal();
 
     const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const dispatch = useDispatch()
 
     const fetchData = async () => {
@@ -101,7 +104,7 @@ const Subscription = ({ navigation }) => {
         };
     }, []);
     useFocusEffect(useCallback(() => {
-        if(token){
+        if (token) {
 
             dispatch(fetchUser(token))
         }
@@ -121,13 +124,13 @@ const Subscription = ({ navigation }) => {
     return (
         <SafeAreaView style={NewStyles.container}>
             <FlatList
-                contentContainerStyle={[styles.contentContainerStyle, NewStyles.center,{gap:10, paddingVertical:10}]}
+                contentContainerStyle={[styles.contentContainerStyle, NewStyles.center, { gap: 10, paddingVertical: 10 }]}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor1.bgColor(1)} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}
                 ListEmptyComponent={<BlankScreen />}
                 data={data}
-                
-                
+
+
                 keyExtractor={(item) => item?.id?.toString()}
                 renderItem={({ item, index }) => (
                     <SubscriptionItem item={item} onPress={() => {
@@ -148,7 +151,7 @@ const Subscription = ({ navigation }) => {
                 )}
             />
             <View>
-                <PaymentModal modal={paymentModal} setModal={setPaymentModal} wallet={subscriptionWalletPayment} payment={() => { subscriptionPayment()}} />
+                <PaymentModal modal={paymentModal} setModal={setPaymentModal} wallet={subscriptionWalletPayment} payment={() => { subscriptionPayment() }} />
             </View>
         </SafeAreaView>
     )

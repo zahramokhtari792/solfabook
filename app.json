@@ -81,6 +81,8 @@
         {
           "fonts": [
             "./assets/fonts/iransans.ttf",
+            "./assets/fonts/VazirThin.ttf",
+            "./assets/fonts/Vazirmatn-Bold.ttf",
             "./assets/fonts/DimaShekasteh.ttf"
           ]
         }
@@ -107,11 +109,17 @@
       [
         "expo-screen-orientation"
       ],
-      "expo-build-properties"
+      "expo-build-properties",
+      [
+        "react-native-capture-protection",
+        {
+          "captureType": "restrictedCapture"
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "a059143a-6ae4-477e-9524-9d842701a74a"
+        "projectId": "66069161-91a6-430e-ad2f-96dbd6554072"
       }
     }
   }

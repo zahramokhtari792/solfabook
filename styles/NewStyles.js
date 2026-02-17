@@ -20,294 +20,304 @@ export const gradientColors = [
     themeColor1.bgColor(1)
 ]
 
-const NewStyles = StyleSheet.create({
-    textStyle: {
-        fontSize: 14,
-        fontFamily: 'iransans',
-        textAlign: 'right',
-        color: themeColor0.bgColor(1),
-        paddingRight: 10,
-    },
-    inputSearchStyle: {
-        fontSize: 14,
-        fontFamily: 'iransans',
-        textAlign: 'right',
-        color: themeColor0.bgColor(1),
-        paddingHorizontal: 10,
-        height: 50,
-        borderWidth: 0,
-        // backgroundColor: themeColor4.bgColor(0.1),
-        borderRadius: 8,
-    },
-    itemContainerStyle: {
-        backgroundColor: themeColor4.bgColor(0.1),
-        borderRadius: 8,
-        margin: 2,
-        borderCurve: 'continuous',
-        // overflow: 'hidden',
-    },
-    dropDownContainerStyle: {
-        borderRadius: 8,
-        margin: 0,
-        padding: 0,
-        borderCurve: 'continuous',
-        // overflow: 'hidden',
-        borderColor: themeColor5.bgColor(1),
-        backgroundColor: themeColor5.bgColor(1)
-    },
-    codeFieldRoot: {
-        height: 45,
-        paddingHorizontal: 20,
-        justifyContent: 'center',
-    },
+const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
 
-    cell: {
-        marginHorizontal: 8,
-        height: 45,
-        width: 45,
-        lineHeight: 45 - 5,
-        borderBottomColor: themeColor0.bgColor(1),
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        ...Platform.select({ web: { lineHeight: 65 } }),
-        fontSize: 24,
-        textAlign: 'center',
-        borderRadius: 8,
-        borderCurve: 'continuous',
-        overflow: 'hidden',
-        color: themeColor0.bgColor(1),
-        backgroundColor: '#fff',
-    },
+const langIsRTL = (lang) => {
+    const code = (lang || '').toLowerCase().split('-')[0];
+    return RTL_LANGS.has(code);
+};
+export const makeStyles = (lang = 'fa') => {
+    const isRTL = langIsRTL(lang);
 
-    container: {
-        flex: 1,
-        backgroundColor: themeColor5.bgColor(1),
-    },
-
-    center: {
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-
-    rowWrapper: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-
-    row: {
-        flexDirection: 'row-reverse',
-        alignItems: 'center'
-    },
-
-    spacing: {
-        paddingVertical: '5%',
-        paddingHorizontal: '5%',
-    },
-
-    shadow: {
-        shadowColor: themeColor3.bgColor(1),
-        shadowOffset: {
-            width: 0,
-            height: 1,
+    return StyleSheet.create({
+        textStyle: {
+            fontSize: 14,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            textAlign: isRTL ? 'right' : 'left',
+            color: themeColor0.bgColor(1),
+            paddingRight: 10,
         },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-    },
+        inputSearchStyle: {
+            fontSize: 14,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            textAlign: isRTL ? 'right' : 'left',
+            color: themeColor0.bgColor(1),
+            paddingHorizontal: 10,
+            height: 50,
+            borderWidth: 0,
+            // backgroundColor: themeColor4.bgColor(0.1),
+            borderRadius: 8,
+        },
+        itemContainerStyle: {
+            backgroundColor: themeColor4.bgColor(0.1),
+            borderRadius: 8,
+            margin: 2,
+            borderCurve: 'continuous',
+            // overflow: 'hidden',
+        },
+        dropDownContainerStyle: {
+            borderRadius: 8,
+            margin: 0,
+            padding: 0,
+            borderCurve: 'continuous',
+            // overflow: 'hidden',
+            borderColor: themeColor5.bgColor(1),
+            backgroundColor: themeColor5.bgColor(1)
+        },
+        codeFieldRoot: {
+            height: 45,
+            paddingHorizontal: 20,
+            justifyContent: 'center',
+        },
 
-    border5: {
-        borderRadius: 5,
-        borderCurve: "continuous",
-    },
+        cell: {
+            marginHorizontal: 8,
+            height: 45,
+            width: 45,
+            lineHeight: 45 - 5,
+            borderBottomColor: themeColor0.bgColor(1),
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            ...Platform.select({ web: { lineHeight: 65 } }),
+            fontSize: 24,
+            textAlign: 'center',
+            borderRadius: 8,
+            borderCurve: 'continuous',
+            overflow: 'hidden',
+            color: themeColor0.bgColor(1),
+            backgroundColor: '#fff',
+        },
 
-    border10: {
-        borderRadius: 10,
-        borderCurve: "continuous",
-    },
-    border8: {
-        borderRadius: 8,
-        borderCurve: "continuous"
-    },
+        container: {
+            flex: 1,
+            backgroundColor: themeColor5.bgColor(1),
+        },
 
-    border100: {
-        borderRadius: 100,
-        borderCurve: "continuous",
-    },
+        center: {
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
 
-    text: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor0.bgColor(1),
-        textAlign: 'right',
-    },
+        rowWrapper: {
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
 
-    text1: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor1.bgColor(1),
-        textAlign: 'right',
-    },
+        row: {
+            flexDirection: isRTL ? 'row-reverse' : 'row',
+            alignItems: 'center'
+        },
 
-    text3: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor3.bgColor(1),
-        textAlign: 'right',
-    },
+        spacing: {
+            paddingVertical: '5%',
+            paddingHorizontal: '5%',
+        },
 
-    text4: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor4.bgColor(1),
-        textAlign: 'right',
-    },
+        shadow: {
+            shadowColor: themeColor3.bgColor(1),
+            shadowOffset: {
+                width: 0,
+                height: 1,
+            },
+            shadowOpacity: 0.22,
+            shadowRadius: 2.22,
+            elevation: 3,
+        },
 
-    text6: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor6.bgColor(1),
-        textAlign: 'right',
-    },
+        border5: {
+            borderRadius: 5,
+            borderCurve: "continuous",
+        },
 
-    text7: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor7.bgColor(1),
-        textAlign: 'right',
-    },
+        border10: {
+            borderRadius: 10,
+            borderCurve: "continuous",
+        },
+        border8: {
+            borderRadius: 8,
+            borderCurve: "continuous"
+        },
 
-    text10: {
-        fontFamily: 'iransans',
-        fontSize: 14,
-        color: themeColor10.bgColor(1),
-        textAlign: 'right',
-    },
+        border100: {
+            borderRadius: 100,
+            borderCurve: "continuous",
+        },
 
-    title: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor0.bgColor(1),
-        textAlign: 'right',
-    },
+        text: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor0.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    title1: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor1.bgColor(1),
-        textAlign: 'right',
-    },
+        text1: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor1.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    title3: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor3.bgColor(1),
-        textAlign: 'right',
-    },
+        text3: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor3.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    title4: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor4.bgColor(1),
-        textAlign: 'right',
-    },
+        text4: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor4.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    title6: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor6.bgColor(1),
-        textAlign: 'right',
-    },
+        text6: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor6.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    title10: {
-        fontSize: deviceWidth >= 768 ? 24 : 16,
-        fontFamily: 'iransans',
-        color: themeColor10.bgColor(1),
-        textAlign: 'right',
-    },
+        text7: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor7.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    heading: {
-        fontSize: 20,
-        fontFamily: 'iransans',
-        color: themeColor0.bgColor(1),
-        textAlign: 'right',
-    },
+        text10: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            fontSize: 14,
+            color: themeColor10.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    heading4: {
-        fontSize: 20,
-        fontFamily: 'iransans',
-        color: themeColor4.bgColor(1),
-        textAlign: 'right',
-    },
+        title: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor0.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    heading10: {
-        fontSize: 20,
-        fontFamily: 'iransans',
-        color: themeColor10.bgColor(1),
-        textAlign: 'right',
-    },
+        title1: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor1.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    discountText: {
-        fontFamily: 'iransans',
-        color: themeColor10.bgColor(1),
-        textDecorationLine: 'line-through',
-        textAlign: 'right',
-    },
+        title3: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor3.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    textInput: {
-        minHeight: 50,
-        backgroundColor: themeColor4.bgColor(1),
-        paddingHorizontal: '5%',
-    },
+        title4: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor4.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    seperator: {
-        paddingBottom: '5%',
-        paddingHorizontal: '5%',
-        gap: 20,
-        borderBottomWidth: 5,
-        borderBottomColor: themeColor3.bgColor(0.2),
-    },
+        title6: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor6.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    nav: {
-        gap: 50,
-        paddingHorizontal: '5%',
-        backgroundColor: themeColor4.bgColor(1)
-    },
+        title10: {
+            fontSize: deviceWidth >= 768 ? 24 : 16,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor10.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    whiteButton: {
-        backgroundColor: themeColor4.bgColor(1),
-        borderRadius: 100,
-        margin: 5,
-        padding: 10,
-    },
+        heading: {
+            fontSize: 20,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor0.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    add: {
-        padding: 3,
-        backgroundColor: themeColor0.bgColor(1),
-        borderRadius: 100,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
+        heading4: {
+            fontSize: 20,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor4.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    remove: {
-        padding: 3,
-        borderRadius: 100,
-        borderColor: themeColor0.bgColor(1),
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
+        heading10: {
+            fontSize: 20,
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor10.bgColor(1),
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    banner: {
-        height: 140,
-        width: '95%',
-    },
+        discountText: {
+            fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
+            color: themeColor10.bgColor(1),
+            textDecorationLine: 'line-through',
+            textAlign: isRTL ? 'right' : 'left',
+        },
 
-    strip: {
-        minHeight: 50,
-        width: '100%',
-        marginVertical: 10,
-        backgroundColor: themeColor0.bgColor(0.5),
-    },
-});
+        textInput: {
+            minHeight: 50,
+            backgroundColor: themeColor4.bgColor(1),
+            paddingHorizontal: '5%',
+        },
 
-export default NewStyles;
+        seperator: {
+            paddingBottom: '5%',
+            paddingHorizontal: '5%',
+            gap: 20,
+            borderBottomWidth: 5,
+            borderBottomColor: themeColor3.bgColor(0.2),
+        },
+
+        nav: {
+            gap: 50,
+            paddingHorizontal: '5%',
+            backgroundColor: themeColor4.bgColor(1)
+        },
+
+        whiteButton: {
+            backgroundColor: themeColor4.bgColor(1),
+            borderRadius: 100,
+            margin: 5,
+            padding: 10,
+        },
+
+        add: {
+            padding: 3,
+            backgroundColor: themeColor0.bgColor(1),
+            borderRadius: 100,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+
+        remove: {
+            padding: 3,
+            borderRadius: 100,
+            borderColor: themeColor0.bgColor(1),
+            borderWidth: 1,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+
+        banner: {
+            height: 140,
+            width: '95%',
+        },
+
+        strip: {
+            minHeight: 50,
+            width: '100%',
+            marginVertical: 10,
+            backgroundColor: themeColor0.bgColor(0.5),
+        },
+    });
+};
+export default makeStyles;
+export const DefaultStyles = makeStyles('fa');

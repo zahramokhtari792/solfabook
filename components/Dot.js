@@ -1,11 +1,16 @@
 import { StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation, } from 'react-native-reanimated';
 
-import NewStyles from '../styles/NewStyles';
+import makeStyles from '../styles/NewStyles';
 import { themeColor0 } from '../theme/Color';
+import { useTranslation } from 'react-i18next';
 
 export default function Dot({ x, index, size }) {
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const animatedDotStyle = useAnimatedStyle(() => {
         const widthAnimation = interpolate(
             x.value,

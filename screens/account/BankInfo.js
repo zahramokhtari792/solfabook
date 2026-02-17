@@ -1,6 +1,6 @@
 import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import React, { useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import { themeColor1, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color'
 import Button from '../../components/Button'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,6 +10,7 @@ import { handleError, showToastOrAlert } from '../../helpers/Common'
 import { fetchUser } from '../../slices/userSlice'
 import CustomStatusBar from '../../components/CustomStatusBar'
 import BackHeader from './../../components/BackHeader';
+import { useTranslation } from 'react-i18next'
 
 const BankInfo = ({ navigation }) => {
     const userToken = useSelector(state => state?.auth?.token);
@@ -26,7 +27,7 @@ const BankInfo = ({ navigation }) => {
             card_no: cardNumber,
             iban: sheba,
             account_name: cardName,
-            bank_name:bankName
+            bank_name: bankName
         }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } }).then((res) => {
             dispatch(fetchUser(userToken))
             setLoading(false);
@@ -39,11 +40,14 @@ const BankInfo = ({ navigation }) => {
             setLoading(false)
         })
     }
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
     return (
         <SafeAreaView style={NewStyles.container}>
-            <CustomStatusBar/>
+            <CustomStatusBar />
             <BackHeader title={'اطلاعات بانکی'} />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

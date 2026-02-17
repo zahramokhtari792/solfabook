@@ -1,12 +1,15 @@
 import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Ionicons } from '@expo/vector-icons';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { themeColor1, themeColor10, themeColor3 } from '../../theme/Color';
 import { useTranslation } from 'react-i18next';
 
-const ModalPlayer = ({visible, setVisible, audio, musicIndex, setMusicIndex, playing, setPlayNow}) => {
-    const {t} = useTranslation()
+const ModalPlayer = ({ visible, setVisible, audio, musicIndex, setMusicIndex, playing, setPlayNow }) => {
+    const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Modal animationType='slide' visible={visible} onRequestClose={() => {
             setVisible(false)

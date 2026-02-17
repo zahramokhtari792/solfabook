@@ -1,13 +1,18 @@
 import { Image, ImageBackground, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import NewStyles, { deviceWidth } from '../../styles/NewStyles'
+import React, { useMemo } from 'react'
+import makeStyles, { deviceWidth } from '../../styles/NewStyles'
 import { useNavigation } from '@react-navigation/native'
 import { dlUrl } from '../../services/URL'
 import { Ionicons } from '@expo/vector-icons';
 import { themeColor4, themeColor6 } from '../../theme/Color'
+import { useTranslation } from 'react-i18next'
 
 const MyFileComponent = ({ item, onLongPress, showTrash = true }) => {
     const navigation = useNavigation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    
     return (
         <Pressable style={[item?.is_album == 0 ? { width: deviceWidth * 0.45, aspectRatio: 0.73 } : { width: deviceWidth * 0.45, aspectRatio: 1 }, NewStyles.border8, NewStyles.shadow]} onLongPress={() => {
             if (onLongPress) {
@@ -26,7 +31,7 @@ const MyFileComponent = ({ item, onLongPress, showTrash = true }) => {
             if (item?.file_type == 3 || item?.file_type == 4) {
                 navigation.navigate('PictureAudio', { id: item?.id })
             }
-            // navigation.navigate('PDFReaderWebView', {id: item?.id})
+            // navigation.navigate('PDFReaderWebView', { id: item?.id })
         }}>
             <ImageBackground source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={[{ height: '100%', width: '100%', alignItems: 'flex-start' }, NewStyles.border8]} imageStyle={NewStyles.border8} >
                 {showTrash && <TouchableOpacity style={[{ padding: 10, backgroundColor: themeColor4.bgColor(0.8), margin: 5, }, NewStyles.border100]} onPress={() => {

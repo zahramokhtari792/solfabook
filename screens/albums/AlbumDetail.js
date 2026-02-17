@@ -1,8 +1,8 @@
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ImageBackground, RefreshControl } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import NewStyles, { deviceWidthScreen } from '../../styles/NewStyles'
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ImageBackground, RefreshControl, ActivityIndicator } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import makeStyles, { deviceWidthScreen } from '../../styles/NewStyles'
 import axios from 'axios';
-import { dlUrl, imageUri, uri } from '../../services/URL';
+import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
@@ -31,6 +31,7 @@ import AudioPlayer from '../../components/AudioPlayer';
 import { fetchUser } from '../../slices/userSlice';
 import * as FileSystem from 'expo-file-system';
 import { usePreventScreenCapture } from 'expo-screen-capture';
+import { CaptureProtection } from 'react-native-capture-protection';
 
 const AlbumDetail = ({ route, navigation }) => {
     const params = route?.params;
@@ -41,14 +42,18 @@ const AlbumDetail = ({ route, navigation }) => {
     const [refreshing, setRefreshing] = useState(false)
 
     const [data, setData] = useState()
+    const [tracks, setTracks] = useState([])
     const [musicIndex, setMusicIndex] = useState(0);
     const [playing, setPlaying] = useState(false);
     const [playNow, setPlayNow] = useState(false);
     const [score, setScore] = useState(0)
     const [message, setemessage] = useState('');
     const insets = useSafeAreaInsets();
-    const { t } = useTranslation()
-    const mood = [{ id: 1, name: t("Usefull") }, { id: 2, name: t("Fruitful") }, { id: 3, name: t("Fascinating") }, { id: 4, name: t('Informative') }]
+    const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+
     const [useful, setUseful] = useState(0);
     const [attractive, setAttractive] = useState(0);
     const [weighty, setWeighty] = useState(0);
@@ -57,17 +62,25 @@ const AlbumDetail = ({ route, navigation }) => {
     const [saved, setSaved] = useState(false);
     const [like, setLike] = useState(false);
     const [paymodal, setPayModal] = useState(false)
+    const [addLoader, setAddLoader] = useState(false)
+    const [fileGalleryId, setFileGalleryId] = useState()
     const [visible, setVisible] = useState(false)
     const [visiblePlayer, setVisiblePlayer] = useState(false)
     const [text, setText] = useState();
     const [textBtn, setTextBtn] = useState();
     const [deleteModal, setDeleteModal] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [tracksLoader, setTracksLoader] = useState(true);
     const { showModal } = useLoginModal();
     const [comments, setComments] = useState([])
     const [myComment, setMyComments] = useState()
 
-    usePreventScreenCapture()
+    useEffect(() => {
+        CaptureProtection.prevent();
+        return () => {
+            CaptureProtection.allow();
+        };
+    }, []);
     const redirectUrl = Linking.createURL("/?");
     const dispatch = useDispatch()
     const addLinkingListenerWallet = (event) => {
@@ -131,23 +144,23 @@ const AlbumDetail = ({ route, navigation }) => {
                         <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                             {item.useful == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>مفیدبود🙂</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>مفیدبود🙂</Text>
                                 </View>
                             }
 
                             {item.weighty == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>پرباربود🤔</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>پرباربود🤔</Text>
                                 </View>
                             }
                             {item.attractive == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>جذاب بود🧐</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>جذاب بود🧐</Text>
                                 </View>
                             }
                             {item.informative == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>آموزنده بود🤓</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>آموزنده بود🤓</Text>
                                 </View>
                             }
                         </View>
@@ -171,6 +184,41 @@ const AlbumDetail = ({ route, navigation }) => {
                 handleError(err)
             })
     }
+
+    const fetchTrackList = () => {
+        axios.post(`${uri}/fetchTrackList`, { file_id: fileId, user_id: user?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
+            .then((res) => {
+                setTracks(res?.data);
+            })
+            .catch((err) => {
+                handleError(err)
+            })
+            .finally(() => {
+                setTracksLoader(false);
+                setAddLoader(false)
+            })
+    }
+
+    const addToAlbumCart = (file_gallery_id) => {
+        setFileGalleryId(file_gallery_id)
+        setAddLoader(true)
+        axios.post(`${uri}/addToAlbumCart`, { file_gallery_id: file_gallery_id, publisher_id: data?.publisher_id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
+            .then((res) => {
+                console.log(res?.data);
+                fetchTrackList();
+            })
+            .catch((err) => {
+                console.log(err);
+                setAddLoader(false)
+                handleError(err)
+            })
+            .finally(() => {
+
+                setFileGalleryId()
+            })
+
+    }
+
 
     const submitRate = () => {
         axios.post(`${uri}/submitRate`, { rate: score, comment: message, file_id: fileId, useful: useful, attractive: attractive, weighty: weighty, informative: informative }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
@@ -255,7 +303,6 @@ const AlbumDetail = ({ route, navigation }) => {
         axios.post(`${uri}/fetchFileDetail`, { id: fileId })
             .then((res) => {
                 setData(res?.data)
-
                 if (res?.data?.discounted_price) {
                     setFinalPrice(res?.data?.discounted_price)
                 } else {
@@ -324,10 +371,13 @@ const AlbumDetail = ({ route, navigation }) => {
             };
         }, [addLinkingListenerWallet])
     );
+
     useFocusEffect(useCallback(() => {
         fetchFileDetail()
         fetchFileComment()
+        fetchTrackList()
     }, []))
+
     if (loader) {
         return (
             <Loader />
@@ -404,34 +454,6 @@ const AlbumDetail = ({ route, navigation }) => {
                             <Text style={[NewStyles.text10, { textAlign: 'center' }]}>{t('Publication date')}: {data?.publish_date.replaceAll('-', '/')}</Text>
                         }
 
-                        <FlatList
-                            numColumns={2}
-                            scrollEnabled={false}
-                            data={data?.sample_files}
-                            contentContainerStyle={{ gap: 5, alignItems: 'flex-end', marginVertical: 10, }}
-                            columnWrapperStyle={{ flexDirection: 'row-reverse' }}
-                            renderItem={({ item, index }) => {
-                                return (
-                                    <View style={[NewStyles.row, { width: deviceWidthScreen * 0.5, paddingRight: 10, gap: 10 }]}>
-                                        <ImageBackground style={[{ width: deviceWidthScreen * 0.2, aspectRatio: 1 }, NewStyles.center]} source={[{ uri: `${dlUrl}/${data?.image_gallery?.image_path}` }]} imageStyle={[NewStyles.border10, NewStyles.shadow]}>
-                                            <LinearGradient colors={['transparent', themeColor10.bgColor(0.3), 'transparent']} style={[NewStyles.border10, { height: '100%', width: '100%' }, NewStyles.center]}>
-                                                <TouchableOpacity onPress={() => {
-                                                    setMusicIndex(index);
-                                                    setVisiblePlayer(true)
-                                                    if (index == musicIndex) { setPlayNow(!playing); } else { setPlayNow(true); }
-                                                }}>
-                                                    <Ionicons name={(playing && musicIndex === index) ? 'pause-circle' : 'play-circle'} color={themeColor4.bgColor(0.8)} size={40} />
-                                                </TouchableOpacity>
-                                            </LinearGradient>
-                                        </ImageBackground>
-                                        <View style={{ alignItems: 'flex-end', flex: 1 }}>
-                                            <Text style={[NewStyles.text10, {}]}>{item?.title}</Text>
-                                            <Text style={[NewStyles.text3, { fontSize: 12 }]}>{item?.duration}</Text>
-                                        </View>
-                                    </View>
-                                )
-                            }}
-                        />
                         <View style={{ paddingHorizontal: '5%' }}>
                             <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
                                 if (user && userToken) {
@@ -458,12 +480,12 @@ const AlbumDetail = ({ route, navigation }) => {
                                         </View>
                                     </View>}
                             </Pressable>
-                            {/* لینکش رو نذاشتم هنوز */}
                             {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
-                                Linking.openURL(`${mainUri}/product/${fileId}`)
+                                Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeColor0.bgColor(1) }} />}
+
                             {(data?.des || data?.description) && <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginVertical: 10 }]}>{t("About the album")}</Text>
+                                <Text style={[styles.sectiontitle, { marginVertical: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
                                 <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), width: '100%', padding: 10, borderRadius: 8 }}>
                                     <Text style={NewStyles.text10} numberOfLines={3}>{data?.des ? data?.des : data?.description}</Text>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }} onPress={() => {
@@ -474,17 +496,97 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </TouchableOpacity>
                                 </View>
                             </View>}
-
+                            {tracks?.length > 0 && <View>
+                                <FlatList
+                                    ListHeaderComponent={() => {
+                                        return (
+                                            <View style={{ alignItems: lang != 'en' ? 'flex-end' : 'flex-start' }}>
+                                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Album tracks")}</Text>
+                                            </View>
+                                        )
+                                    }}
+                                    data={tracks}
+                                    scrollEnabled={false}
+                                    contentContainerStyle={{ gap: 10 }}
+                                    renderItem={({ item, index }) => {
+                                        return (
+                                            <View style={{}}>
+                                                <View style={NewStyles.rowWrapper}>
+                                                    <View style={[NewStyles.row, { gap: 10, flex: 1 }]}>
+                                                        <ImageBackground
+                                                            style={[{ width: 70, height: 70 }, NewStyles.center]}
+                                                            source={[{ uri: `${dlUrl}/${data?.image_gallery?.image_path}` }]}
+                                                            imageStyle={[NewStyles.border10, NewStyles.shadow]}
+                                                        >
+                                                            <LinearGradient
+                                                                colors={['transparent', themeColor10.bgColor(0.3), 'transparent']}
+                                                                style={[NewStyles.border10, { height: '100%', width: '100%' }, NewStyles.center]}
+                                                            >
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        setVisiblePlayer(true);
+                                                                        setMusicIndex((prevIndex) => {
+                                                                            if (prevIndex === index) {
+                                                                                setPlaying((p) => !p);
+                                                                                return prevIndex;
+                                                                            } else {
+                                                                                setPlaying(true);
+                                                                                return index;
+                                                                            }
+                                                                        });
+                                                                    }}
+                                                                >
+                                                                    <Ionicons
+                                                                        name={playing && musicIndex === index ? 'pause-circle' : 'play-circle'}
+                                                                        color={themeColor4.bgColor(0.8)}
+                                                                        size={36}
+                                                                    />
+                                                                </TouchableOpacity>
+                                                            </LinearGradient>
+                                                        </ImageBackground>
+                                                        <View style={{ flex: 1 }}>
+                                                            <Text style={[NewStyles.text10, { width: '90%', }]} >{item?.title}</Text>
+                                                            <Text style={[NewStyles.text10, { width: '90%', }]}>{data?.publisher?.name}</Text>
+                                                            {!!item?.duration && (
+                                                                <Text style={[NewStyles.text3, { fontSize: 12 }]}>{item?.duration}</Text>
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                    <TouchableOpacity disabled={addLoader} style={[{ paddingVertical: 5, width: 100, borderWidth: 1, borderColor: themeColor0.bgColor(1), borderRadius: 5 }, NewStyles.center]}
+                                                        onPress={() => {
+                                                            if (item?.in_cart == 0) {
+                                                                addToAlbumCart(item?.id)
+                                                            } else {
+                                                                navigation.navigate('AlbumCart')
+                                                            }
+                                                        }}
+                                                    >
+                                                        {
+                                                            ((addLoader && fileGalleryId == item?.id)) ? <ActivityIndicator size="small" color={themeColor0.bgColor(1)} /> :
+                                                                item?.in_cart == 0 ? <Text style={NewStyles.text}>{formatPrice(item?.price)} {t("currency unit")}</Text> :
+                                                                    <Ionicons
+                                                                        name={"cart-outline"}
+                                                                        size={24}
+                                                                        color={themeColor0.bgColor(1)}
+                                                                    />
+                                                        }
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        )
+                                    }}
+                                />
+                            </View>}
                         </View>
 
                         <View style={{ paddingHorizontal: '5%' }}>
                             <View style={NewStyles.rowWrapper}>
                                 <View style={{ alignItems: 'flex-end' }}>
-                                    <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10 }]}>{t("Album rating")}</Text>
+                                    <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Album rating")}</Text>
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
-                                        <Text style={{ fontFamily: 'iransans', marginHorizontal: 5, }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
+                                        <Text style={{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', marginHorizontal: 5, }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
                                         {data?.file_comment_avg_rate >= 1 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 2 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 3 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
@@ -516,7 +618,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: 'iransans', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this album...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this album...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -539,7 +641,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>
                                             <View style={[{ marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 100 }, myComment.is_show == 0 ? { backgroundColor: themeColor11.bgColor(0.2) } : { backgroundColor: themeColor7.bgColor(0.2) }]}>
-                                                <Text style={[{ fontFamily: 'iransans', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
+                                                <Text style={[{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
                                             </View>
                                         </View>
                                         <TouchableOpacity onPress={() => {
@@ -571,23 +673,23 @@ const AlbumDetail = ({ route, navigation }) => {
                                             <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                                                 {myComment.useful == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Usefull')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Usefull')}</Text>
                                                     </View>
                                                 }
 
                                                 {myComment.weighty == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Fruitful')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Fruitful')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.attractive == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Fascinating')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Fascinating')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.informative == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Informative')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Informative')}</Text>
                                                     </View>
                                                 }
                                             </View>
@@ -599,7 +701,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                 </View>
                             }
                             <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10 }]}>{t("User comments")}</Text>
+                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
                             </View>
 
                         </View>
@@ -631,18 +733,21 @@ const AlbumDetail = ({ route, navigation }) => {
                     textBtn={textBtn} />
             </View>
             {
-                (data?.sample_files && visiblePlayer) && <View style={[{ backgroundColor: themeColor1.bgColor(0.2), paddingBottom: 10 }]}>
-                    <TouchableOpacity style={{ padding: 10 }} onPress={() => {
-                        setVisiblePlayer(false);
-                        setPlayNow(false);
-                        setPlaying(false)
-                    }}>
-                        <Ionicons name='close' color={themeColor6.bgColor(1)} size={20} />
-                    </TouchableOpacity>
-                    <AudioPlayer audio={data?.sample_files} setIndex={setMusicIndex} index={musicIndex} playing={playing} setPlaying={setPlaying} playNow={playNow} />
+                (tracks?.length > 0 && visiblePlayer) && <View style={[{ backgroundColor: themeColor1.bgColor(0.2), paddingBottom: 10 }]}>
+                    <View style={[NewStyles.rowWrapper, {paddingVertical:10}]}>
+                        <Text style={[NewStyles.text10,{paddingHorizontal:10, flex:1, fontFamily:'VazirThin'}]}>{t("You are listening to the demo, for complete access please purchase the album")}</Text>
+                        <TouchableOpacity style={{ padding: 10 }} onPress={() => {
+                            setVisiblePlayer(false);
+                            setPlayNow(false);
+                            setPlaying(false)
+                        }}>
+                            <Ionicons name='close' color={themeColor6.bgColor(1)} size={20} />
+                        </TouchableOpacity>
+                    </View>
+                    <AudioPlayer audio={tracks} setIndex={setMusicIndex} index={musicIndex} playing={playing} setPlaying={setPlaying} playNow={playNow} maxPreviewSeconds={25} />
                 </View>
             }
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }
 
@@ -656,7 +761,6 @@ const styles = StyleSheet.create({
         height: 50
     },
     sectiontitle: {
-        fontFamily: 'iransans',
         fontSize: 16,
         textAlign: 'right',
         marginBottom: 15,
@@ -676,11 +780,10 @@ const styles = StyleSheet.create({
     },
     tinyText: {
         textAlign: 'center',
-        fontFamily: 'iransans',
+        fontFamily: 'VazirBold',
         fontSize: 10
     },
     txtMood: {
-        fontFamily: 'iransans',
         fontSize: 11
     },
     moodContainer: {

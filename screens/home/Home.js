@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, Text, View, SafeAreaView, BackHandler, RefreshControl } from 'react-native'
-import React, { useCallback, useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useCallback, useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import CustomStatusBar from '../../components/CustomStatusBar'
 import axios from 'axios'
 import { uri } from '../../services/URL'
@@ -20,8 +20,11 @@ const Home = () => {
   const [data, setData] = useState([])
   const [loader, setLoader] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   const homeData = () => {
-    axios.get(`${uri}/homeData`)
+    axios.get(`${uri}/homeData?lang=${lang}`)
       .then((res) => {
         setData(res?.data)
       })

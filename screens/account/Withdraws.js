@@ -1,10 +1,10 @@
 import { FlatList, Linking, Pressable, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
-import NewStyles, { deviceWidth } from '../../styles/NewStyles';
+import makeStyles, { deviceWidth } from '../../styles/NewStyles';
 import { Ionicons } from '@expo/vector-icons';
 import BlankScreen from '../../components/BlankScreen';
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,6 +28,10 @@ export default function Withdraws({ navigation }) {
         return moment(utcDate).local().format('YYYY-MM-DD HH:mm:ss');
     };
     const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const [loading, setLoading] = useState(true);
 
     const [data, setData] = useState([]);

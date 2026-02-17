@@ -23,6 +23,8 @@ const Tab = createBottomTabNavigator();
 export default function MainLayout() {
 
     const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
     return (
         <Tab.Navigator
@@ -32,28 +34,28 @@ export default function MainLayout() {
                 headerShown: true,
                 headerTitle: '',
                 headerBackTitle: 'Back',
-                headerTitleStyle: styles.text,
+                headerTitleStyle: { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin'},
                 headerTintColor: themeColor10.bgColor(1),
                 tabBarStyle: { backgroundColor: themeColor4.bgColor(1) },
-                tabBarLabelStyle: styles.text,
+                tabBarLabelStyle: { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin'},
                 tabBarActiveTintColor: themeColor0.bgColor(1),
                 tabBarInactiveTintColor: themeColor1.bgColor(1),
-                headerLeftContainerStyle: { paddingLeft: '5%' },
-                headerShadowVisible:false,
-                header:()=>{
-                    return(
-                        <Header/>
+                headerLeftContainerStyle: lang != 'en' ? { paddingLeft: '5%' } : { paddingRight: '5%' },
+                headerShadowVisible: false,
+                header: () => {
+                    return (
+                        <Header />
                     )
                 }
 
-                
+
             }}
         >
             <Tab.Screen name='MyLibrary' component={MyLibrary}
                 options={{
                     title: `${t('My Library')}`,
                     tabBarIcon: ({ color }) => { return <LibararyIcon color={color} /> },
-                    
+
                 }}
             />
             <Tab.Screen name='AlbumTab' component={AlbumTab}
@@ -80,13 +82,13 @@ export default function MainLayout() {
                     tabBarIcon: ({ color }) => { return <HomeIcon color={color} /> }
                 }}
             />
-            
+
         </Tab.Navigator >
     )
 }
 
 const styles = StyleSheet.create({
     text: {
-        fontFamily: 'iransans',
+
     }
 })

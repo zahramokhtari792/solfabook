@@ -1,7 +1,7 @@
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import NewStyles from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import { themeColor0, themeColor1, themeColor4 } from '../../theme/Color'
 import EditIcon from '../../assets/svg/EditIcon'
 import { Image } from 'expo-image'
@@ -19,6 +19,10 @@ const Account = ({ navigation }) => {
   const userLoading = useSelector(state => state.user?.loading);
   const userToken = useSelector(state => state.auth?.token);
   const { t } = useTranslation()
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   const [modal, setModal] = useState(false)
   const dispatch = useDispatch()
   return (
@@ -70,6 +74,7 @@ const Account = ({ navigation }) => {
         </View>}
         {user?.apple_check != 1 && <OptionsComponents txt={t('Bookmarked words')} icon={'bookmarks'} onPress={() => { navigation.navigate('BookmarkedWords') }} />}
         {user?.apple_check != 1 && <OptionsComponents txt={t('Withdraw Requests')} icon={'arrow-up-circle'} onPress={() => { navigation.navigate('Decrease') }} />}
+        <OptionsComponents txt={t('Language')} icon={'language'} onPress={() => { navigation.navigate('Language') }} />
         <OptionsComponents txt={t('Settings')} icon={'settings'} onPress={() => { navigation.navigate('Settings') }} />
         <OptionsComponents txt={t('About Us')} icon={'information-circle'} onPress={() => { navigation.navigate('AboutUs') }} />
         <OptionsComponents txt={t('Contact Us')} icon={'help-circle'} onPress={() => {

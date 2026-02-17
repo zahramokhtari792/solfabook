@@ -1,6 +1,6 @@
 import { FlatList, ImageBackground, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import NewStyles, { deviceWidth } from '../../styles/NewStyles'
+import React, { useEffect, useMemo, useState } from 'react'
+import makeStyles, { deviceWidth } from '../../styles/NewStyles'
 import axios from 'axios'
 import { imageUri, uri } from '../../services/URL'
 import { handleError } from '../../helpers/Common'
@@ -9,13 +9,17 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import BlankScreen from '../../components/BlankScreen'
 import { themeColor10, themeColor4 } from '../../theme/Color'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useTranslation } from 'react-i18next'
 
-const MusicalInstrument = ({navigation}) => {
+const MusicalInstrument = ({ navigation }) => {
     const [loader, setLoader] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [data, setData] = useState([])
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const allMusicalInstruments = () => {
-        axios.get(`${uri}/allMusicalInstruments`)
+        axios.get(`${uri}/allMusicalInstruments?lang=${lang}`)
             .then((res) => {
                 setData(res?.data);
 
@@ -54,8 +58,8 @@ const MusicalInstrument = ({navigation}) => {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); allMusicalInstruments() }} />}
                 renderItem={({ item }) => {
                     return (
-                        <Pressable style={[{width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1)}, NewStyles.border10]} onPress={()=>{
-                            navigation.navigate('InstrumentDetail',{data:item})
+                        <Pressable style={[{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1) }, NewStyles.border10]} onPress={() => {
+                            navigation.navigate('InstrumentDetail', { data: item })
                         }}>
 
                             <ImageBackground source={{ uri: `${imageUri}/${item?.image_path}` }} style={{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1) }} imageStyle={[NewStyles.border10]} resizeMode='contain'>

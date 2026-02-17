@@ -1,11 +1,11 @@
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 import { uri } from '../../services/URL';
 import { showToastOrAlert } from '../../helpers/Common';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import { themeColor1 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
@@ -19,6 +19,10 @@ import * as Linking from "expo-linking";
 export default function Subscription() {
 
     const { t } = useTranslation();
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -92,7 +96,7 @@ export default function Subscription() {
             }).catch((error) => {
                 if (error.response.status == 409) {
                     showToastOrAlert(t(`${error?.response?.data?.error}`))
-                }else if(error.response.status == 401){
+                } else if (error.response.status == 401) {
                     showToastOrAlert(t(`Unauthorized access. Please login.`))
                 } else {
                     const message = error.response ? t('An unexpected error occurred!') : t('Network error!');

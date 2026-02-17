@@ -1,6 +1,6 @@
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import NewStyles from '../../styles/NewStyles'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import makeStyles from '../../styles/NewStyles'
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
@@ -39,6 +39,9 @@ import * as FileSystem from 'expo-file-system';
 const FileDetail = ({ route, navigation }) => {
     const params = route?.params;
     const fileId = params?.id;
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const [loader, setLoader] = useState(true)
@@ -67,7 +70,6 @@ const FileDetail = ({ route, navigation }) => {
     const [comments, setComments] = useState([])
     const [myComment, setMyComments] = useState()
     const dispatch = useDispatch()
-    const lang = useSelector(state => state.lang?.lang)
 
     const redirectUrl = Linking.createURL("/?");
     const shareFile = async () => {
@@ -209,23 +211,23 @@ const FileDetail = ({ route, navigation }) => {
                         <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                             {item.useful == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>مفیدبود🙂</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>مفیدبود🙂</Text>
                                 </View>
                             }
 
                             {item.weighty == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>پرباربود🤔</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>پرباربود🤔</Text>
                                 </View>
                             }
                             {item.attractive == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>جذاب بود🧐</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>جذاب بود🧐</Text>
                                 </View>
                             }
                             {item.informative == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={styles.txtMood}>آموزنده بود🤓</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>آموزنده بود🤓</Text>
                                 </View>
                             }
                         </View>
@@ -564,10 +566,10 @@ const FileDetail = ({ route, navigation }) => {
                             }
                             {/* لینکش رو نذاشتم هنوز */}
                             {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
-                                Linking.openURL(`${mainUri}/product/${fileId}`)
+                                Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeColor0.bgColor(1) }} />}
                             <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginVertical: 10 }]}>{t("About the book")}</Text>
+                                <Text style={[styles.sectiontitle, { marginVertical: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("About the book")}</Text>
                                 <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), width: '100%', padding: 10, borderRadius: 8 }}>
                                     <Text style={NewStyles.text10} numberOfLines={3}>{data?.des ? data?.des : data?.description}</Text>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }} onPress={() => {
@@ -580,39 +582,39 @@ const FileDetail = ({ route, navigation }) => {
                             </View>
                             <View style={{ alignItems: 'flex-end' }}>
 
-                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10 }]}>{t("Book Description")}</Text>
+                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Book Description")}</Text>
                             </View>
                         </View>
                         <View style={[NewStyles.row, { marginBottom: 20, height: 90, paddingVertical: 20, backgroundColor: themeColor1.bgColor(0.2) }]} >
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <LinearBookIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{(data?.file_type == 2 || data?.file_type == 5) ? t("{{num}} pages", { num: data?.page_num }) : '-'}</Text>
+                                    <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{(data?.file_type == 2 || data?.file_type == 5) ? t("{{num}} pages", { num: data?.page_num }) : '-'}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <AdobIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>PDF</Text>
+                                    <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>PDF</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <HappyFaceIcon color={(data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { color: (data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Audio file")}</Text>
+                                    <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Audio file")}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <VideoPictureIcon color={(data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { color: (data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Video")}</Text>
+                                    <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Video")}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <View style={{ alignItems: 'center' }}>
                                         <FolderCloudIcon color={data?.file_galleries_sum_file_size ? themeColor0.color : themeColor3.bgColor(1)} />
-                                        <Text style={[styles.tinyText, { color: data?.file_galleries_sum_file_size ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size * 1024)}` : '-'}</Text>
+                                        <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', color: data?.file_galleries_sum_file_size ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size * 1024)}` : '-'}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -620,17 +622,17 @@ const FileDetail = ({ route, navigation }) => {
                                 navigation.navigate('MoreAboutFile', { data: data })
                             }} >
                                 <MoreIcon color={themeColor0.bgColor(1)} />
-                                <Text style={styles.tinyText}>{t("More")}</Text>
+                                <Text style={[styles.tinyText, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>{t("More")}</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={{ paddingHorizontal: '5%' }}>
                             <View style={NewStyles.rowWrapper}>
                                 <View style={{ alignItems: 'flex-end' }}>
-                                    <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10 }]}>{t("Book rating")}</Text>
+                                    <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Book rating")}</Text>
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
-                                        <Text style={{ fontFamily: 'iransans', marginHorizontal: 5, }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
+                                        <Text style={{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', marginHorizontal: 5, }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
                                         {data?.file_comment_avg_rate >= 1 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 2 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 3 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
@@ -664,7 +666,7 @@ const FileDetail = ({ route, navigation }) => {
                                 <View style={{ paddingVertical: 20 }}>
                                     <FlatList style={{ paddingVertical: 10 }} contentContainerStyle={{ gap: 5 }} showsHorizontalScrollIndicator={false} inverted horizontal={true} data={mood} renderItem={renderMoodItem} />
                                 </View>
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: 'iransans', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this book...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this book...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -687,7 +689,7 @@ const FileDetail = ({ route, navigation }) => {
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>
                                             <View style={[{ marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 100 }, myComment.is_show == 0 ? { backgroundColor: themeColor11.bgColor(0.2) } : { backgroundColor: themeColor7.bgColor(0.2) }]}>
-                                                <Text style={[{ fontFamily: 'iransans', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
+                                                <Text style={[{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
                                             </View>
                                         </View>
                                         <TouchableOpacity onPress={() => {
@@ -719,23 +721,23 @@ const FileDetail = ({ route, navigation }) => {
                                             <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                                                 {myComment.useful == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Usefull')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>{t('Usefull')}</Text>
                                                     </View>
                                                 }
 
                                                 {myComment.weighty == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Fruitful')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>{t('Fruitful')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.attractive == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Fascinating')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>{t('Fascinating')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.informative == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={styles.txtMood}>{t('Informative')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]}>{t('Informative')}</Text>
                                                     </View>
                                                 }
                                             </View>
@@ -747,7 +749,7 @@ const FileDetail = ({ route, navigation }) => {
                                 </View>
                             }
                             <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10 }]}>{t("User comments")}</Text>
+                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
                             </View>
 
                         </View>
@@ -792,7 +794,6 @@ const styles = StyleSheet.create({
         height: 50
     },
     sectiontitle: {
-        fontFamily: 'iransans',
         fontSize: 16,
         textAlign: 'right',
         marginBottom: 15,
@@ -812,11 +813,9 @@ const styles = StyleSheet.create({
     },
     tinyText: {
         textAlign: 'center',
-        fontFamily: 'iransans',
         fontSize: 10
     },
     txtMood: {
-        fontFamily: 'iransans',
         fontSize: 11
     },
     moodContainer: {

@@ -1,12 +1,12 @@
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
 import { dlUrl, uri } from './../../services/URL';
 import { useSelector } from 'react-redux';
 import { handleError } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import PDFReaderWebView from './PDFReaderWebView';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioPlayer from '../../components/AudioPlayer';
@@ -15,6 +15,7 @@ import { usePreventScreenCapture } from 'expo-screen-capture';
 import AlbumIcon from '../../assets/svg/AlbumIcon';
 import { themeColor0, themeColor5 } from '../../theme/Color';
 import ModalPlayer from './ModalPlayer';
+import { useTranslation } from 'react-i18next';
 
 const PDFReader = ({ route }) => {
     const params = route?.params;
@@ -30,7 +31,9 @@ const PDFReader = ({ route }) => {
     const [playNow, setPlayNow] = useState(false);
     usePreventScreenCapture();
 
-
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
 
     const fetchFiles = () => {
@@ -96,13 +99,13 @@ const PDFReader = ({ route }) => {
                 </View>
             }
             <View style={{ flex: 1 }}>
-                <PDFReaderWebView 
-                    route={{ 
-                        params: { 
-                            pdfUrl: `${dlUrl}/${data?.[0]?.file_path}`, 
-                            id: id 
-                        } 
-                    }} 
+                <PDFReaderWebView
+                    route={{
+                        params: {
+                            pdfUrl: `${dlUrl}/${data?.[0]?.file_path}`,
+                            id: id
+                        }
+                    }}
                 />
             </View>
             <ModalPlayer visible={visible} setVisible={setVisible} audio={audio} musicIndex={musicIndex} setMusicIndex={setMusicIndex} playing={playing} setPlayNow={setPlayNow} />

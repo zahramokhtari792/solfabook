@@ -1,7 +1,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import NewStyles from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import FilesProduct from '../../components/FilesProduct';
 import CategoriItem from '../category/CategoriItem';
 import AlbumCategoryItem from '../albums/AlbumCategoryItem';
@@ -11,6 +11,9 @@ import MyFileComponent from '../library/MyFileComponent';
 const SearchResult = ({ route }) => {
     const params = route?.params;
     const { t } = useTranslation()
+    const { i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <View style={{ paddingVertical: 15 }}>
@@ -80,7 +83,7 @@ const SearchResult = ({ route }) => {
                                 />
                             }
                             {
-                                (item?.type == 'my_file' || item?.type=='my_album') &&
+                                (item?.type == 'my_file' || item?.type == 'my_album') &&
                                 <FlatList
                                     horizontal
                                     inverted
@@ -90,14 +93,13 @@ const SearchResult = ({ route }) => {
                                     showsHorizontalScrollIndicator={false}
                                     data={item?.data}
                                     renderItem={({ item: subItem }) => {
-                                        
                                         return (
                                             <MyFileComponent showTrash={false} item={subItem.file} />
                                         )
                                     }}
                                 />
                             }
-                            
+
                         </View>
                     )
                 }}

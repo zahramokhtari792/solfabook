@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import NewStyles from '../../styles/NewStyles';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
 import { uri } from '../../services/URL';
@@ -10,6 +10,7 @@ import FilesProduct from '../../components/FilesProduct';
 import BlankScreen from '../../components/BlankScreen';
 import { ActivityIndicator } from 'react-native';
 import { themeColor0 } from '../../theme/Color';
+import { useTranslation } from 'react-i18next';
 
 const Explore = () => {
   const [data, setData] = useState([]);
@@ -18,7 +19,9 @@ const Explore = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   // تابع fetchAllFiles را برای pagination بهینه کردیم
   const fetchAllFiles = async (reset = false) => {
     if (isLoading && !reset) return; // اگر در حال لود هستیم و reset نیست، از ادامه کار جلوگیری کن
