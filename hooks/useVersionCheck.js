@@ -27,7 +27,7 @@ const compareVersions = (current, latest) => {
   // نرمال‌سازی ورژن‌ها
   const normalizedCurrent = normalizeVersion(current);
   const normalizedLatest = normalizeVersion(latest);
-  
+
   const currentParts = normalizedCurrent.split('.').map(Number);
   const latestParts = normalizedLatest.split('.').map(Number);
 
@@ -60,13 +60,13 @@ export const useVersionCheck = () => {
       // چک کردن آخرین زمان بررسی
       if (!forceCheck) {
         const lastCheck = await AsyncStorage.getItem(LAST_CHECK_KEY);
-        
+
         if (lastCheck) {
-            const timeSinceLastCheck = Date.now() - parseInt(lastCheck);
-            if (timeSinceLastCheck < CHECK_INTERVAL) {
-                setLoading(false);
-                return; // هنوز وقت چک نشده
-            }
+          const timeSinceLastCheck = Date.now() - parseInt(lastCheck);
+          if (timeSinceLastCheck < CHECK_INTERVAL) {
+            setLoading(false);
+            return; // هنوز وقت چک نشده
+          }
         }
       }
 
@@ -103,7 +103,7 @@ export const useVersionCheck = () => {
         setUpdateInfo(info);
         console.log('👁️ Setting showModal to true');
         setShowModal(true);
-        
+
         // فقط زمانی timestamp ذخیره می‌کنیم که نسخه جدید باشد
         // تا دوباره بعد از 24 ساعت یادآوری بشه
         await AsyncStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
@@ -111,7 +111,7 @@ export const useVersionCheck = () => {
         // اگر نسخه جدید نبود، timestamp رو پاک می‌کنیم
         // تا دفعه بعد دوباره چک بشه
         await AsyncStorage.removeItem(LAST_CHECK_KEY);
-        
+
         // فقط وقتی چک دستی بود پیام بده
         if (forceCheck) {
           showToast('شما از آخرین نسخه اپلیکیشن استفاده می‌کنید ✅');
@@ -120,14 +120,17 @@ export const useVersionCheck = () => {
 
       setLoading(false);
     } catch (error) {
-      console.error('❌ Version check error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        url: error.config?.url
-      });
-      
+      if (__DEV__) {
+
+        console.log('❌ Version check error:', error);
+        console.log('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          url: error.config?.url
+        });
+      }
+
       // فقط وقتی چک دستی بود پیام خطا بده
       if (forceCheck) {
         if (error.response) {
@@ -138,7 +141,7 @@ export const useVersionCheck = () => {
           showToast('خطا در بررسی به‌روزرسانی: ' + error.message);
         }
       }
-      
+
       setLoading(false);
     }
   };
@@ -147,7 +150,7 @@ export const useVersionCheck = () => {
     console.log('🎬 useVersionCheck mounted - starting initial check');
     checkVersion();
   }, []);
-  
+
   useEffect(() => {
     console.log('📢 useVersionCheck state changed - updateInfo:', updateInfo, 'showModal:', showModal);
   }, [updateInfo, showModal]);

@@ -42,6 +42,7 @@ export default function AudioPlayer({
     const playerRef = useRef(null);
     const isSeekingRef = useRef(false);
     const wasPlayingRef = useRef(false);
+    const currentSourceRef = useRef('remote');
 
     // Per instance stable key (for global single-play)
     const instanceKeyRef = useRef(`ap_${Math.random().toString(16).slice(2)}_${Date.now()}`);
@@ -51,6 +52,7 @@ export default function AudioPlayer({
     const [total, setTotal] = useState(0);
     const [width, setWidth] = useState(0);
     const [tempWidth, setTempWidth] = useState(0);
+    const [seekableMs, setSeekableMs] = useState(0);
 
     const [isSeeking, setIsSeeking] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -65,7 +67,9 @@ export default function AudioPlayer({
     const remoteUri = remotePath ? `${dlUrl}/${remotePath}` : '';
     const cacheDir = `${FileSystem.documentDirectory}audio-cache/`;
     const fileName = remotePath ? remotePath.split('/').pop() : null;
-    const localPath = fileName ? `${cacheDir}${fileName}` : null;
+    const trackId = audio?.[index]?.id ?? audio?.[index]?.file_gallery_id ?? index;
+    const safeFileName = fileName ? `${trackId}_${fileName}` : `${trackId}.bin`;
+    const localPath = `${cacheDir}${safeFileName}`;
     const [localUri, setLocalUri] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const limitMs = Number.isFinite(maxPreviewSeconds) && maxPreviewSeconds > 0
@@ -101,9 +105,11 @@ export default function AudioPlayer({
         setIsLoaded(false);
         setLoadingErr(null);
         seekTargetRef.current = null;
+        currentSourceRef.current = 'remote';
         setLocalUri(null);
         setIsDownloading(false);
         setPendingPlay(false);
+        setSeekableMs(0);
     }, [remotePath, index]);
 
     // Check for cached file on track change
@@ -146,8 +152,8 @@ export default function AudioPlayer({
         notifyPlaying(instanceKey);
 
         console.log('[AudioPlayer] playSound', {
-            source: localUri ? 'LOCAL' : 'REMOTE',
-            uri: localUri ?? remoteUri,
+            source: currentSourceRef.current === 'local' ? 'LOCAL' : 'REMOTE',
+            uri: currentSourceRef.current === 'local' && localUri ? localUri : remoteUri,
             index,
             remotePath,
             localPath,
@@ -243,9 +249,10 @@ export default function AudioPlayer({
             playing,
         });
         setPendingPlay(true);
-        const ok = await ensureLocalUri();
-        if (!ok) {
-            setPendingPlay(false);
+        currentSourceRef.current = localUri ? 'local' : 'remote';
+        playSound();
+        if (!localUri) {
+            void ensureLocalUri();
         }
     }, [ensureLocalUri]);
 
@@ -271,13 +278,16 @@ export default function AudioPlayer({
     };
 
     const SLIDER_STEP_MS = 100;
+    const maxSeekMs = total > 0
+        ? (seekableMs > 0 ? Math.min(total, seekableMs) : total)
+        : 0;
 
     return (
         <View>
             <Video
-                key={localUri ?? remoteUri} // force new native instance per track
+                key={currentSourceRef.current === 'local' && localUri ? localUri : remoteUri} // force new native instance per track
                 ref={playerRef}
-                source={{ uri: localUri ?? remoteUri }}
+                source={{ uri: currentSourceRef.current === 'local' && localUri ? localUri : remoteUri }}
                 audioOnly
                 paused={!playing}
                 playInBackground
@@ -305,6 +315,8 @@ export default function AudioPlayer({
 
                     const ctMs = (p?.currentTime ?? 0) * 1000;
                     const v = Number.isFinite(ctMs) ? ctMs : 0;
+                    const seekable = (p?.seekableDuration ?? 0) * 1000;
+                    if (seekable > 0) setSeekableMs(seekable);
                     if (limitMs && v >= limitMs) {
                         setWidth(limitMs);
                         setTempWidth(limitMs);
@@ -356,7 +368,7 @@ export default function AudioPlayer({
                 <Slider
                     step={SLIDER_STEP_MS}
                     minimumValue={0}
-                    maximumValue={total > 0 ? total : 1}
+                    maximumValue={maxSeekMs > 0 ? maxSeekMs : 1}
                     minimumTrackTintColor={themeColor0.bgColor(1)}
                     maximumTrackTintColor={themeColor1.bgColor(1)}
                     thumbTintColor={themeColor0.bgColor(1)}
@@ -376,7 +388,8 @@ export default function AudioPlayer({
                     onValueChange={(value) => {
                         if (!isLoaded) return;
                         const capped = limitMs ? Math.min(value, limitMs) : value;
-                        setTempWidth(capped);
+                        const bounded = maxSeekMs > 0 ? Math.min(capped, maxSeekMs) : capped;
+                        setTempWidth(bounded);
                     }}
                     onSlidingComplete={(value) => {
                         if (!isLoaded) return;
@@ -385,11 +398,12 @@ export default function AudioPlayer({
                         setIsSeeking(true);
                         isSeekingRef.current = true;
                         const capped = limitMs ? Math.min(value, limitMs) : value;
-                        setTempWidth(capped);
-                        setWidth(capped);
+                        const bounded = maxSeekMs > 0 ? Math.min(capped, maxSeekMs) : capped;
+                        setTempWidth(bounded);
+                        setWidth(bounded);
 
-                        seekTargetRef.current = capped; // ms
-                        playerRef.current?.seek(capped / 1000);
+                        seekTargetRef.current = bounded; // ms
+                        playerRef.current?.seek(bounded / 1000);
                         if (wasPlayingRef.current) setPlaying(true);
                     }}
                 />
