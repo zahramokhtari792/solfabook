@@ -30,6 +30,9 @@ const MusicPlayer = ({ route }) => {
     const [downloadingTrackId, setDownloadingTrackId] = useState(null);
     const [downloadedTracks, setDownloadedTracks] = useState({});
     const [preferLocalMap, setPreferLocalMap] = useState({});
+    const [initialAudioReady, setInitialAudioReady] = useState(false);
+    const [initialLocalUri, setInitialLocalUri] = useState(null);
+    const [initialSourceType, setInitialSourceType] = useState('remote');
     const userToken = useSelector(state => state.auth?.token);
     const fadeAnim = useRef(new Animated.Value(1)).current;
     const { i18n } = useTranslation();
@@ -88,6 +91,44 @@ const MusicPlayer = ({ route }) => {
             refreshDownloadedTracks(audio);
         }
     }, [audio]);
+
+    useEffect(() => {
+        let active = true;
+        if (!audio?.length) return;
+        setInitialAudioReady(false);
+        (async () => {
+            try {
+                const current = audio[musicIndex];
+                if (!current) {
+                    if (active) {
+                        setInitialLocalUri(null);
+                        setInitialSourceType('remote');
+                        setInitialAudioReady(true);
+                    }
+                    return;
+                }
+                const { trackId, localPath, localDonePath } = getLocalPaths(current, musicIndex);
+                const info = await FileSystem.getInfoAsync(localPath);
+                const done = await FileSystem.getInfoAsync(localDonePath);
+                if (active && info.exists && done.exists) {
+                    setInitialLocalUri(info.uri);
+                    setInitialSourceType('local');
+                    setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
+                } else if (active) {
+                    setInitialLocalUri(null);
+                    setInitialSourceType('remote');
+                }
+            } catch (e) {
+                if (active) {
+                    setInitialLocalUri(null);
+                    setInitialSourceType('remote');
+                }
+            } finally {
+                if (active) setInitialAudioReady(true);
+            }
+        })();
+        return () => { active = false; };
+    }, [audio, musicIndex]);
     useEffect(() => {
         if (galleries?.length < 2) return;
 
@@ -128,7 +169,22 @@ const MusicPlayer = ({ route }) => {
                 />
                 <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10, paddingHorizontal: '5%' }]}>{audio?.[musicIndex]?.title}</Text>
                 {
-                    audio && <AudioPlayer audio={audio} setIndex={setMusicIndex} index={musicIndex} playing={playing} setPlaying={setPlaying} playNow={playNow} preferLocalMap={preferLocalMap} downloadedTracks={downloadedTracks} />
+                    audio && initialAudioReady ? (
+                        <AudioPlayer
+                            audio={audio}
+                            setIndex={setMusicIndex}
+                            index={musicIndex}
+                            playing={playing}
+                            setPlaying={setPlaying}
+                            playNow={playNow}
+                            preferLocalMap={preferLocalMap}
+                            downloadedTracks={downloadedTracks}
+                            initialLocalUri={initialLocalUri}
+                            initialSourceType={initialSourceType}
+                        />
+                    ) : (
+                        <ActivityIndicator size="large" color={themeColor10.bgColor(1)} />
+                    )
                 }
 
                 <FlatList

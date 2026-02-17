@@ -36,6 +36,8 @@ export default function AudioPlayer({
     maxPreviewSeconds,
     preferLocalMap,
     downloadedTracks,
+    initialLocalUri,
+    initialSourceType,
 }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
@@ -117,6 +119,17 @@ export default function AudioPlayer({
         setPendingPlay(false);
         setSeekableMs(0);
     }, [remotePath, index]);
+
+    // Apply initial source/local when provided by parent (e.g., MusicPlayer precheck)
+    useEffect(() => {
+        if (initialLocalUri) {
+            setLocalUri(initialLocalUri);
+        }
+        if (initialSourceType === 'local' || initialSourceType === 'remote') {
+            currentSourceRef.current = initialSourceType;
+            setSourceType(initialSourceType);
+        }
+    }, [initialLocalUri, initialSourceType, trackId]);
 
     // Check for cached file on track change
     useEffect(() => {
@@ -271,15 +284,16 @@ export default function AudioPlayer({
             setIsDownloading(false);
         }}, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
 
-    const shouldUseLocal = !!localUri && (
+    const wantsLocal = (
         (preferLocalMap && preferLocalMap[trackId] === true) ||
         (downloadedTracks && downloadedTracks[trackId] === true)
     );
+    const shouldUseLocal = !!localUri && wantsLocal;
 
-    // Enforce local playback when user prefers local (even if play is triggered externally)
+    // Enforce local playback when local is preferred or already downloaded
     useEffect(() => {
         if (!playing) return;
-        if (preferLocalMap && preferLocalMap[trackId] === true) {
+        if (wantsLocal) {
             if (!localUri) {
                 if (!pendingPlay) setPendingPlay(true);
                 setPlaying(false);
@@ -292,7 +306,7 @@ export default function AudioPlayer({
                 setPendingPlay(true);
             }
         }
-    }, [playing, preferLocalMap, trackId, localUri, sourceType, pendingPlay, setPlaying]);
+    }, [playing, wantsLocal, trackId, localUri, sourceType, pendingPlay, setPlaying]);
 
     const handlePlayPress = useCallback(async () => {
         console.log('[AudioPlayer] Play pressed', {
@@ -308,7 +322,7 @@ export default function AudioPlayer({
             pendingPlay,
             playing,
         });
-        if (shouldUseLocal) {
+        if (wantsLocal) {
             if (!localUri) {
                 setPendingPlay(true);
                 return;
@@ -321,7 +335,7 @@ export default function AudioPlayer({
         currentSourceRef.current = 'remote';
         setSourceType('remote');
         playSound();
-    }, [shouldUseLocal, localUri, playSound]);
+    }, [wantsLocal, localUri, playSound]);
 
     // Start playback once localUri becomes available
     useEffect(() => {
