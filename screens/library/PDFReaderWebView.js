@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import { handleError } from '../../helpers/Common'
 import * as FileSystem from 'expo-file-system'
 import { useTranslation } from 'react-i18next'
+import { Ionicons } from '@expo/vector-icons'
 
 const { width: deviceWidth } = Dimensions.get('window');
 
@@ -54,9 +55,9 @@ const PDFReaderWebView = ({ route }) => {
     }
 
     // Use provided PDF URL or fallback to sample PDF for testing
-    // const pdfUrl = params?.pdfUrl ?? data;
+    const pdfUrl = params?.pdfUrl ?? data;
     
-    const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+    // const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
@@ -1565,7 +1566,7 @@ const PDFReaderWebView = ({ route }) => {
                         style={[styles.iconButton, drawingMode && styles.iconButtonActive]}
                         onPress={toggleDrawingMode}
                     >
-                        <Text style={{ fontSize: 18 }}>✏️</Text>
+                        <Ionicons name="pencil" size={18} color={themeColor0.bgColor(1)} />
                     </TouchableOpacity>
 
                     {/* Drawing Controls - Only show when drawing mode is active */}
@@ -1576,10 +1577,10 @@ const PDFReaderWebView = ({ route }) => {
                                 onPress={() => setShowColorPicker(true)}
                             />
                             <TouchableOpacity style={styles.iconButton} onPress={undoDrawing}>
-                                <Text style={{ fontSize: 16 }}>↩️</Text>
+                                <Ionicons name="arrow-undo" size={16} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.iconButton} onPress={clearAllDrawings}>
-                                <Text style={{ fontSize: 16 }}>🗑️</Text>
+                                <Ionicons name="trash" size={16} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                         </>
                     )}
@@ -1587,10 +1588,11 @@ const PDFReaderWebView = ({ route }) => {
                     {/* Apply Highlight Button - Shows when text is selected */}
                     {textSelected && (
                         <TouchableOpacity
-                            style={styles.highlightApplyButton}
+                            style={[styles.highlightApplyButton, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}
                             onPress={applyHighlight}
                         >
-                            <Text style={styles.highlightApplyButtonText}>🖍️ هایلایت</Text>
+                            <Ionicons name="brush" size={14} color={themeColor5.bgColor(1)} />
+                            <Text style={styles.highlightApplyButtonText}>هایلایت</Text>
                         </TouchableOpacity>
                     )}
 
@@ -1606,7 +1608,7 @@ const PDFReaderWebView = ({ route }) => {
                             style={styles.iconButton}
                             onPress={() => setShowHighlightsModal(true)}
                         >
-                            <Text style={{ fontSize: 16 }}>📋</Text>
+                            <Ionicons name="clipboard-outline" size={16} color={themeColor0.bgColor(1)} />
                         </TouchableOpacity>
                     )}
 
@@ -1650,10 +1652,10 @@ const PDFReaderWebView = ({ route }) => {
                                 {currentSearchIndex} از {searchResultCount}
                             </Text>
                             <TouchableOpacity style={styles.navButton} onPress={handlePrevResult}>
-                                <Text style={styles.navButtonText}>▲</Text>
+                                <Ionicons name="chevron-up" size={12} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.navButton} onPress={handleNextResult}>
-                                <Text style={styles.navButtonText}>▼</Text>
+                                <Ionicons name="chevron-down" size={12} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                         </View>
                     )}
@@ -1745,9 +1747,11 @@ const PDFReaderWebView = ({ route }) => {
                             style={[styles.navBtn, isCurrentPageBookmarked() && styles.bookmarkActive]}
                             onPress={() => toggleBookmark()}
                         >
-                            <Text style={[styles.navBtnText, isCurrentPageBookmarked() && styles.bookmarkActiveText]}>
-                                {isCurrentPageBookmarked() ? '🔖' : '📑'}
-                            </Text>
+                            <Ionicons
+                                name={isCurrentPageBookmarked() ? 'bookmark' : 'bookmark-outline'}
+                                size={16}
+                                color={themeColor0.bgColor(1)}
+                            />
                         </TouchableOpacity>
 
                         {/* First Page Button */}
@@ -1756,7 +1760,11 @@ const PDFReaderWebView = ({ route }) => {
                             onPress={handleGoToFirstPage}
                             disabled={currentPage === 1}
                         >
-                            <Text style={[styles.navBtnText, currentPage === 1 && styles.navBtnTextDisabled]}>⏮</Text>
+                            <Ionicons
+                                name="play-skip-back"
+                                size={16}
+                                color={currentPage === 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
+                            />
                         </TouchableOpacity>
 
                         {/* Previous Page Button */}
@@ -1765,7 +1773,11 @@ const PDFReaderWebView = ({ route }) => {
                             onPress={handlePrevPage}
                             disabled={currentPage === 1}
                         >
-                            <Text style={[styles.navBtnText, currentPage === 1 && styles.navBtnTextDisabled]}>◀</Text>
+                            <Ionicons
+                                name="chevron-back"
+                                size={16}
+                                color={currentPage === 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
+                            />
                         </TouchableOpacity>
 
                         {/* Page Indicator (Tappable) */}
@@ -1781,7 +1793,11 @@ const PDFReaderWebView = ({ route }) => {
                             onPress={handleNextPage}
                             disabled={currentPage === totalPages}
                         >
-                            <Text style={[styles.navBtnText, currentPage === totalPages && styles.navBtnTextDisabled]}>▶</Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={16}
+                                color={currentPage === totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
+                            />
                         </TouchableOpacity>
 
                         {/* Last Page Button */}
@@ -1790,7 +1806,11 @@ const PDFReaderWebView = ({ route }) => {
                             onPress={handleGoToLastPage}
                             disabled={currentPage === totalPages}
                         >
-                            <Text style={[styles.navBtnText, currentPage === totalPages && styles.navBtnTextDisabled]}>⏭</Text>
+                            <Ionicons
+                                name="play-skip-forward"
+                                size={16}
+                                color={currentPage === totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
+                            />
                         </TouchableOpacity>
 
                         {/* View Bookmarks Button */}
@@ -1799,7 +1819,7 @@ const PDFReaderWebView = ({ route }) => {
                                 style={styles.navBtn}
                                 onPress={() => setShowBookmarksModal(true)}
                             >
-                                <Text style={styles.navBtnText}>📚</Text>
+                                <Ionicons name="bookmarks-outline" size={16} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                         )}
                     </ScrollView>
@@ -1891,7 +1911,7 @@ const PDFReaderWebView = ({ route }) => {
                                             style={styles.removeBookmarkBtn}
                                             onPress={() => toggleBookmark(pageNum)}
                                         >
-                                            <Text style={styles.removeBookmarkText}>✕</Text>
+                                            <Ionicons name="close" size={16} color={themeColor4.bgColor(0.6)} />
                                         </TouchableOpacity>
                                     </TouchableOpacity>
                                 ))}
@@ -2022,7 +2042,7 @@ const PDFReaderWebView = ({ route }) => {
                                             style={styles.removeBookmarkBtn}
                                             onPress={() => removeHighlight(index)}
                                         >
-                                            <Text style={styles.removeBookmarkText}>✕</Text>
+                                            <Ionicons name="close" size={16} color={themeColor4.bgColor(0.6)} />
                                         </TouchableOpacity>
                                     </TouchableOpacity>
                                 ))}
