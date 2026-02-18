@@ -55,7 +55,7 @@ const PdfReaderHeader = ({
                                 style={[styles.iconButton, { padding: 6 }]} 
                                 onPress={() => onChangeStrokeWidth(Math.max(1, strokeWidth - 2))}
                             >
-                                <Text style={{ color: themeColor0.bgColor(1), fontSize: 16 }}>-</Text>
+                                <Ionicons name="remove-circle-outline" size={16} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                             <Text style={{ color: themeColor0.bgColor(1), fontSize: 11, minWidth: 25, textAlign: 'center' }}>
                                 {strokeWidth}px
@@ -64,7 +64,7 @@ const PdfReaderHeader = ({
                                 style={[styles.iconButton, { padding: 6 }]} 
                                 onPress={() => onChangeStrokeWidth(Math.min(50, strokeWidth + 2))}
                             >
-                                <Text style={{ color: themeColor0.bgColor(1), fontSize: 16 }}>+</Text>
+                                <Ionicons name={'add-circle'} size={16} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                         </View>
                         
@@ -86,7 +86,8 @@ const PdfReaderHeader = ({
                                 style={[styles.iconButton, { padding: 6 }]} 
                                 onPress={() => onChangeDrawingOpacity(Math.max(0.1, Math.round((drawingOpacity - 0.1) * 10) / 10))}
                             >
-                                <Ionicons name="remove" size={14} color={themeColor0.bgColor(1)} />
+                                <Ionicons name="remove-circle-outline" size={16} color={themeColor0.bgColor(1)} />
+
                             </TouchableOpacity>
                             <Text style={{ color: themeColor0.bgColor(1), fontSize: 10, minWidth: 30, textAlign: 'center' }}>
                                 {Math.round(drawingOpacity * 100)}%
@@ -95,7 +96,8 @@ const PdfReaderHeader = ({
                                 style={[styles.iconButton, { padding: 6 }]} 
                                 onPress={() => onChangeDrawingOpacity(Math.min(1, Math.round((drawingOpacity + 0.1) * 10) / 10))}
                             >
-                                <Ionicons name="add" size={14} color={themeColor0.bgColor(1)} />
+                                <Ionicons name={'add-circle'} size={16} color={themeColor0.bgColor(1)} />
+                                
                             </TouchableOpacity>
                         </View>
                         
@@ -108,21 +110,9 @@ const PdfReaderHeader = ({
                     </>
                 )}
 
-                {textSelected && (
-                    <TouchableOpacity
-                        style={[styles.highlightApplyButton, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}
-                        onPress={onApplyHighlight}
-                    >
-                        <Ionicons name="brush" size={14} color={themeColor5.bgColor(1)} />
-                        <Text style={styles.highlightApplyButtonText}>هایلایت</Text>
-                    </TouchableOpacity>
-                )}
+             
 
-                <TouchableOpacity
-                    style={[styles.colorPickerBtn, { backgroundColor: highlightColor }]}
-                    onPress={onOpenHighlightColorPicker}
-                />
-
+                 
                 {hasHighlights && (
                     <TouchableOpacity
                         style={styles.iconButton}
@@ -136,11 +126,7 @@ const PdfReaderHeader = ({
                     <SearchIcon color={themeColor0.bgColor(1)} />
                 </TouchableOpacity>
 
-                {hasHighlights && (
-                    <TouchableOpacity style={styles.clearButton} onPress={onClearHighlights}>
-                        <Text style={styles.clearButtonText}>پاک کردن</Text>
-                    </TouchableOpacity>
-                )}
+                
 
                 <TouchableOpacity
                     style={[styles.navBtn, isBookmarked && styles.bookmarkActive, { backgroundColor: themeColor0.bgColor(0) }]}

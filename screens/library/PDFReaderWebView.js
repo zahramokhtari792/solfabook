@@ -870,13 +870,6 @@ const PDFReaderWebView = ({ route }) => {
         let pageViewports = {};
         let isRendering = false; // Prevent concurrent renders
         let pendingPage = null; // Queue next page if user taps rapidly
-        let lastZoomScale = 1;
-
-        function getZoomScale() {
-            return (window.visualViewport && typeof window.visualViewport.scale === 'number')
-                ? window.visualViewport.scale
-                : 1;
-        }
 
         // Convert hex color to rgba with opacity
         function hexToRgba(hex, alpha) {
@@ -1071,10 +1064,9 @@ const PDFReaderWebView = ({ route }) => {
             const containerWidth = container.clientWidth || window.innerWidth || baseViewport.width;
             const fitScale = Math.min(containerWidth / baseViewport.width, 1);
             const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-            const zoomScale = getZoomScale();
+            // Removed zoomScale - let browser handle zoom natively for smooth scaling
             const viewportCss = page.getViewport({ scale: fitScale });
-            const viewportRender = page.getViewport({ scale: fitScale * dpr * zoomScale });
-            lastZoomScale = zoomScale;
+            const viewportRender = page.getViewport({ scale: fitScale * dpr });
 
             // Clear container now that we have page data
             container.innerHTML = '';
@@ -1167,18 +1159,8 @@ const PDFReaderWebView = ({ route }) => {
             }
         }
 
-        if (window.visualViewport) {
-            let zoomRaf = null;
-            window.visualViewport.addEventListener('resize', () => {
-                if (zoomRaf) cancelAnimationFrame(zoomRaf);
-                zoomRaf = requestAnimationFrame(() => {
-                    const z = getZoomScale();
-                    if (Math.abs(z - lastZoomScale) >= 0.1) {
-                        renderPage(currentPageNum);
-                    }
-                });
-            });
-        }
+        // Removed zoom-triggered re-render - browser handles zoom natively via CSS transforms
+        // This prevents flickering and layout jumps during pinch-zoom
         
 
         // Drawing functions
