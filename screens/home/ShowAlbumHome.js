@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 const ShowAlbumHome = ({ data, title, phone }) => {
     const chunkedData = chunkArray(data, 3);
     const navigation = useNavigation();
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const renderColumn = ({ item }) => {
@@ -38,16 +38,16 @@ const ShowAlbumHome = ({ data, title, phone }) => {
                                 <View style={{}}>
 
                                     {subItem.price > 0 ? <Text style={{ textAlign: 'right', alignSelf:  lang != 'en' ? 'flex-end':'flex-start', fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', marginTop: 5, fontSize: 13 }}>
-                                        {subItem.discounted_price ? `${formatPrice(subItem.discounted_price)} تومان` : `${formatPrice(subItem.price)} تومان`}
+                                        {subItem.discounted_price ? `${formatPrice(subItem.discounted_price)} ${t("currency unit")}` : `${formatPrice(subItem.price)} ${t("currency unit")}`}
 
                                     </Text>
                                         :
                                         <Text style={NewStyles.text10}>
-                                            رایگان
+                                            {t('Free')}
                                         </Text>
                                     }
                                     {subItem.discounted_price && <Text style={[NewStyles.discountText, { color: themeColor3.bgColor(1), fontSize: 12 }]}>
-                                        {subItem.price && formatPrice(subItem.price)} تومان
+                                        {subItem.price && formatPrice(subItem.price)} {t("currency unit")}
                                     </Text>
                                     }
                                 </View>

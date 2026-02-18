@@ -55,12 +55,13 @@ const PDFReaderWebView = ({ route }) => {
     }
 
     // Use provided PDF URL or fallback to sample PDF for testing
-    const pdfUrl = params?.pdfUrl ?? data;
-    
-    // const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+    // const pdfUrl = params?.pdfUrl ?? data;
+
+    const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
+    const didRestorePageRef = useRef(false);
     const navigation = useNavigation();
     const [loading, setLoading] = useState(true);
     const [highlights, setHighlights] = useState([]);
@@ -80,6 +81,7 @@ const PDFReaderWebView = ({ route }) => {
     const [totalPages, setTotalPages] = useState(0);
     const [showPageModal, setShowPageModal] = useState(false);
     const [pageInput, setPageInput] = useState('');
+    const [lastOpenedPage, setLastOpenedPage] = useState(null);
 
     // Bookmarks state
     const [bookmarks, setBookmarks] = useState([]);
@@ -104,6 +106,8 @@ const PDFReaderWebView = ({ route }) => {
         if (!fileId) return;
         loadHighlights();
         loadBookmarks();
+        loadLastOpenedPage();
+        didRestorePageRef.current = false;
     }, [fileId]);
 
     // Fetch file URL when id/token available
@@ -188,6 +192,31 @@ const PDFReaderWebView = ({ route }) => {
             setBookmarks(newBookmarks);
         } catch (err) {
             console.log('Error saving bookmarks:', err);
+        }
+    };
+
+    const loadLastOpenedPage = async () => {
+        try {
+            const saved = await AsyncStorage.getItem(`pdf_last_page_${fileId}`);
+            if (saved) {
+                const page = parseInt(saved, 10);
+                if (!Number.isNaN(page)) {
+                    setLastOpenedPage(page);
+                }
+            } else {
+                setLastOpenedPage(null);
+            }
+        } catch (err) {
+            console.log('Error loading last page:', err);
+        }
+    };
+
+    const saveLastOpenedPage = async (page) => {
+        if (!fileId) return;
+        try {
+            await AsyncStorage.setItem(`pdf_last_page_${fileId}`, String(page));
+        } catch (err) {
+            console.log('Error saving last page:', err);
         }
     };
 
@@ -1424,6 +1453,14 @@ const PDFReaderWebView = ({ route }) => {
 
     const webViewSource = useMemo(() => ({ html: htmlContent }), [htmlContent]);
 
+    useEffect(() => {
+        if (didRestorePageRef.current) return;
+        if (!lastOpenedPage || lastOpenedPage <= 1) return;
+        if (!totalPages || lastOpenedPage > totalPages) return;
+        webViewRef.current?.injectJavaScript(`goToPage(${lastOpenedPage}); true;`);
+        didRestorePageRef.current = true;
+    }, [lastOpenedPage, totalPages]);
+
     // Handle messages from WebView
     const onMessage = (event) => {
         try {
@@ -1451,6 +1488,7 @@ const PDFReaderWebView = ({ route }) => {
                 case 'PAGE_CHANGED':
                     setCurrentPage(data.currentPage);
                     setTotalPages(data.totalPages);
+                    saveLastOpenedPage(data.currentPage);
                     break;
                 case 'WEBVIEW_READY':
                     // WebView is ready, send base64 PDF data in chunks to avoid memory crash
@@ -1560,7 +1598,7 @@ const PDFReaderWebView = ({ route }) => {
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             {/* Header */}
             <View style={[styles.header, NewStyles.rowWrapper]}>
-                <View style={NewStyles.row}>
+                <View style={[NewStyles.row, {flex:1, flexWrap:'wrap'}]}>
                     {/* Drawing Toggle Button */}
                     <TouchableOpacity
                         style={[styles.iconButton, drawingMode && styles.iconButtonActive]}
@@ -1577,10 +1615,10 @@ const PDFReaderWebView = ({ route }) => {
                                 onPress={() => setShowColorPicker(true)}
                             />
                             <TouchableOpacity style={styles.iconButton} onPress={undoDrawing}>
-                                <Ionicons name="arrow-undo" size={16} color={themeColor0.bgColor(1)} />
+                                <Ionicons name="arrow-undo" size={24} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.iconButton} onPress={clearAllDrawings}>
-                                <Ionicons name="trash" size={16} color={themeColor0.bgColor(1)} />
+                                <Ionicons name="trash" size={24} color={themeColor0.bgColor(1)} />
                             </TouchableOpacity>
                         </>
                     )}
@@ -1608,7 +1646,7 @@ const PDFReaderWebView = ({ route }) => {
                             style={styles.iconButton}
                             onPress={() => setShowHighlightsModal(true)}
                         >
-                            <Ionicons name="clipboard-outline" size={16} color={themeColor0.bgColor(1)} />
+                            <Ionicons name="clipboard-outline" size={24} color={themeColor0.bgColor(1)} />
                         </TouchableOpacity>
                     )}
 
@@ -1620,6 +1658,16 @@ const PDFReaderWebView = ({ route }) => {
                             <Text style={styles.clearButtonText}>پاک کردن</Text>
                         </TouchableOpacity>
                     )}
+                    <TouchableOpacity
+                        style={[styles.navBtn, isCurrentPageBookmarked() && styles.bookmarkActive, {backgroundColor: themeColor0.bgColor(0)}]}
+                        onPress={() => toggleBookmark()}
+                    >
+                        <Ionicons
+                            name={isCurrentPageBookmarked() ? 'bookmark' : 'bookmark-outline'}
+                            size={24}
+                            color={themeColor0.bgColor(1)}
+                        />
+                    </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                     <BackArrowIcon color={themeColor0.bgColor(1)} />
@@ -1743,16 +1791,7 @@ const PDFReaderWebView = ({ route }) => {
                 <View style={styles.bottomNavBar}>
                     <ScrollView horizontal contentContainerStyle={{ gap: 15, paddingHorizontal: 20, }} showsHorizontalScrollIndicator={false}>
                         {/* Bookmark Button */}
-                        <TouchableOpacity
-                            style={[styles.navBtn, isCurrentPageBookmarked() && styles.bookmarkActive]}
-                            onPress={() => toggleBookmark()}
-                        >
-                            <Ionicons
-                                name={isCurrentPageBookmarked() ? 'bookmark' : 'bookmark-outline'}
-                                size={16}
-                                color={themeColor0.bgColor(1)}
-                            />
-                        </TouchableOpacity>
+                       
 
                         {/* First Page Button */}
                         <TouchableOpacity
@@ -2228,8 +2267,7 @@ const styles = StyleSheet.create({
     },
     navBtn: {
         backgroundColor: themeColor0.bgColor(0.1),
-        paddingVertical: 10,
-        paddingHorizontal: 15,
+        padding: 10, 
         borderRadius: 8,
     },
     navBtnDisabled: {
