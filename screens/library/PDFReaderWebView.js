@@ -427,7 +427,7 @@ const PDFReaderWebView = ({ route }) => {
             display: block;
             margin: 0 auto;
         }
-        .text-layer {
+        .textLayer {
             position: absolute;
             left: 0;
             top: 0;
@@ -438,7 +438,7 @@ const PDFReaderWebView = ({ route }) => {
             -webkit-user-select: text;
             user-select: text;
         }
-        .text-layer > span {
+        .textLayer > span {
             color: transparent;
             position: absolute;
             white-space: pre;
@@ -447,13 +447,13 @@ const PDFReaderWebView = ({ route }) => {
             -webkit-user-select: text;
             user-select: text;
             pointer-events: auto;
-            padding: 2px 0;
+            padding: 0;
         }
-        .text-layer > span::selection {
+        .textLayer > span::selection {
             background: rgba(150, 29, 90, 0.5);
             color: transparent;
         }
-        .text-layer > span::-moz-selection {
+        .textLayer > span::-moz-selection {
             background: rgba(150, 29, 90, 0.5);
             color: transparent;
         }
@@ -461,7 +461,7 @@ const PDFReaderWebView = ({ route }) => {
             color: transparent !important;
             border-radius: 2px;
         }
-        .highlight-mode-active .text-layer > span {
+        .highlight-mode-active .textLayer > span {
             cursor: pointer !important;
         }
         .highlight-mode-indicator {
@@ -548,7 +548,6 @@ const PDFReaderWebView = ({ route }) => {
     <div id="error-msg" style="display:none; color:red; text-align:center; padding:20px;"></div>
     <div id="highlight-mode-indicator" class="highlight-mode-indicator">حالت هایلایت فعال - روی متن کلیک کنید</div>
     <div id="pdf-container"></div>
-    <div id="highlight-btn" class="highlight-toolbar" onclick="highlightSelection()">هایلایت</div>
 
     <script>
         // Error handler for script loading
@@ -565,7 +564,7 @@ const PDFReaderWebView = ({ route }) => {
             return true;
         };
     </script>
-    <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js" crossorigin="anonymous"></script>
     <script>
         // Check if PDF.js loaded
         if (typeof pdfjsLib === 'undefined') {
@@ -582,7 +581,6 @@ const PDFReaderWebView = ({ route }) => {
         let pdfDoc = null;
         let highlights = [];
         const container = document.getElementById('pdf-container');
-        const highlightBtn = document.getElementById('highlight-btn');
         const loadingEl = document.getElementById('loading');
         const highlightModeIndicator = document.getElementById('highlight-mode-indicator');
         let selectedSpans = [];
@@ -601,6 +599,7 @@ const PDFReaderWebView = ({ route }) => {
             }
             return null;
         }
+
 
         function getSpanSelectionInfo(span, range) {
             const spanText = span.textContent || '';
@@ -683,6 +682,50 @@ const PDFReaderWebView = ({ route }) => {
         let isDrawingMode = false;
         let drawingColor = '#ff0000';
         let lineWidth = 3;
+
+        async function renderTextLayerAccurate(textLayer, textContent, viewport, pageNum, dpr) {
+            if (typeof pdfjsLib.renderTextLayer === 'function') {
+                await pdfjsLib.renderTextLayer({
+                    textContent,
+                    container: textLayer,
+                    viewport,
+                    textDivs: [],
+                    enhanceTextSelection: true
+                }).promise;
+            } else {
+                const items = textContent.items || [];
+                items.forEach((item, index) => {
+                    if (!item.str || item.str.trim() === '') return;
+                    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+                    const span = document.createElement('span');
+                    span.textContent = item.str;
+                    span.dataset.index = index;
+                    const fontSize = Math.sqrt(tx[0] * tx[0] + tx[1] * tx[1]) / dpr;
+                    const left = tx[4] / dpr;
+                    const top = tx[5] / dpr;
+                    span.style.left = left + 'px';
+                    span.style.top = top + 'px';
+                    span.style.fontSize = fontSize + 'px';
+                    span.style.fontFamily = item.fontName || 'sans-serif';
+                    if (item.width) {
+                        span.style.width = (item.width * viewport.scale / dpr) + 'px';
+                    }
+                    span.style.transform = 'scaleX(' + (item.transform[0] < 0 ? -1 : 1) + ')';
+                    textLayer.appendChild(span);
+                });
+            }
+
+            const spans = textLayer.querySelectorAll('span');
+            spans.forEach((span, index) => {
+                if (!span.dataset.index) span.dataset.index = index;
+                span.addEventListener('click', function(e) {
+                    if (isHighlightMode) {
+                        e.stopPropagation();
+                        handleSpanClick(span, pageNum);
+                    }
+                });
+            });
+        }
         let drawings = {}; // { pageNum: [{ points: [], color: string }] }
         let currentPath = null;
         let isDrawing = false;
@@ -692,6 +735,13 @@ const PDFReaderWebView = ({ route }) => {
         let pageViewports = {};
         let isRendering = false; // Prevent concurrent renders
         let pendingPage = null; // Queue next page if user taps rapidly
+        let lastZoomScale = 1;
+
+        function getZoomScale() {
+            return (window.visualViewport && typeof window.visualViewport.scale === 'number')
+                ? window.visualViewport.scale
+                : 1;
+        }
 
         // Convert hex color to rgba with opacity
         function hexToRgba(hex, alpha) {
@@ -763,17 +813,8 @@ const PDFReaderWebView = ({ route }) => {
             const hasSelection = selection && selection.toString().trim().length > 0;
 
             if (hasSelection) {
-                highlightBtn.classList.add('visible');
                 selectedSpans = [];
-                const range = selection.getRangeAt(0);
-                document.querySelectorAll('.text-layer span').forEach(span => {
-                    if (selection.containsNode(span, true) || range.intersectsNode(span)) {
-                        const info = getSpanSelectionInfo(span, range);
-                        if (info) selectedSpans.push(info);
-                    }
-                });
             } else {
-                highlightBtn.classList.remove('visible');
                 selectedSpans = [];
             }
 
@@ -790,7 +831,7 @@ const PDFReaderWebView = ({ route }) => {
                 if (!selection || selection.rangeCount === 0) return;
 
                 const range = selection.getRangeAt(0);
-                document.querySelectorAll('.text-layer span').forEach(span => {
+                document.querySelectorAll('.textLayer span').forEach(span => {
                     if (selection.containsNode(span, true) || range.intersectsNode(span)) {
                         const info = getSpanSelectionInfo(span, range);
                         if (info) selectedSpans.push(info);
@@ -840,7 +881,6 @@ const PDFReaderWebView = ({ route }) => {
             const selection = window.getSelection();
             if (selection) selection.removeAllRanges();
             selectedSpans = [];
-            highlightBtn.classList.remove('visible');
         }
 
         // Apply saved highlights to rendered page
@@ -849,7 +889,7 @@ const PDFReaderWebView = ({ route }) => {
             const pageWrapper = document.querySelector('.page-wrapper');
             if (!pageWrapper) return;
 
-            const spans = pageWrapper.querySelectorAll('.text-layer span');
+            const spans = pageWrapper.querySelectorAll('.textLayer span');
             spans.forEach(span => {
                 if (span.querySelector('.highlight')) {
                     span.textContent = span.textContent;
@@ -901,9 +941,11 @@ const PDFReaderWebView = ({ route }) => {
             const baseViewport = page.getViewport({ scale: 1 });
             const containerWidth = container.clientWidth || window.innerWidth || baseViewport.width;
             const fitScale = Math.min(containerWidth / baseViewport.width, 1);
-            const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-            const renderScale = fitScale * dpr;
-            const viewport = page.getViewport({ scale: renderScale });
+            const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+            const zoomScale = getZoomScale();
+            const viewportCss = page.getViewport({ scale: fitScale });
+            const viewportRender = page.getViewport({ scale: fitScale * dpr * zoomScale });
+            lastZoomScale = zoomScale;
 
             // Clear container now that we have page data
             container.innerHTML = '';
@@ -912,24 +954,24 @@ const PDFReaderWebView = ({ route }) => {
             const pageWrapper = document.createElement('div');
             pageWrapper.className = 'page-wrapper';
             pageWrapper.dataset.page = pageNum;
-            pageWrapper.style.width = (viewport.width / dpr) + 'px';
-            pageWrapper.style.height = (viewport.height / dpr) + 'px';
+            pageWrapper.style.width = viewportCss.width + 'px';
+            pageWrapper.style.height = viewportCss.height + 'px';
 
             // Create canvas
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.className = 'pdf-canvas';
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.style.width = (viewport.width / dpr) + 'px';
-            canvas.style.height = (viewport.height / dpr) + 'px';
+            canvas.height = viewportRender.height;
+            canvas.width = viewportRender.width;
+            canvas.style.width = viewportCss.width + 'px';
+            canvas.style.height = viewportCss.height + 'px';
             pageWrapper.appendChild(canvas);
 
             // Create text layer
             const textLayer = document.createElement('div');
-            textLayer.className = 'text-layer';
-            textLayer.style.width = (viewport.width / dpr) + 'px';
-            textLayer.style.height = (viewport.height / dpr) + 'px';
+            textLayer.className = 'textLayer';
+            textLayer.style.width = viewportCss.width + 'px';
+            textLayer.style.height = viewportCss.height + 'px';
             pageWrapper.appendChild(textLayer);
 
             // Create drawing canvas
@@ -937,10 +979,10 @@ const PDFReaderWebView = ({ route }) => {
             drawingCanvas.className = 'drawing-canvas';
             if (isDrawingMode) drawingCanvas.classList.add('active');
             drawingCanvas.dataset.page = pageNum;
-            drawingCanvas.width = viewport.width;
-            drawingCanvas.height = viewport.height;
-            drawingCanvas.style.width = (viewport.width / dpr) + 'px';
-            drawingCanvas.style.height = (viewport.height / dpr) + 'px';
+            drawingCanvas.width = viewportRender.width;
+            drawingCanvas.height = viewportRender.height;
+            drawingCanvas.style.width = viewportCss.width + 'px';
+            drawingCanvas.style.height = viewportCss.height + 'px';
             pageWrapper.appendChild(drawingCanvas);
 
             // Add to container
@@ -952,48 +994,15 @@ const PDFReaderWebView = ({ route }) => {
             // Render canvas
             await page.render({
                 canvasContext: context,
-                viewport: viewport
+                viewport: viewportRender
             }).promise;
 
-            // Get text content (limit to 300 items for performance)
-            const textContent = await page.getTextContent();
-            const textItems = textContent.items;
-            const maxTextItems = 300;
-            const itemsToRender = textItems.length > maxTextItems ? textItems.slice(0, maxTextItems) : textItems;
-
-            itemsToRender.forEach((item, index) => {
-                if (!item.str || item.str.trim() === '') return;
-                
-                const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
-                const span = document.createElement('span');
-                span.textContent = item.str;
-                span.dataset.index = index;
-                
-                const fontSize = Math.sqrt(tx[0] * tx[0] + tx[1] * tx[1]) / dpr;
-                const left = tx[4] / dpr;
-                const top = tx[5] / dpr;
-                
-                span.style.left = left + 'px';
-                span.style.top = top + 'px';
-                span.style.fontSize = fontSize + 'px';
-                span.style.fontFamily = item.fontName || 'sans-serif';
-                
-                if (item.width) {
-                    span.style.width = (item.width * viewport.scale / dpr) + 'px';
-                }
-                
-                span.style.transform = 'scaleX(' + (item.transform[0] < 0 ? -1 : 1) + ')';
-                
-                // Add click handler for highlight mode
-                span.addEventListener('click', function(e) {
-                    if (isHighlightMode) {
-                        e.stopPropagation();
-                        handleSpanClick(span, pageNum);
-                    }
-                });
-                
-                textLayer.appendChild(span);
+            // Render text layer for accurate selection
+            const textContent = await page.getTextContent({
+                normalizeWhitespace: false,
+                disableCombineTextItems: true
             });
+            await renderTextLayerAccurate(textLayer, textContent, viewportCss, pageNum, 1);
 
             // Apply saved highlights and drawings
             applySavedHighlights(pageNum);
@@ -1018,6 +1027,19 @@ const PDFReaderWebView = ({ route }) => {
                 pendingPage = null;
                 renderPage(nextPage);
             }
+        }
+
+        if (window.visualViewport) {
+            let zoomRaf = null;
+            window.visualViewport.addEventListener('resize', () => {
+                if (zoomRaf) cancelAnimationFrame(zoomRaf);
+                zoomRaf = requestAnimationFrame(() => {
+                    const z = getZoomScale();
+                    if (Math.abs(z - lastZoomScale) >= 0.1) {
+                        renderPage(currentPageNum);
+                    }
+                });
+            });
         }
         
 
@@ -1116,15 +1138,12 @@ const PDFReaderWebView = ({ route }) => {
             });
             
             // Disable text selection when drawing
-            const textLayers = document.querySelectorAll('.text-layer');
+            const textLayers = document.querySelectorAll('.textLayer');
             textLayers.forEach(layer => {
                 layer.style.pointerEvents = enabled ? 'none' : 'auto';
             });
             
-            // Hide highlight button in drawing mode
-            if (enabled) {
-                highlightBtn.classList.remove('visible');
-            }
+           
         }
 
         function setDrawingColor(color) {
@@ -1265,7 +1284,7 @@ const PDFReaderWebView = ({ route }) => {
         // Function to clear all highlights (called from React Native)
         function clearAllHighlights() {
             highlights = [];
-            document.querySelectorAll('.text-layer span').forEach(span => {
+            document.querySelectorAll('.textLayer span').forEach(span => {
                 if (span.querySelector('.highlight')) {
                     span.textContent = span.textContent;
                 }
@@ -1305,7 +1324,7 @@ const PDFReaderWebView = ({ route }) => {
             }
 
             const searchTerm = query.trim().toLowerCase();
-            const allSpans = document.querySelectorAll('.text-layer span');
+            const allSpans = document.querySelectorAll('.textLayer span');
 
             allSpans.forEach((span, index) => {
                 const text = span.textContent.toLowerCase();
@@ -2170,8 +2189,7 @@ const styles = StyleSheet.create({
     highlightApplyButtonText: {
         color: themeColor5.bgColor(1),
         fontFamily: 'VazirBold',
-        fontSize: 12,
-        fontWeight: 'bold',
+        fontSize: 12, 
     },
     searchContainer: {
         flexDirection: 'row',
