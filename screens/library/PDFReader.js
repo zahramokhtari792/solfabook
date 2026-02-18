@@ -40,6 +40,8 @@ const PDFReader = ({ route }) => {
         axios.post(`${uri}/fetchFiles`, { id: id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
                 setData(res?.data?.file_pdf)
+                console.log(res?.data?.file_pdf);
+                
                 setAudio(res?.data?.file_audio)
             })
             .catch((err) => {

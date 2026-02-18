@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { WebView } from 'react-native-webview'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import makeStyles from '../../styles/NewStyles'
-import { themeColor0, themeColor4, themeColor5, themeColor10 } from '../../theme/Color'
+import { themeColor0, themeColor4, themeColor5 } from '../../theme/Color'
 import BackArrowIcon from '../../assets/svg/BackArrowIcon'
 import SearchIcon from '../../assets/svg/SearchIcon'
 import { useNavigation } from '@react-navigation/native'
@@ -54,9 +54,10 @@ const PDFReaderWebView = ({ route }) => {
     }
 
     // Use provided PDF URL or fallback to sample PDF for testing
-    // const pdfUrl = params?.pdfUrl || 'https://dl.solfabook.com/files/cUUOzJA7XTrc2n6Ca5Egv55hdGJ3WMt093x303vP.pdf';
+    // const pdfUrl = params?.pdfUrl ?? data;
+    
     const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
-    const fileId = params?.id || 'test-pdf';
+    const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
     const navigation = useNavigation();
@@ -97,12 +98,18 @@ const PDFReaderWebView = ({ route }) => {
     const [textSelected, setTextSelected] = useState(false);
     const highlightColors = ['#ffeb3b', '#a5d6a7', '#90caf9', '#f48fb1', '#ce93d8', '#ffcc80', '#80deea', '#e6ee9c'];
 
-    // Load saved highlights and bookmarks from AsyncStorage on mount
+    // Load saved highlights and bookmarks when fileId changes
     useEffect(() => {
+        if (!fileId) return;
         loadHighlights();
         loadBookmarks();
-        fetchFiles()
-    }, []);
+    }, [fileId]);
+
+    // Fetch file URL when id/token available
+    useEffect(() => {
+        if (!params?.id || !userToken) return;
+        fetchFiles();
+    }, [params?.id, userToken]);
 
     // Fetch PDF as base64 to bypass CORS
     useEffect(() => {
@@ -323,7 +330,7 @@ const PDFReaderWebView = ({ route }) => {
     };
 
     // HTML content that loads PDF.js and renders the PDF
-    const htmlContent = `
+    const htmlContent = useMemo(() => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -476,14 +483,6 @@ const PDFReaderWebView = ({ route }) => {
             display: block;
             margin: 0 auto;
         }
-            pointer-events: none;
-        }
-        .drawing-canvas.active {
-            pointer-events: auto;
-            cursor: crosshair;
-        }
-            box-shadow: 0 0 4px rgba(255, 87, 34, 0.8);
-        }
         .highlight-toolbar {
             position: fixed;
             bottom: 20px;
@@ -557,6 +556,94 @@ const PDFReaderWebView = ({ route }) => {
         const highlightModeIndicator = document.getElementById('highlight-mode-indicator');
         let selectedSpans = [];
 
+        function getOffsetWithinSpan(span, container, offset) {
+            if (!span.contains(container)) return null;
+            let currentOffset = 0;
+            const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT, null);
+            let node = walker.nextNode();
+            while (node) {
+                if (node === container) {
+                    return currentOffset + offset;
+                }
+                currentOffset += node.nodeValue.length;
+                node = walker.nextNode();
+            }
+            return null;
+        }
+
+        function getSpanSelectionInfo(span, range) {
+            const spanText = span.textContent || '';
+            if (!spanText) return null;
+            let startOffset = 0;
+            let endOffset = spanText.length;
+
+            if (span.contains(range.startContainer)) {
+                const start = getOffsetWithinSpan(span, range.startContainer, range.startOffset);
+                if (start !== null) startOffset = start;
+            }
+            if (span.contains(range.endContainer)) {
+                const end = getOffsetWithinSpan(span, range.endContainer, range.endOffset);
+                if (end !== null) endOffset = end;
+            }
+
+            if (endOffset <= startOffset) return null;
+
+            return {
+                span,
+                startOffset,
+                endOffset
+            };
+        }
+
+        function renderHighlightsForSpan(span, spanHighlights) {
+            const baseText = span.textContent || '';
+            if (!baseText || !spanHighlights || spanHighlights.length === 0) return;
+
+            const ranges = spanHighlights.map(h => {
+                const start = typeof h.startOffset === 'number' ? h.startOffset : 0;
+                const end = typeof h.endOffset === 'number' ? h.endOffset : baseText.length;
+                return {
+                    start: Math.max(0, Math.min(start, baseText.length)),
+                    end: Math.max(0, Math.min(end, baseText.length)),
+                    color: h.color || highlightColor
+                };
+            }).filter(r => r.end > r.start)
+              .sort((a, b) => (a.start - b.start) || (a.end - b.end));
+
+            if (ranges.length === 0) return;
+
+            const merged = [];
+            ranges.forEach(r => {
+                if (merged.length === 0) {
+                    merged.push(r);
+                    return;
+                }
+                const last = merged[merged.length - 1];
+                if (r.start <= last.end) {
+                    last.end = Math.max(last.end, r.end);
+                } else {
+                    merged.push(r);
+                }
+            });
+
+            span.innerHTML = '';
+            let cursor = 0;
+            merged.forEach(r => {
+                if (r.start > cursor) {
+                    span.appendChild(document.createTextNode(baseText.slice(cursor, r.start)));
+                }
+                const mark = document.createElement('span');
+                mark.className = 'highlight';
+                mark.style.backgroundColor = hexToRgba(r.color, 0.4);
+                mark.textContent = baseText.slice(r.start, r.end);
+                span.appendChild(mark);
+                cursor = r.end;
+            });
+            if (cursor < baseText.length) {
+                span.appendChild(document.createTextNode(baseText.slice(cursor)));
+            }
+        }
+
         // Highlight mode state
         let isHighlightMode = false;
         let highlightColor = '#ffeb3b';
@@ -603,33 +690,34 @@ const PDFReaderWebView = ({ route }) => {
         // Handle click on text span in highlight mode
         function handleSpanClick(span, pageNum) {
             if (!isHighlightMode) return;
-            
+
             const spanIndex = parseInt(span.dataset.index);
-            const text = span.textContent;
-            
-            // Check if already highlighted - toggle off
-            if (span.classList.contains('highlight')) {
-                span.classList.remove('highlight');
-                span.style.backgroundColor = '';
-                
-                // Remove from highlights array
-                highlights = highlights.filter(h => !(h.page === pageNum && h.spanIndex === spanIndex));
+            const spanText = span.textContent || '';
+            const startOffset = 0;
+            const endOffset = spanText.length;
+
+            const existingIndex = highlights.findIndex(h =>
+                h.page === pageNum &&
+                h.spanIndex === spanIndex &&
+                h.startOffset === startOffset &&
+                h.endOffset === endOffset
+            );
+
+            if (existingIndex >= 0) {
+                highlights.splice(existingIndex, 1);
             } else {
-                // Add highlight
-                span.classList.add('highlight');
-                span.style.backgroundColor = highlightColor;
-                
-                // Save highlight data with color
                 const highlightData = {
                     page: pageNum,
-                    text: text,
+                    text: spanText,
                     spanIndex: spanIndex,
+                    startOffset: startOffset,
+                    endOffset: endOffset,
                     color: highlightColor
                 };
                 highlights.push(highlightData);
             }
-            
-            // Send highlights to React Native
+
+            applySavedHighlights(pageNum);
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SAVE_HIGHLIGHTS',
                 highlights: highlights
@@ -639,26 +727,25 @@ const PDFReaderWebView = ({ route }) => {
         // Track selection
         document.addEventListener('selectionchange', () => {
             if (isHighlightMode) return; // Don't show selection toolbar in highlight mode
-            
+
             const selection = window.getSelection();
             const hasSelection = selection && selection.toString().trim().length > 0;
-            
+
             if (hasSelection) {
                 highlightBtn.classList.add('visible');
-                // Track which spans are selected
                 selectedSpans = [];
                 const range = selection.getRangeAt(0);
                 document.querySelectorAll('.text-layer span').forEach(span => {
                     if (selection.containsNode(span, true) || range.intersectsNode(span)) {
-                        selectedSpans.push(span);
+                        const info = getSpanSelectionInfo(span, range);
+                        if (info) selectedSpans.push(info);
                     }
                 });
             } else {
                 highlightBtn.classList.remove('visible');
                 selectedSpans = [];
             }
-            
-            // Notify React Native about selection state
+
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'TEXT_SELECTED',
                 hasSelection: hasSelection
@@ -668,53 +755,57 @@ const PDFReaderWebView = ({ route }) => {
         // Highlight the selected text
         function highlightSelection() {
             if (selectedSpans.length === 0) {
-                // Fallback: try to get from current selection
                 const selection = window.getSelection();
                 if (!selection || selection.rangeCount === 0) return;
-                
+
                 const range = selection.getRangeAt(0);
                 document.querySelectorAll('.text-layer span').forEach(span => {
                     if (selection.containsNode(span, true) || range.intersectsNode(span)) {
-                        selectedSpans.push(span);
+                        const info = getSpanSelectionInfo(span, range);
+                        if (info) selectedSpans.push(info);
                     }
                 });
             }
-            
+
             if (selectedSpans.length === 0) return;
 
-            selectedSpans.forEach(span => {
-                span.classList.add('highlight');
-                span.style.backgroundColor = hexToRgba(highlightColor, 0.4);
-                
-                // Save highlight data with color
+            selectedSpans.forEach(info => {
+                const span = info.span;
                 const pageWrapper = span.closest('.page-wrapper');
                 const pageNum = pageWrapper ? pageWrapper.dataset.page : 0;
                 const spanIndex = span.dataset.index || Array.from(span.parentNode.children).indexOf(span);
+                const spanText = span.textContent || '';
+                const startOffset = info.startOffset;
+                const endOffset = info.endOffset;
+                const selectedText = spanText.slice(startOffset, endOffset);
+
                 const highlightData = {
                     page: parseInt(pageNum),
-                    text: span.textContent,
+                    text: selectedText,
                     spanIndex: parseInt(spanIndex),
+                    startOffset: startOffset,
+                    endOffset: endOffset,
                     color: highlightColor
                 };
-                
-                // Check if not already saved
-                const exists = highlights.find(h => 
-                    h.page === highlightData.page && 
-                    h.spanIndex === highlightData.spanIndex
+
+                const exists = highlights.find(h =>
+                    h.page === highlightData.page &&
+                    h.spanIndex === highlightData.spanIndex &&
+                    h.startOffset === highlightData.startOffset &&
+                    h.endOffset === highlightData.endOffset
                 );
-                
+
                 if (!exists) {
                     highlights.push(highlightData);
                 }
             });
 
-            // Send highlights to React Native
+            applySavedHighlights(currentPageNum);
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SAVE_HIGHLIGHTS',
                 highlights: highlights
             }));
 
-            // Clear selection
             const selection = window.getSelection();
             if (selection) selection.removeAllRanges();
             selectedSpans = [];
@@ -728,25 +819,24 @@ const PDFReaderWebView = ({ route }) => {
             if (!pageWrapper) return;
 
             const spans = pageWrapper.querySelectorAll('.text-layer span');
-            pageHighlights.forEach(h => {
-                // Find by data-index attribute first
-                let span = pageWrapper.querySelector('.text-layer span[data-index="' + h.spanIndex + '"]');
-                if (!span && spans[h.spanIndex]) {
-                    span = spans[h.spanIndex];
+            spans.forEach(span => {
+                if (span.querySelector('.highlight')) {
+                    span.textContent = span.textContent;
                 }
-                if (span) {
-                    span.classList.add('highlight');
-                    // Apply saved color with opacity or default
-                    const color = h.color || '#ffeb3b';
-                    span.style.backgroundColor = hexToRgba(color, 0.4);
-                    
-                    // Add click handler for highlight mode
-                    span.addEventListener('click', function(e) {
-                        if (isHighlightMode) {
-                            e.stopPropagation();
-                            handleSpanClick(span, pageNum);
-                        }
-                    });
+            });
+
+            const highlightsBySpan = {};
+            pageHighlights.forEach(h => {
+                const key = String(h.spanIndex);
+                if (!highlightsBySpan[key]) highlightsBySpan[key] = [];
+                highlightsBySpan[key].push(h);
+            });
+
+            spans.forEach((span, index) => {
+                const spanIndex = span.dataset.index || index;
+                const spanHighlights = highlightsBySpan[String(spanIndex)];
+                if (spanHighlights && spanHighlights.length > 0) {
+                    renderHighlightsForSpan(span, spanHighlights);
                 }
             });
         }
@@ -1140,8 +1230,10 @@ const PDFReaderWebView = ({ route }) => {
         // Function to clear all highlights (called from React Native)
         function clearAllHighlights() {
             highlights = [];
-            document.querySelectorAll('.highlight').forEach(el => {
-                el.classList.remove('highlight');
+            document.querySelectorAll('.text-layer span').forEach(span => {
+                if (span.querySelector('.highlight')) {
+                    span.textContent = span.textContent;
+                }
             });
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SAVE_HIGHLIGHTS',
@@ -1323,7 +1415,9 @@ const PDFReaderWebView = ({ route }) => {
     </script>
 </body>
 </html>
-    `;
+    `, [pdfUrl, highlights]);
+
+    const webViewSource = useMemo(() => ({ html: htmlContent }), [htmlContent]);
 
     // Handle messages from WebView
     const onMessage = (event) => {
@@ -1611,7 +1705,7 @@ const PDFReaderWebView = ({ route }) => {
                 {pdfBase64 && (
                     <WebView
                         ref={webViewRef}
-                        source={{ html: htmlContent }}
+                        source={webViewSource}
                         style={{ flex: 1, backgroundColor: themeColor5.bgColor(1) }}
                         onMessage={onMessage}
                         onError={onWebViewError}

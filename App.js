@@ -66,6 +66,7 @@ import { useVersionCheckContext, VersionCheckProvider } from './context/VersionC
 import AlbumCart from './screens/albums/AlbumCart';
 import ar from './assets/locales/ar.json';
 import ckb from './assets/locales/ckb.json';
+import PDFReaderScreen from './screens/library/PDFReaderScreen';
 
 function VersionCheckModal() {
   const { updateInfo, showModal, closeModal } = useVersionCheckContext();
@@ -150,6 +151,7 @@ export default function App() {
                           <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
                           <Stack.Screen name='PDFReader' component={PDFReader} options={{ headerShown: false }} />
                           <Stack.Screen name='PDFReaderWebView' component={PDFReaderWebView} options={{ headerShown: false }} />
+                          <Stack.Screen name='PDFReaderScreen' component={PDFReaderScreen} options={{ headerShown: false }} />
                           <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
                           <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
                           <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
