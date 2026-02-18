@@ -1,11 +1,9 @@
-import { StyleSheet, View, ActivityIndicator, TouchableOpacity, Text, TextInput, Keyboard, Modal, Dimensions, ScrollView } from 'react-native'
+﻿import { View, ActivityIndicator, TouchableOpacity, Text, Keyboard } from 'react-native'
 import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { WebView } from 'react-native-webview'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import makeStyles from '../../styles/NewStyles'
-import { themeColor0, themeColor4, themeColor5 } from '../../theme/Color'
-import BackArrowIcon from '../../assets/svg/BackArrowIcon'
-import SearchIcon from '../../assets/svg/SearchIcon'
+import { themeColor0, themeColor5 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import axios from 'axios'
@@ -14,9 +12,11 @@ import { useSelector } from 'react-redux'
 import { handleError } from '../../helpers/Common'
 import * as FileSystem from 'expo-file-system'
 import { useTranslation } from 'react-i18next'
-import { Ionicons } from '@expo/vector-icons'
-
-const { width: deviceWidth } = Dimensions.get('window');
+import PdfReaderHeader from './pdfReaderWebView/components/PdfReaderHeader';
+import PdfSearchBar from './pdfReaderWebView/components/PdfSearchBar';
+import PdfBottomNav from './pdfReaderWebView/components/PdfBottomNav';
+import PdfModals from './pdfReaderWebView/components/PdfModals';
+import { styles } from './pdfReaderWebView/styles';
 
 // Chunk size for base64 transfer (500KB per chunk to avoid memory issues)
 const CHUNK_SIZE = 500 * 1024;
@@ -437,6 +437,20 @@ const PDFReaderWebView = ({ route }) => {
             line-height: 1.0;
             -webkit-user-select: text;
             user-select: text;
+            z-index: 2;
+        }
+        .highlight-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .highlight-rect {
+            position: absolute;
+            border-radius: 2px;
         }
         .textLayer > span {
             color: transparent;
@@ -600,6 +614,115 @@ const PDFReaderWebView = ({ route }) => {
             return null;
         }
 
+        function getTopLevelTextSpans() {
+            const layer = document.querySelector('.textLayer');
+            if (!layer) return [];
+            return Array.from(layer.children).filter(el => el.tagName === 'SPAN');
+        }
+
+        function getRangeRects(range) {
+            return Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
+        }
+
+        function spanIntersectsRange(spanRect, rangeRects, minVerticalRatio) {
+            const spanHeight = Math.max(1, spanRect.height);
+            for (let i = 0; i < rangeRects.length; i++) {
+                const r = rangeRects[i];
+                const overlapTop = Math.max(spanRect.top, r.top);
+                const overlapBottom = Math.min(spanRect.bottom, r.bottom);
+                const overlap = Math.max(0, overlapBottom - overlapTop);
+                if (overlap / spanHeight >= minVerticalRatio) {
+                    // also require some horizontal overlap
+                    if (!(spanRect.right <= r.left || spanRect.left >= r.right)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function getRectsRelativeToPage(range, pageWrapper) {
+            const wrapperRect = pageWrapper.getBoundingClientRect();
+            return Array.from(range.getClientRects())
+                .filter(r => r.width > 0 && r.height > 0)
+                .map(r => ({
+                    x: r.left - wrapperRect.left,
+                    y: r.top - wrapperRect.top,
+                    width: r.width,
+                    height: r.height
+                }));
+        }
+
+        function drawHighlightRects(rects, color, highlightLayer) {
+            rects.forEach(r => {
+                const rect = document.createElement('div');
+                rect.className = 'highlight-rect';
+                rect.style.backgroundColor = hexToRgba(color || highlightColor, 0.4);
+                rect.style.left = r.x + 'px';
+                rect.style.top = r.y + 'px';
+                rect.style.width = r.width + 'px';
+                rect.style.height = r.height + 'px';
+                highlightLayer.appendChild(rect);
+            });
+        }
+
+        function rangesIntersect(a, b) {
+            if (a.compareBoundaryPoints(Range.END_TO_START, b) <= 0) return false;
+            if (a.compareBoundaryPoints(Range.START_TO_END, b) >= 0) return false;
+            return true;
+        }
+
+        function getIntersectionRange(a, b) {
+            if (!rangesIntersect(a, b)) return null;
+            const r = document.createRange();
+            if (a.compareBoundaryPoints(Range.START_TO_START, b) > 0) {
+                r.setStart(a.startContainer, a.startOffset);
+            } else {
+                r.setStart(b.startContainer, b.startOffset);
+            }
+            if (a.compareBoundaryPoints(Range.END_TO_END, b) < 0) {
+                r.setEnd(a.endContainer, a.endOffset);
+            } else {
+                r.setEnd(b.endContainer, b.endOffset);
+            }
+            if (r.collapsed) return null;
+            return r;
+        }
+
+        function getTextRectsFromSelection(range, textLayer, pageWrapper) {
+            const wrapperRect = pageWrapper.getBoundingClientRect();
+            const rects = [];
+            const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT, null);
+            let node = walker.nextNode();
+            while (node) {
+                const nodeRange = document.createRange();
+                nodeRange.selectNodeContents(node);
+                const intersection = getIntersectionRange(range, nodeRange);
+                if (intersection) {
+                    const r = Array.from(intersection.getClientRects())
+                        .map(rc => {
+                            const left = Math.max(rc.left, wrapperRect.left);
+                            const right = Math.min(rc.right, wrapperRect.right);
+                            const top = Math.max(rc.top, wrapperRect.top);
+                            const bottom = Math.min(rc.bottom, wrapperRect.bottom);
+                            const width = right - left;
+                            const height = bottom - top;
+                            if (width <= 0 || height <= 0) return null;
+                            return {
+                                x: left - wrapperRect.left,
+                                y: top - wrapperRect.top,
+                                width,
+                                height
+                            };
+                        })
+                        .filter(Boolean);
+                    rects.push(...r);
+                }
+                node = walker.nextNode();
+            }
+            return rects;
+        }
+
 
         function getSpanSelectionInfo(span, range) {
             const spanText = span.textContent || '';
@@ -625,53 +748,36 @@ const PDFReaderWebView = ({ route }) => {
             };
         }
 
-        function renderHighlightsForSpan(span, spanHighlights) {
+        function renderHighlightsForSpan(span, spanHighlights, highlightLayer, pageWrapper) {
             const baseText = span.textContent || '';
             if (!baseText || !spanHighlights || spanHighlights.length === 0) return;
+            if (!span.firstChild || !highlightLayer) return;
 
-            const ranges = spanHighlights.map(h => {
+            const wrapperRect = pageWrapper.getBoundingClientRect();
+
+            spanHighlights.forEach(h => {
                 const start = typeof h.startOffset === 'number' ? h.startOffset : 0;
                 const end = typeof h.endOffset === 'number' ? h.endOffset : baseText.length;
-                return {
-                    start: Math.max(0, Math.min(start, baseText.length)),
-                    end: Math.max(0, Math.min(end, baseText.length)),
-                    color: h.color || highlightColor
-                };
-            }).filter(r => r.end > r.start)
-              .sort((a, b) => (a.start - b.start) || (a.end - b.end));
+                const safeStart = Math.max(0, Math.min(start, baseText.length));
+                const safeEnd = Math.max(0, Math.min(end, baseText.length));
+                if (safeEnd <= safeStart) return;
 
-            if (ranges.length === 0) return;
+                const range = document.createRange();
+                range.setStart(span.firstChild, safeStart);
+                range.setEnd(span.firstChild, safeEnd);
 
-            const merged = [];
-            ranges.forEach(r => {
-                if (merged.length === 0) {
-                    merged.push(r);
-                    return;
-                }
-                const last = merged[merged.length - 1];
-                if (r.start <= last.end) {
-                    last.end = Math.max(last.end, r.end);
-                } else {
-                    merged.push(r);
-                }
+                const rects = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
+                rects.forEach(r => {
+                    const rect = document.createElement('div');
+                    rect.className = 'highlight-rect';
+                    rect.style.backgroundColor = hexToRgba(h.color || highlightColor, 0.4);
+                    rect.style.left = (r.left - wrapperRect.left) + 'px';
+                    rect.style.top = (r.top - wrapperRect.top) + 'px';
+                    rect.style.width = r.width + 'px';
+                    rect.style.height = r.height + 'px';
+                    highlightLayer.appendChild(rect);
+                });
             });
-
-            span.innerHTML = '';
-            let cursor = 0;
-            merged.forEach(r => {
-                if (r.start > cursor) {
-                    span.appendChild(document.createTextNode(baseText.slice(cursor, r.start)));
-                }
-                const mark = document.createElement('span');
-                mark.className = 'highlight';
-                mark.style.backgroundColor = hexToRgba(r.color, 0.4);
-                mark.textContent = baseText.slice(r.start, r.end);
-                span.appendChild(mark);
-                cursor = r.end;
-            });
-            if (cursor < baseText.length) {
-                span.appendChild(document.createTextNode(baseText.slice(cursor)));
-            }
         }
 
         // Highlight mode state
@@ -780,20 +886,27 @@ const PDFReaderWebView = ({ route }) => {
             const existingIndex = highlights.findIndex(h =>
                 h.page === pageNum &&
                 h.spanIndex === spanIndex &&
-                h.startOffset === startOffset &&
-                h.endOffset === endOffset
+                h.source === 'span'
             );
 
             if (existingIndex >= 0) {
                 highlights.splice(existingIndex, 1);
             } else {
+                if (!span.firstChild) return;
+                const pageWrapper = span.closest('.page-wrapper');
+                if (!pageWrapper) return;
+                const range = document.createRange();
+                range.setStart(span.firstChild, startOffset);
+                range.setEnd(span.firstChild, endOffset);
+                const rects = getRectsRelativeToPage(range, pageWrapper);
+                if (!rects.length) return;
                 const highlightData = {
                     page: pageNum,
                     text: spanText,
                     spanIndex: spanIndex,
-                    startOffset: startOffset,
-                    endOffset: endOffset,
-                    color: highlightColor
+                    rects: rects,
+                    color: highlightColor,
+                    source: 'span'
                 };
                 highlights.push(highlightData);
             }
@@ -810,7 +923,15 @@ const PDFReaderWebView = ({ route }) => {
             if (isHighlightMode) return; // Don't show selection toolbar in highlight mode
 
             const selection = window.getSelection();
-            const hasSelection = selection && selection.toString().trim().length > 0;
+            let hasSelection = selection && selection.toString().trim().length > 0;
+            if (hasSelection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const layer = document.querySelector('.textLayer');
+                const inTextLayer = layer && layer.contains(range.commonAncestorContainer);
+                if (!inTextLayer) {
+                    hasSelection = false;
+                }
+            }
 
             if (hasSelection) {
                 selectedSpans = [];
@@ -826,51 +947,26 @@ const PDFReaderWebView = ({ route }) => {
 
         // Highlight the selected text
         function highlightSelection() {
-            if (selectedSpans.length === 0) {
-                const selection = window.getSelection();
-                if (!selection || selection.rangeCount === 0) return;
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0) return;
+            const range = selection.getRangeAt(0);
+            const layer = document.querySelector('.textLayer');
+            if (!layer || !layer.contains(range.commonAncestorContainer)) return;
+            const pageWrapper = layer.closest('.page-wrapper');
+            if (!pageWrapper) return;
 
-                const range = selection.getRangeAt(0);
-                document.querySelectorAll('.textLayer span').forEach(span => {
-                    if (selection.containsNode(span, true) || range.intersectsNode(span)) {
-                        const info = getSpanSelectionInfo(span, range);
-                        if (info) selectedSpans.push(info);
-                    }
-                });
-            }
+            const rects = getTextRectsFromSelection(range, layer, pageWrapper);
+            const selectedText = selection.toString().trim();
+            if (!rects.length || !selectedText) return;
 
-            if (selectedSpans.length === 0) return;
+            const highlightData = {
+                page: currentPageNum,
+                text: selectedText,
+                rects: rects,
+                color: highlightColor
+            };
 
-            selectedSpans.forEach(info => {
-                const span = info.span;
-                const pageWrapper = span.closest('.page-wrapper');
-                const pageNum = pageWrapper ? pageWrapper.dataset.page : 0;
-                const spanIndex = span.dataset.index || Array.from(span.parentNode.children).indexOf(span);
-                const spanText = span.textContent || '';
-                const startOffset = info.startOffset;
-                const endOffset = info.endOffset;
-                const selectedText = spanText.slice(startOffset, endOffset);
-
-                const highlightData = {
-                    page: parseInt(pageNum),
-                    text: selectedText,
-                    spanIndex: parseInt(spanIndex),
-                    startOffset: startOffset,
-                    endOffset: endOffset,
-                    color: highlightColor
-                };
-
-                const exists = highlights.find(h =>
-                    h.page === highlightData.page &&
-                    h.spanIndex === highlightData.spanIndex &&
-                    h.startOffset === highlightData.startOffset &&
-                    h.endOffset === highlightData.endOffset
-                );
-
-                if (!exists) {
-                    highlights.push(highlightData);
-                }
-            });
+            highlights.push(highlightData);
 
             applySavedHighlights(currentPageNum);
             window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -878,7 +974,6 @@ const PDFReaderWebView = ({ route }) => {
                 highlights: highlights
             }));
 
-            const selection = window.getSelection();
             if (selection) selection.removeAllRanges();
             selectedSpans = [];
         }
@@ -889,25 +984,30 @@ const PDFReaderWebView = ({ route }) => {
             const pageWrapper = document.querySelector('.page-wrapper');
             if (!pageWrapper) return;
 
-            const spans = pageWrapper.querySelectorAll('.textLayer span');
-            spans.forEach(span => {
-                if (span.querySelector('.highlight')) {
-                    span.textContent = span.textContent;
-                }
-            });
+            const highlightLayer = pageWrapper.querySelector('.highlight-layer');
+            if (!highlightLayer) return;
+            highlightLayer.innerHTML = '';
 
-            const highlightsBySpan = {};
             pageHighlights.forEach(h => {
-                const key = String(h.spanIndex);
-                if (!highlightsBySpan[key]) highlightsBySpan[key] = [];
-                highlightsBySpan[key].push(h);
-            });
+                if (h.rects && h.rects.length > 0) {
+                    drawHighlightRects(h.rects, h.color, highlightLayer);
+                    return;
+                }
 
-            spans.forEach((span, index) => {
-                const spanIndex = span.dataset.index || index;
-                const spanHighlights = highlightsBySpan[String(spanIndex)];
-                if (spanHighlights && spanHighlights.length > 0) {
-                    renderHighlightsForSpan(span, spanHighlights);
+                // Backward compatibility: convert old spanIndex/offset highlights to rects
+                if (h.spanIndex != null) {
+                    const span = pageWrapper.querySelector('.textLayer span[data-index="' + h.spanIndex + '"]');
+                    if (!span || !span.firstChild) return;
+                    const start = typeof h.startOffset === 'number' ? h.startOffset : 0;
+                    const end = typeof h.endOffset === 'number' ? h.endOffset : span.textContent.length;
+                    if (end <= start) return;
+                    const range = document.createRange();
+                    range.setStart(span.firstChild, start);
+                    range.setEnd(span.firstChild, end);
+                    const rects = getRectsRelativeToPage(range, pageWrapper);
+                    if (rects.length > 0) {
+                        drawHighlightRects(rects, h.color, highlightLayer);
+                    }
                 }
             });
         }
@@ -973,6 +1073,12 @@ const PDFReaderWebView = ({ route }) => {
             textLayer.style.width = viewportCss.width + 'px';
             textLayer.style.height = viewportCss.height + 'px';
             pageWrapper.appendChild(textLayer);
+
+            const highlightLayer = document.createElement('div');
+            highlightLayer.className = 'highlight-layer';
+            highlightLayer.style.width = viewportCss.width + 'px';
+            highlightLayer.style.height = viewportCss.height + 'px';
+            pageWrapper.appendChild(highlightLayer);
 
             // Create drawing canvas
             const drawingCanvas = document.createElement('canvas');
@@ -1284,11 +1390,11 @@ const PDFReaderWebView = ({ route }) => {
         // Function to clear all highlights (called from React Native)
         function clearAllHighlights() {
             highlights = [];
-            document.querySelectorAll('.textLayer span').forEach(span => {
-                if (span.querySelector('.highlight')) {
-                    span.textContent = span.textContent;
-                }
-            });
+            const pageWrapper = document.querySelector('.page-wrapper');
+            if (pageWrapper) {
+                const highlightLayer = pageWrapper.querySelector('.highlight-layer');
+                if (highlightLayer) highlightLayer.innerHTML = '';
+            }
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SAVE_HIGHLIGHTS',
                 highlights: []
@@ -1625,126 +1731,40 @@ const PDFReaderWebView = ({ route }) => {
 
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
-            {/* Header */}
-            <View style={[styles.header, NewStyles.rowWrapper]}>
-                <View style={[NewStyles.row, {flex:1, flexWrap:'wrap'}]}>
-                    {/* Drawing Toggle Button */}
-                    <TouchableOpacity
-                        style={[styles.iconButton, drawingMode && styles.iconButtonActive]}
-                        onPress={toggleDrawingMode}
-                    >
-                        <Ionicons name="pencil" size={18} color={themeColor0.bgColor(1)} />
-                    </TouchableOpacity>
+            <PdfReaderHeader
+                NewStyles={NewStyles}
+                styles={styles}
+                drawingMode={drawingMode}
+                drawingColor={drawingColor}
+                onToggleDrawingMode={toggleDrawingMode}
+                onOpenDrawingColorPicker={() => setShowColorPicker(true)}
+                onUndoDrawing={undoDrawing}
+                onClearAllDrawings={clearAllDrawings}
+                textSelected={textSelected}
+                onApplyHighlight={applyHighlight}
+                highlightColor={highlightColor}
+                onOpenHighlightColorPicker={() => setShowHighlightColorPicker(true)}
+                hasHighlights={highlights.length > 0}
+                onOpenHighlightsModal={() => setShowHighlightsModal(true)}
+                onToggleSearch={() => setShowSearch(!showSearch)}
+                onClearHighlights={clearHighlights}
+                isBookmarked={isCurrentPageBookmarked()}
+                onToggleBookmark={() => toggleBookmark()}
+                onBack={() => navigation.goBack()}
+            />
 
-                    {/* Drawing Controls - Only show when drawing mode is active */}
-                    {drawingMode && (
-                        <>
-                            <TouchableOpacity
-                                style={[styles.colorPickerBtn, { backgroundColor: drawingColor }]}
-                                onPress={() => setShowColorPicker(true)}
-                            />
-                            <TouchableOpacity style={styles.iconButton} onPress={undoDrawing}>
-                                <Ionicons name="arrow-undo" size={24} color={themeColor0.bgColor(1)} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.iconButton} onPress={clearAllDrawings}>
-                                <Ionicons name="trash" size={24} color={themeColor0.bgColor(1)} />
-                            </TouchableOpacity>
-                        </>
-                    )}
-
-                    {/* Apply Highlight Button - Shows when text is selected */}
-                    {textSelected && (
-                        <TouchableOpacity
-                            style={[styles.highlightApplyButton, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}
-                            onPress={applyHighlight}
-                        >
-                            <Ionicons name="brush" size={14} color={themeColor5.bgColor(1)} />
-                            <Text style={styles.highlightApplyButtonText}>هایلایت</Text>
-                        </TouchableOpacity>
-                    )}
-
-                    {/* Highlight Color Picker Button */}
-                    <TouchableOpacity
-                        style={[styles.colorPickerBtn, { backgroundColor: highlightColor }]}
-                        onPress={() => setShowHighlightColorPicker(true)}
-                    />
-
-                    {/* View Highlights Button */}
-                    {highlights.length > 0 && (
-                        <TouchableOpacity
-                            style={styles.iconButton}
-                            onPress={() => setShowHighlightsModal(true)}
-                        >
-                            <Ionicons name="clipboard-outline" size={24} color={themeColor0.bgColor(1)} />
-                        </TouchableOpacity>
-                    )}
-
-                    <TouchableOpacity style={styles.iconButton} onPress={() => setShowSearch(!showSearch)}>
-                        <SearchIcon color={themeColor0.bgColor(1)} />
-                    </TouchableOpacity>
-                    {highlights.length > 0 && (
-                        <TouchableOpacity style={styles.clearButton} onPress={clearHighlights}>
-                            <Text style={styles.clearButtonText}>پاک کردن</Text>
-                        </TouchableOpacity>
-                    )}
-                    <TouchableOpacity
-                        style={[styles.navBtn, isCurrentPageBookmarked() && styles.bookmarkActive, {backgroundColor: themeColor0.bgColor(0)}]}
-                        onPress={() => toggleBookmark()}
-                    >
-                        <Ionicons
-                            name={isCurrentPageBookmarked() ? 'bookmark' : 'bookmark-outline'}
-                            size={24}
-                            color={themeColor0.bgColor(1)}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <BackArrowIcon color={themeColor0.bgColor(1)} />
-                </TouchableOpacity>
-            </View>
-
-            {/* Search Bar */}
             {showSearch && (
-                <View style={styles.searchContainer}>
-                    <View style={styles.searchInputWrapper}>
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="جستجو در PDF..."
-                            placeholderTextColor={themeColor0.bgColor(0.5)}
-                            value={searchQuery}
-                            onChangeText={handleSearch}
-                            autoFocus={true}
-                            returnKeyType="search"
-                        />
-                        {searchQuery.length > 0 && (
-                            <TouchableOpacity style={styles.clearSearchBtn} onPress={() => handleSearch('')}>
-                                <Text style={{ color: themeColor0.bgColor(1), fontSize: 18 }}>×</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-
-                    {searchResultCount > 0 && (
-                        <View style={styles.searchNavigation}>
-                            <Text style={styles.searchResultText}>
-                                {currentSearchIndex} از {searchResultCount}
-                            </Text>
-                            <TouchableOpacity style={styles.navButton} onPress={handlePrevResult}>
-                                <Ionicons name="chevron-up" size={12} color={themeColor0.bgColor(1)} />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.navButton} onPress={handleNextResult}>
-                                <Ionicons name="chevron-down" size={12} color={themeColor0.bgColor(1)} />
-                            </TouchableOpacity>
-                        </View>
-                    )}
-
-                    {searchQuery.length > 0 && searchResultCount === 0 && (
-                        <Text style={styles.noResultText}>نتیجه‌ای یافت نشد</Text>
-                    )}
-
-                    <TouchableOpacity style={styles.closeSearchBtn} onPress={handleCloseSearch}>
-                        <Text style={styles.closeSearchText}>بستن</Text>
-                    </TouchableOpacity>
-                </View>
+                <PdfSearchBar
+                    styles={styles}
+                    searchQuery={searchQuery}
+                    onChangeSearch={handleSearch}
+                    onClearSearch={() => handleSearch('')}
+                    searchResultCount={searchResultCount}
+                    currentSearchIndex={currentSearchIndex}
+                    onPrevResult={handlePrevResult}
+                    onNextResult={handleNextResult}
+                    onCloseSearch={handleCloseSearch}
+                />
             )}
 
             {/* WebView */}
@@ -1815,83 +1835,19 @@ const PDFReaderWebView = ({ route }) => {
                 )}
             </View>
 
-            {/* Bottom Navigation Bar */}
             {totalPages > 0 && !loading && (
-                <View style={styles.bottomNavBar}>
-                    <ScrollView horizontal contentContainerStyle={{ gap: 15, paddingHorizontal: 20, }} showsHorizontalScrollIndicator={false}>
-                        {/* Bookmark Button */}
-                       
-
-                        {/* First Page Button */}
-                        <TouchableOpacity
-                            style={[styles.navBtn, currentPage === 1 && styles.navBtnDisabled]}
-                            onPress={handleGoToFirstPage}
-                            disabled={currentPage === 1}
-                        >
-                            <Ionicons
-                                name="play-skip-back"
-                                size={16}
-                                color={currentPage === 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
-                            />
-                        </TouchableOpacity>
-
-                        {/* Previous Page Button */}
-                        <TouchableOpacity
-                            style={[styles.navBtn, currentPage === 1 && styles.navBtnDisabled]}
-                            onPress={handlePrevPage}
-                            disabled={currentPage === 1}
-                        >
-                            <Ionicons
-                                name="chevron-back"
-                                size={16}
-                                color={currentPage === 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
-                            />
-                        </TouchableOpacity>
-
-                        {/* Page Indicator (Tappable) */}
-                        <TouchableOpacity style={styles.pageIndicator} onPress={openPageModal}>
-                            <Text style={styles.pageIndicatorText}>
-                                {currentPage} / {totalPages}
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* Next Page Button */}
-                        <TouchableOpacity
-                            style={[styles.navBtn, currentPage === totalPages && styles.navBtnDisabled]}
-                            onPress={handleNextPage}
-                            disabled={currentPage === totalPages}
-                        >
-                            <Ionicons
-                                name="chevron-forward"
-                                size={16}
-                                color={currentPage === totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
-                            />
-                        </TouchableOpacity>
-
-                        {/* Last Page Button */}
-                        <TouchableOpacity
-                            style={[styles.navBtn, currentPage === totalPages && styles.navBtnDisabled]}
-                            onPress={handleGoToLastPage}
-                            disabled={currentPage === totalPages}
-                        >
-                            <Ionicons
-                                name="play-skip-forward"
-                                size={16}
-                                color={currentPage === totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)}
-                            />
-                        </TouchableOpacity>
-
-                        {/* View Bookmarks Button */}
-                        {bookmarks.length > 0 && (
-                            <TouchableOpacity
-                                style={styles.navBtn}
-                                onPress={() => setShowBookmarksModal(true)}
-                            >
-                                <Ionicons name="bookmarks-outline" size={16} color={themeColor0.bgColor(1)} />
-                            </TouchableOpacity>
-                        )}
-                    </ScrollView>
-                </View>
+                <PdfBottomNav
+                    styles={styles}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onGoFirst={handleGoToFirstPage}
+                    onPrev={handlePrevPage}
+                    onNext={handleNextPage}
+                    onGoLast={handleGoToLastPage}
+                    onOpenPageModal={openPageModal}
+                    bookmarksCount={bookmarks.length}
+                    onOpenBookmarksModal={() => setShowBookmarksModal(true)}
+                />
             )}
 
             {/* Page Scroll Indicator (Side) */}
@@ -1902,643 +1858,42 @@ const PDFReaderWebView = ({ route }) => {
                 </View>
             )}
 
-            {/* Page Number Modal */}
-            <Modal
-                visible={showPageModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowPageModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowPageModal(false)}
-                >
-                    <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>رفتن به صفحه</Text>
-                        <TextInput
-                            style={styles.pageInput}
-                            placeholder={`1 - ${totalPages}`}
-                            placeholderTextColor={themeColor0.bgColor(0.4)}
-                            value={pageInput}
-                            onChangeText={setPageInput}
-                            keyboardType="number-pad"
-                            autoFocus={true}
-                            selectTextOnFocus={true}
-                        />
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity
-                                style={styles.modalCancelBtn}
-                                onPress={() => setShowPageModal(false)}
-                            >
-                                <Text style={styles.modalCancelText}>انصراف</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.modalConfirmBtn}
-                                onPress={() => handleGoToPage(pageInput)}
-                            >
-                                <Text style={styles.modalConfirmText}>برو</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
-
-            {/* Bookmarks Modal */}
-            <Modal
-                visible={showBookmarksModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowBookmarksModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowBookmarksModal(false)}
-                >
-                    <View style={styles.bookmarksModalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>صفحات نشان‌شده</Text>
-
-                        {bookmarks.length === 0 ? (
-                            <Text style={styles.noBookmarksText}>هیچ صفحه‌ای نشان نشده است</Text>
-                        ) : (
-                            <ScrollView style={styles.bookmarksList}>
-                                {bookmarks.sort((a, b) => a - b).map((pageNum) => (
-                                    <TouchableOpacity
-                                        key={pageNum}
-                                        style={[
-                                            styles.bookmarkItem,
-                                            currentPage === pageNum && styles.bookmarkItemActive
-                                        ]}
-                                        onPress={() => goToBookmark(pageNum)}
-                                    >
-                                        <Text style={styles.bookmarkItemText}>
-                                            📄 صفحه {pageNum}
-                                        </Text>
-                                        <TouchableOpacity
-                                            style={styles.removeBookmarkBtn}
-                                            onPress={() => toggleBookmark(pageNum)}
-                                        >
-                                            <Ionicons name="close" size={16} color={themeColor4.bgColor(0.6)} />
-                                        </TouchableOpacity>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        )}
-
-                        <TouchableOpacity
-                            style={styles.modalCancelBtn}
-                            onPress={() => setShowBookmarksModal(false)}
-                        >
-                            <Text style={styles.modalCancelText}>بستن</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
-
-            {/* Color Picker Modal */}
-            <Modal
-                visible={showColorPicker}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowColorPicker(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowColorPicker(false)}
-                >
-                    <View style={styles.colorPickerModalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>انتخاب رنگ</Text>
-                        <View style={styles.colorGrid}>
-                            {drawingColors.map((color) => (
-                                <TouchableOpacity
-                                    key={color}
-                                    style={[
-                                        styles.colorOption,
-                                        { backgroundColor: color },
-                                        drawingColor === color && styles.colorOptionSelected
-                                    ]}
-                                    onPress={() => changeDrawingColor(color)}
-                                />
-                            ))}
-                        </View>
-                        <TouchableOpacity
-                            style={styles.modalCancelBtn}
-                            onPress={() => setShowColorPicker(false)}
-                        >
-                            <Text style={styles.modalCancelText}>بستن</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
-
-            {/* Highlight Color Picker Modal */}
-            <Modal
-                visible={showHighlightColorPicker}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowHighlightColorPicker(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowHighlightColorPicker(false)}
-                >
-                    <View style={styles.colorPickerModalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>انتخاب رنگ هایلایت</Text>
-                        <View style={styles.colorGrid}>
-                            {highlightColors.map((color) => (
-                                <TouchableOpacity
-                                    key={color}
-                                    style={[
-                                        styles.colorOption,
-                                        { backgroundColor: color },
-                                        highlightColor === color && styles.colorOptionSelected
-                                    ]}
-                                    onPress={() => changeHighlightColor(color)}
-                                />
-                            ))}
-                        </View>
-                        <TouchableOpacity
-                            style={styles.modalCancelBtn}
-                            onPress={() => setShowHighlightColorPicker(false)}
-                        >
-                            <Text style={styles.modalCancelText}>بستن</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
-
-            {/* Highlights List Modal */}
-            <Modal
-                visible={showHighlightsModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowHighlightsModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowHighlightsModal(false)}
-                >
-                    <View style={styles.highlightsModalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>هایلایت‌های ذخیره شده</Text>
-
-                        {highlights.length === 0 ? (
-                            <Text style={styles.noBookmarksText}>هیچ هایلایتی وجود ندارد</Text>
-                        ) : (
-                            <ScrollView style={styles.bookmarksList}>
-                                {highlights.map((highlight, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={[
-                                            styles.highlightItem,
-                                            { borderLeftColor: highlight.color || '#ffeb3b' }
-                                        ]}
-                                        onPress={() => goToHighlight(highlight)}
-                                    >
-                                        <View style={styles.highlightItemContent}>
-                                            <Text style={styles.highlightItemPage}>
-                                                صفحه {highlight.page}
-                                            </Text>
-                                            <Text style={styles.highlightItemText} numberOfLines={2}>
-                                                {highlight.text}
-                                            </Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            style={styles.removeBookmarkBtn}
-                                            onPress={() => removeHighlight(index)}
-                                        >
-                                            <Ionicons name="close" size={16} color={themeColor4.bgColor(0.6)} />
-                                        </TouchableOpacity>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        )}
-
-                        <View style={styles.modalButtons}>
-                            {highlights.length > 0 && (
-                                <TouchableOpacity
-                                    style={[styles.modalCancelBtn, { backgroundColor: '#ffdddd' }]}
-                                    onPress={clearHighlights}
-                                >
-                                    <Text style={[styles.modalCancelText, { color: '#cc0000' }]}>پاک کردن همه</Text>
-                                </TouchableOpacity>
-                            )}
-                            <TouchableOpacity
-                                style={styles.modalCancelBtn}
-                                onPress={() => setShowHighlightsModal(false)}
-                            >
-                                <Text style={styles.modalCancelText}>بستن</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
+            <PdfModals
+                styles={styles}
+                NewStyles={NewStyles}
+                showPageModal={showPageModal}
+                onClosePageModal={() => setShowPageModal(false)}
+                pageInput={pageInput}
+                onChangePageInput={setPageInput}
+                totalPages={totalPages}
+                onConfirmPage={() => handleGoToPage(pageInput)}
+                showBookmarksModal={showBookmarksModal}
+                bookmarks={bookmarks}
+                currentPage={currentPage}
+                onGoToBookmark={goToBookmark}
+                onToggleBookmark={toggleBookmark}
+                onCloseBookmarksModal={() => setShowBookmarksModal(false)}
+                showColorPicker={showColorPicker}
+                drawingColors={drawingColors}
+                drawingColor={drawingColor}
+                onSelectDrawingColor={changeDrawingColor}
+                onCloseColorPicker={() => setShowColorPicker(false)}
+                showHighlightColorPicker={showHighlightColorPicker}
+                highlightColors={highlightColors}
+                highlightColor={highlightColor}
+                onSelectHighlightColor={changeHighlightColor}
+                onCloseHighlightColorPicker={() => setShowHighlightColorPicker(false)}
+                showHighlightsModal={showHighlightsModal}
+                highlights={highlights}
+                onGoToHighlight={goToHighlight}
+                onRemoveHighlight={removeHighlight}
+                onClearHighlights={clearHighlights}
+                onCloseHighlightsModal={() => setShowHighlightsModal(false)}
+            />
         </SafeAreaView>
     );
 };
 
 export default PDFReaderWebView;
 
-const styles = StyleSheet.create({
-    header: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: themeColor4.bgColor(0.2),
-    },
-    backButton: {
-        padding: 5,
-    },
-    iconButton: {
-        padding: 8,
-        marginRight: 5,
-    },
-    iconButtonActive: {
-        backgroundColor: themeColor0.bgColor(0.2),
-        borderRadius: 8,
-    },
-    colorPickerBtn: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        marginRight: 5,
-        borderWidth: 2,
-        borderColor: themeColor0.bgColor(0.3),
-    },
-    clearButton: {
-        backgroundColor: themeColor0.bgColor(0.1),
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 15,
-    },
-    clearButtonText: {
-        color: themeColor0.bgColor(1),
-        fontFamily: 'VazirBold',
-        fontSize: 12,
-    },
-    highlightApplyButton: {
-        backgroundColor: themeColor0.bgColor(1),
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 15,
-        marginRight: 5,
-    },
-    highlightApplyButtonText: {
-        color: themeColor5.bgColor(1),
-        fontFamily: 'VazirBold',
-        fontSize: 12, 
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        backgroundColor: themeColor4.bgColor(0.1),
-        borderBottomWidth: 1,
-        borderBottomColor: themeColor4.bgColor(0.2),
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    searchInputWrapper: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: themeColor5.bgColor(1),
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: themeColor0.bgColor(0.3),
-        minWidth: 150,
-    },
-    searchInput: {
-        flex: 1,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        textAlign: 'right',
-        color: themeColor0.bgColor(1),
-    },
-    clearSearchBtn: {
-        padding: 8,
-    },
-    searchNavigation: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-    },
-    searchResultText: {
-        fontFamily: 'VazirBold',
-        fontSize: 12,
-        color: themeColor0.bgColor(1),
-        marginRight: 5,
-    },
-    navButton: {
-        backgroundColor: themeColor0.bgColor(0.1),
-        padding: 6,
-        borderRadius: 4,
-    },
-    navButtonText: {
-        color: themeColor0.bgColor(1),
-        fontSize: 10,
-    },
-    noResultText: {
-        fontFamily: 'VazirBold',
-        fontSize: 12,
-        color: themeColor0.bgColor(0.6),
-    },
-    closeSearchBtn: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-    },
-    closeSearchText: {
-        fontFamily: 'VazirBold',
-        fontSize: 12,
-        color: themeColor0.bgColor(1),
-    },
-    loadingOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: themeColor5.bgColor(0.9),
-        zIndex: 10,
-    },
-    errorOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: themeColor5.bgColor(1),
-        zIndex: 20,
-        paddingHorizontal: 20,
-    },
-    // Bottom Navigation Bar Styles
-    bottomNavBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10,
 
-        backgroundColor: themeColor5.bgColor(1),
-        borderTopWidth: 1,
-        borderTopColor: themeColor4.bgColor(0.2),
-
-    },
-    navBtn: {
-        backgroundColor: themeColor0.bgColor(0.1),
-        padding: 10, 
-        borderRadius: 8,
-    },
-    navBtnDisabled: {
-        backgroundColor: themeColor4.bgColor(0.1),
-    },
-    navBtnText: {
-        color: themeColor0.bgColor(1),
-        fontSize: 16,
-    },
-    navBtnTextDisabled: {
-        color: themeColor4.bgColor(0.5),
-    },
-    pageIndicator: {
-        backgroundColor: themeColor0.bgColor(1),
-        paddingVertical: 8,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        minWidth: 100,
-        alignItems: 'center',
-    },
-    pageIndicatorText: {
-        color: themeColor5.bgColor(1),
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    // Scroll Indicator Styles
-    scrollIndicatorContainer: {
-        position: 'absolute',
-        right: 5,
-        top: '20%',
-        bottom: '20%',
-        width: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    scrollTrack: {
-        width: 4,
-        height: '100%',
-        backgroundColor: themeColor4.bgColor(0.3),
-        borderRadius: 2,
-        position: 'relative',
-    },
-    scrollThumb: {
-        position: 'absolute',
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: themeColor0.bgColor(1),
-        left: -4,
-        marginTop: -6,
-    },
-    scrollPageText: {
-        position: 'absolute',
-        right: 18,
-        backgroundColor: themeColor0.bgColor(0.9),
-        color: themeColor5.bgColor(1),
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-        fontSize: 10,
-        fontFamily: 'VazirBold',
-    },
-    // Page Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: themeColor5.bgColor(1),
-        borderRadius: 15,
-        padding: 25,
-        width: deviceWidth * 0.8,
-        maxWidth: 300,
-        alignItems: 'center',
-    },
-    modalTitle: {
-        fontFamily: 'VazirBold',
-        fontSize: 16,
-        color: themeColor0.bgColor(1),
-        marginBottom: 20,
-    },
-    pageInput: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: themeColor0.bgColor(0.3),
-        borderRadius: 10,
-        paddingHorizontal: 15,
-        paddingVertical: 12,
-        fontSize: 18,
-        textAlign: 'center',
-        fontFamily: 'VazirBold',
-        color: themeColor0.bgColor(1),
-        marginBottom: 20,
-    },
-    modalButtons: {
-        flexDirection: 'row',
-        gap: 15,
-    },
-    modalCancelBtn: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 10,
-        backgroundColor: themeColor4.bgColor(0.2),
-        alignItems: 'center',
-    },
-    modalCancelText: {
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        color: themeColor0.bgColor(0.7),
-    },
-    modalConfirmBtn: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 10,
-        backgroundColor: themeColor0.bgColor(1),
-        alignItems: 'center',
-    },
-    modalConfirmText: {
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        color: themeColor5.bgColor(1),
-        fontWeight: 'bold',
-    },
-    // Bookmark styles
-    bookmarkActive: {
-        backgroundColor: themeColor0.bgColor(0.2),
-    },
-    bookmarkActiveText: {
-        color: themeColor0.bgColor(1),
-    },
-    bookmarksModalContent: {
-        backgroundColor: themeColor5.bgColor(1),
-        borderRadius: 15,
-        padding: 20,
-        width: deviceWidth * 0.85,
-        maxWidth: 350,
-        maxHeight: '70%',
-        alignItems: 'center',
-    },
-    noBookmarksText: {
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        color: themeColor4.bgColor(0.6),
-        textAlign: 'center',
-        paddingVertical: 30,
-    },
-    bookmarksList: {
-        width: '100%',
-        marginBottom: 15,
-    },
-    bookmarkItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        borderRadius: 10,
-        backgroundColor: themeColor4.bgColor(0.1),
-        marginBottom: 8,
-    },
-    bookmarkItemActive: {
-        backgroundColor: themeColor0.bgColor(0.15),
-        borderWidth: 1,
-        borderColor: themeColor0.bgColor(0.3),
-    },
-    bookmarkItemText: {
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        color: themeColor0.bgColor(1),
-    },
-    removeBookmarkBtn: {
-        padding: 5,
-    },
-    removeBookmarkText: {
-        fontSize: 16,
-        color: themeColor4.bgColor(0.6),
-    },
-    // Color Picker styles
-    colorPickerModalContent: {
-        backgroundColor: themeColor5.bgColor(1),
-        borderRadius: 15,
-        padding: 20,
-        width: deviceWidth * 0.8,
-        maxWidth: 300,
-        alignItems: 'center',
-    },
-    colorGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: 15,
-        marginBottom: 20,
-    },
-    colorOption: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        borderWidth: 2,
-        borderColor: themeColor4.bgColor(0.3),
-    },
-    colorOptionSelected: {
-        borderWidth: 3,
-        borderColor: themeColor0.bgColor(1),
-        transform: [{ scale: 1.1 }],
-    },
-    // Highlights Modal styles
-    highlightsModalContent: {
-        backgroundColor: themeColor5.bgColor(1),
-        borderRadius: 15,
-        padding: 20,
-        width: deviceWidth * 0.9,
-        maxWidth: 400,
-        maxHeight: '75%',
-        alignItems: 'center',
-    },
-    highlightItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        borderRadius: 10,
-        backgroundColor: themeColor4.bgColor(0.1),
-        marginBottom: 8,
-        borderLeftWidth: 4,
-    },
-    highlightItemContent: {
-        flex: 1,
-        marginRight: 10,
-    },
-    highlightItemPage: {
-        fontFamily: 'VazirBold',
-        fontSize: 12,
-        color: themeColor0.bgColor(0.7),
-        marginBottom: 4,
-    },
-    highlightItemText: {
-        fontFamily: 'VazirBold',
-        fontSize: 14,
-        color: themeColor0.bgColor(1),
-        textAlign: 'right',
-    },
-});
