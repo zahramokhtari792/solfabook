@@ -866,9 +866,13 @@ const PDFReaderWebView = ({ route }) => {
             
             const page = await pdfDoc.getPage(pageNum);
             
-            // Use lower scale for better performance
-            const scale = Math.min(window.devicePixelRatio, 1.5); // Lower scale
-            const viewport = page.getViewport({ scale });
+            // Fit-to-width (no upscale) with HiDPI rendering
+            const baseViewport = page.getViewport({ scale: 1 });
+            const containerWidth = container.clientWidth || window.innerWidth || baseViewport.width;
+            const fitScale = Math.min(containerWidth / baseViewport.width, 1);
+            const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+            const renderScale = fitScale * dpr;
+            const viewport = page.getViewport({ scale: renderScale });
 
             // Clear container now that we have page data
             container.innerHTML = '';
@@ -877,8 +881,8 @@ const PDFReaderWebView = ({ route }) => {
             const pageWrapper = document.createElement('div');
             pageWrapper.className = 'page-wrapper';
             pageWrapper.dataset.page = pageNum;
-            pageWrapper.style.width = (viewport.width / scale) + 'px';
-            pageWrapper.style.height = (viewport.height / scale) + 'px';
+            pageWrapper.style.width = (viewport.width / dpr) + 'px';
+            pageWrapper.style.height = (viewport.height / dpr) + 'px';
 
             // Create canvas
             const canvas = document.createElement('canvas');
@@ -886,15 +890,15 @@ const PDFReaderWebView = ({ route }) => {
             canvas.className = 'pdf-canvas';
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            canvas.style.width = (viewport.width / scale) + 'px';
-            canvas.style.height = (viewport.height / scale) + 'px';
+            canvas.style.width = (viewport.width / dpr) + 'px';
+            canvas.style.height = (viewport.height / dpr) + 'px';
             pageWrapper.appendChild(canvas);
 
             // Create text layer
             const textLayer = document.createElement('div');
             textLayer.className = 'text-layer';
-            textLayer.style.width = (viewport.width / scale) + 'px';
-            textLayer.style.height = (viewport.height / scale) + 'px';
+            textLayer.style.width = (viewport.width / dpr) + 'px';
+            textLayer.style.height = (viewport.height / dpr) + 'px';
             pageWrapper.appendChild(textLayer);
 
             // Create drawing canvas
@@ -904,8 +908,8 @@ const PDFReaderWebView = ({ route }) => {
             drawingCanvas.dataset.page = pageNum;
             drawingCanvas.width = viewport.width;
             drawingCanvas.height = viewport.height;
-            drawingCanvas.style.width = (viewport.width / scale) + 'px';
-            drawingCanvas.style.height = (viewport.height / scale) + 'px';
+            drawingCanvas.style.width = (viewport.width / dpr) + 'px';
+            drawingCanvas.style.height = (viewport.height / dpr) + 'px';
             pageWrapper.appendChild(drawingCanvas);
 
             // Add to container
@@ -934,9 +938,9 @@ const PDFReaderWebView = ({ route }) => {
                 span.textContent = item.str;
                 span.dataset.index = index;
                 
-                const fontSize = Math.sqrt(tx[0] * tx[0] + tx[1] * tx[1]) / scale;
-                const left = tx[4] / scale;
-                const top = tx[5] / scale;
+                const fontSize = Math.sqrt(tx[0] * tx[0] + tx[1] * tx[1]) / dpr;
+                const left = tx[4] / dpr;
+                const top = tx[5] / dpr;
                 
                 span.style.left = left + 'px';
                 span.style.top = top + 'px';
@@ -944,7 +948,7 @@ const PDFReaderWebView = ({ route }) => {
                 span.style.fontFamily = item.fontName || 'sans-serif';
                 
                 if (item.width) {
-                    span.style.width = (item.width * viewport.scale / scale) + 'px';
+                    span.style.width = (item.width * viewport.scale / dpr) + 'px';
                 }
                 
                 span.style.transform = 'scaleX(' + (item.transform[0] < 0 ? -1 : 1) + ')';
