@@ -55,9 +55,9 @@ const PDFReaderWebView = ({ route }) => {
     }
 
     // Use provided PDF URL or fallback to sample PDF for testing
-    // const pdfUrl = params?.pdfUrl ?? data;
+    const pdfUrl = params?.pdfUrl ?? data;
 
-    const pdfUrl = 'https://solfabook.com/pdf-test.pdf';
+    // const pdfUrl = 'https://solfabook.com/pdf-test.pdf';
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
@@ -92,6 +92,9 @@ const PDFReaderWebView = ({ route }) => {
     const [drawingMode, setDrawingMode] = useState(false);
     const [drawingColor, setDrawingColor] = useState('#ff0000');
     const [showColorPicker, setShowColorPicker] = useState(false);
+    const [strokeWidth, setStrokeWidth] = useState(3);
+    const [highlighterMode, setHighlighterMode] = useState(false);
+    const [drawingOpacity, setDrawingOpacity] = useState(1);
     const drawingColors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#000000', '#ffffff'];
 
     // Highlight state
@@ -283,6 +286,22 @@ const PDFReaderWebView = ({ route }) => {
 
     const clearAllDrawings = () => {
         webViewRef.current?.injectJavaScript('clearAllDrawings(); true;');
+    };
+
+    const changeStrokeWidth = (width) => {
+        setStrokeWidth(width);
+        webViewRef.current?.injectJavaScript(`setLineWidth(${width}); true;`);
+    };
+
+    const toggleHighlighterMode = () => {
+        const newMode = !highlighterMode;
+        setHighlighterMode(newMode);
+        webViewRef.current?.injectJavaScript(`setHighlighterMode(${newMode}); true;`);
+    };
+
+    const changeDrawingOpacity = (opacity) => {
+        setDrawingOpacity(opacity);
+        webViewRef.current?.injectJavaScript(`setDrawingOpacity(${opacity}); true;`);
     };
 
     // Highlight functions
@@ -788,6 +807,16 @@ const PDFReaderWebView = ({ route }) => {
         let isDrawingMode = false;
         let drawingColor = '#ff0000';
         let lineWidth = 3;
+        let isHighlighterMode = false;
+        let drawingOpacity = 1;
+
+        // Helper function to apply opacity to hex color
+        function applyOpacityToColor(hexColor, opacity) {
+            const r = parseInt(hexColor.slice(1, 3), 16);
+            const g = parseInt(hexColor.slice(3, 5), 16);
+            const b = parseInt(hexColor.slice(5, 7), 16);
+            return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + opacity + ')';
+        }
 
         async function renderTextLayerAccurate(textLayer, textContent, viewport, pageNum, dpr) {
             if (typeof pdfjsLib.renderTextLayer === 'function') {
@@ -1177,14 +1206,32 @@ const PDFReaderWebView = ({ route }) => {
                 e.preventDefault();
                 isDrawing = true;
                 const pos = getPos(e);
+                
+                // Calculate effective line width (highlighter mode uses thicker lines)
+                const effectiveWidth = isHighlighterMode ? lineWidth * 6 : lineWidth;
+                const effectiveOpacity = isHighlighterMode ? Math.min(drawingOpacity * 0.4, 0.5) : drawingOpacity;
+                const effectiveColor = applyOpacityToColor(drawingColor, effectiveOpacity);
+                
                 currentPath = {
                     points: [pos],
                     color: drawingColor,
-                    lineWidth: lineWidth * window.devicePixelRatio
+                    lineWidth: effectiveWidth * window.devicePixelRatio,
+                    opacity: effectiveOpacity,
+                    isHighlighter: isHighlighterMode
                 };
+                
                 ctx.beginPath();
+                ctx.globalAlpha = effectiveOpacity;
                 ctx.strokeStyle = drawingColor;
-                ctx.lineWidth = lineWidth * window.devicePixelRatio;
+                ctx.lineWidth = effectiveWidth * window.devicePixelRatio;
+                
+                // Highlighter mode uses different composite mode for overlap
+                if (isHighlighterMode) {
+                    ctx.globalCompositeOperation = 'multiply';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                
                 ctx.moveTo(pos.x, pos.y);
             };
             
@@ -1256,6 +1303,18 @@ const PDFReaderWebView = ({ route }) => {
             drawingColor = color;
         }
 
+        function setLineWidth(width) {
+            lineWidth = Math.max(1, Math.min(width, 50)); // Clamp between 1-50
+        }
+
+        function setHighlighterMode(enabled) {
+            isHighlighterMode = enabled;
+        }
+
+        function setDrawingOpacity(opacity) {
+            drawingOpacity = Math.max(0.1, Math.min(opacity, 1)); // Clamp between 0.1-1
+        }
+
         function redrawPage(pageNum) {
             const canvas = document.querySelector('.drawing-canvas[data-page="' + pageNum + '"]');
             if (!canvas) return;
@@ -1268,6 +1327,17 @@ const PDFReaderWebView = ({ route }) => {
             const pageDrawings = drawings[pageNum] || [];
             pageDrawings.forEach(path => {
                 if (path.points.length < 2) return;
+                
+                // Apply saved opacity and composite mode
+                const pathOpacity = path.opacity !== undefined ? path.opacity : 1;
+                ctx.globalAlpha = pathOpacity;
+                
+                if (path.isHighlighter) {
+                    ctx.globalCompositeOperation = 'multiply';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                
                 ctx.beginPath();
                 ctx.strokeStyle = path.color;
                 ctx.lineWidth = path.lineWidth;
@@ -1277,6 +1347,10 @@ const PDFReaderWebView = ({ route }) => {
                 }
                 ctx.stroke();
             });
+            
+            // Reset to defaults
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
         }
 
         function undoDrawing() {
@@ -1638,6 +1712,10 @@ const PDFReaderWebView = ({ route }) => {
                     if (highlights.length > 0) {
                         webViewRef.current?.injectJavaScript(`setHighlights(${JSON.stringify(highlights)}); true;`);
                     }
+                    // Initialize drawing settings
+                    webViewRef.current?.injectJavaScript(`setLineWidth(${strokeWidth}); true;`);
+                    webViewRef.current?.injectJavaScript(`setDrawingOpacity(${drawingOpacity}); true;`);
+                    webViewRef.current?.injectJavaScript(`setHighlighterMode(${highlighterMode}); true;`);
                     break;
                 case 'CHUNK_RECEIVED':
                     // WebView acknowledged receiving a chunk, continue with next
@@ -1736,8 +1814,14 @@ const PDFReaderWebView = ({ route }) => {
                 styles={styles}
                 drawingMode={drawingMode}
                 drawingColor={drawingColor}
+                strokeWidth={strokeWidth}
+                highlighterMode={highlighterMode}
+                drawingOpacity={drawingOpacity}
                 onToggleDrawingMode={toggleDrawingMode}
                 onOpenDrawingColorPicker={() => setShowColorPicker(true)}
+                onChangeStrokeWidth={changeStrokeWidth}
+                onToggleHighlighterMode={toggleHighlighterMode}
+                onChangeDrawingOpacity={changeDrawingOpacity}
                 onUndoDrawing={undoDrawing}
                 onClearAllDrawings={clearAllDrawings}
                 textSelected={textSelected}

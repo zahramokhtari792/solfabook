@@ -10,8 +10,14 @@ const PdfReaderHeader = ({
     styles,
     drawingMode,
     drawingColor,
+    strokeWidth,
+    highlighterMode,
+    drawingOpacity,
     onToggleDrawingMode,
     onOpenDrawingColorPicker,
+    onChangeStrokeWidth,
+    onToggleHighlighterMode,
+    onChangeDrawingOpacity,
     onUndoDrawing,
     onClearAllDrawings,
     textSelected,
@@ -42,6 +48,57 @@ const PdfReaderHeader = ({
                             style={[styles.colorPickerBtn, { backgroundColor: drawingColor }]}
                             onPress={onOpenDrawingColorPicker}
                         />
+                        
+                        {/* Stroke Width Controls */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 4 }}>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, { padding: 6 }]} 
+                                onPress={() => onChangeStrokeWidth(Math.max(1, strokeWidth - 2))}
+                            >
+                                <Text style={{ color: themeColor0.bgColor(1), fontSize: 16 }}>-</Text>
+                            </TouchableOpacity>
+                            <Text style={{ color: themeColor0.bgColor(1), fontSize: 11, minWidth: 25, textAlign: 'center' }}>
+                                {strokeWidth}px
+                            </Text>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, { padding: 6 }]} 
+                                onPress={() => onChangeStrokeWidth(Math.min(50, strokeWidth + 2))}
+                            >
+                                <Text style={{ color: themeColor0.bgColor(1), fontSize: 16 }}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Highlighter Mode Toggle */}
+                        <TouchableOpacity 
+                            style={[styles.iconButton, highlighterMode && styles.iconButtonActive]}
+                            onPress={onToggleHighlighterMode}
+                        >
+                            <Ionicons 
+                                name="color-fill" 
+                                size={20} 
+                                color={themeColor0.bgColor(1)} 
+                            />
+                        </TouchableOpacity>
+                        
+                        {/* Opacity Controls */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 4 }}>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, { padding: 6 }]} 
+                                onPress={() => onChangeDrawingOpacity(Math.max(0.1, Math.round((drawingOpacity - 0.1) * 10) / 10))}
+                            >
+                                <Ionicons name="remove" size={14} color={themeColor0.bgColor(1)} />
+                            </TouchableOpacity>
+                            <Text style={{ color: themeColor0.bgColor(1), fontSize: 10, minWidth: 30, textAlign: 'center' }}>
+                                {Math.round(drawingOpacity * 100)}%
+                            </Text>
+                            <TouchableOpacity 
+                                style={[styles.iconButton, { padding: 6 }]} 
+                                onPress={() => onChangeDrawingOpacity(Math.min(1, Math.round((drawingOpacity + 0.1) * 10) / 10))}
+                            >
+                                <Ionicons name="add" size={14} color={themeColor0.bgColor(1)} />
+                            </TouchableOpacity>
+                        </View>
+                        
                         <TouchableOpacity style={styles.iconButton} onPress={onUndoDrawing}>
                             <Ionicons name="arrow-undo" size={24} color={themeColor0.bgColor(1)} />
                         </TouchableOpacity>
