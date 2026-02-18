@@ -57,10 +57,11 @@ const PDFReaderWebView = ({ route }) => {
     // Use provided PDF URL or fallback to sample PDF for testing
     // const pdfUrl = params?.pdfUrl ?? data;
 
-    const pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
+    const pdfUrl = 'https://solfabook.com/pdf-test.pdf';
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
+    const webViewReadyRef = useRef(false);
     const didRestorePageRef = useRef(false);
     const navigation = useNavigation();
     const [loading, setLoading] = useState(true);
@@ -579,7 +580,7 @@ const PDFReaderWebView = ({ route }) => {
 
         const pdfUrl = '${pdfUrl}';
         let pdfDoc = null;
-        let highlights = ${JSON.stringify(highlights)};
+        let highlights = [];
         const container = document.getElementById('pdf-container');
         const highlightBtn = document.getElementById('highlight-btn');
         const loadingEl = document.getElementById('loading');
@@ -1449,7 +1450,7 @@ const PDFReaderWebView = ({ route }) => {
     </script>
 </body>
 </html>
-    `, [pdfUrl, highlights]);
+    `, [pdfUrl]);
 
     const webViewSource = useMemo(() => ({ html: htmlContent }), [htmlContent]);
 
@@ -1460,6 +1461,11 @@ const PDFReaderWebView = ({ route }) => {
         webViewRef.current?.injectJavaScript(`goToPage(${lastOpenedPage}); true;`);
         didRestorePageRef.current = true;
     }, [lastOpenedPage, totalPages]);
+
+    useEffect(() => {
+        if (!webViewReadyRef.current) return;
+        webViewRef.current?.injectJavaScript(`setHighlights(${JSON.stringify(highlights)}); true;`);
+    }, [highlights]);
 
     // Handle messages from WebView
     const onMessage = (event) => {
@@ -1491,6 +1497,7 @@ const PDFReaderWebView = ({ route }) => {
                     saveLastOpenedPage(data.currentPage);
                     break;
                 case 'WEBVIEW_READY':
+                    webViewReadyRef.current = true;
                     // WebView is ready, send base64 PDF data in chunks to avoid memory crash
                     if (pdfBase64) {
                         sendPdfInChunks(pdfBase64);
@@ -1502,6 +1509,9 @@ const PDFReaderWebView = ({ route }) => {
                                 }, 2000);
                             }
                         });
+                    }
+                    if (highlights.length > 0) {
+                        webViewRef.current?.injectJavaScript(`setHighlights(${JSON.stringify(highlights)}); true;`);
                     }
                     break;
                 case 'CHUNK_RECEIVED':
