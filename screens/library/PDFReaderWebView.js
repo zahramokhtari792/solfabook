@@ -1118,6 +1118,9 @@ const PDFReaderWebView = ({ route }) => {
             drawingCanvas.height = viewportRender.height;
             drawingCanvas.style.width = viewportCss.width + 'px';
             drawingCanvas.style.height = viewportCss.height + 'px';
+            // Store the base dimensions for coordinate normalization
+            drawingCanvas.dataset.baseWidth = baseViewport.width;
+            drawingCanvas.dataset.baseHeight = baseViewport.height;
             pageWrapper.appendChild(drawingCanvas);
 
             // Add to container
@@ -1189,15 +1192,25 @@ const PDFReaderWebView = ({ route }) => {
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
                 
+                let canvasX, canvasY;
                 if (e.touches && e.touches.length > 0) {
-                    return {
-                        x: (e.touches[0].clientX - rect.left) * scaleX,
-                        y: (e.touches[0].clientY - rect.top) * scaleY
-                    };
+                    canvasX = (e.touches[0].clientX - rect.left) * scaleX;
+                    canvasY = (e.touches[0].clientY - rect.top) * scaleY;
+                } else {
+                    canvasX = (e.clientX - rect.left) * scaleX;
+                    canvasY = (e.clientY - rect.top) * scaleY;
                 }
+                
+                // Convert to normalized PDF coordinates (0-1 range)
+                const normalizedX = canvasX / canvas.width;
+                const normalizedY = canvasY / canvas.height;
+                
                 return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
+                    x: normalizedX,
+                    y: normalizedY,
+                    // Also include canvas coordinates for immediate rendering
+                    canvasX: canvasX,
+                    canvasY: canvasY
                 };
             };
             
@@ -1210,12 +1223,14 @@ const PDFReaderWebView = ({ route }) => {
                 // Calculate effective line width (highlighter mode uses thicker lines)
                 const effectiveWidth = isHighlighterMode ? lineWidth * 6 : lineWidth;
                 const effectiveOpacity = isHighlighterMode ? Math.min(drawingOpacity * 0.4, 0.5) : drawingOpacity;
-                const effectiveColor = applyOpacityToColor(drawingColor, effectiveOpacity);
+                
+                // Store normalized line width (relative to canvas width)
+                const normalizedLineWidth = (effectiveWidth * window.devicePixelRatio) / canvas.width;
                 
                 currentPath = {
-                    points: [pos],
+                    points: [{ x: pos.x, y: pos.y }], // Store normalized coordinates
                     color: drawingColor,
-                    lineWidth: effectiveWidth * window.devicePixelRatio,
+                    lineWidth: normalizedLineWidth, // Normalized line width
                     opacity: effectiveOpacity,
                     isHighlighter: isHighlighterMode
                 };
@@ -1232,18 +1247,18 @@ const PDFReaderWebView = ({ route }) => {
                     ctx.globalCompositeOperation = 'source-over';
                 }
                 
-                ctx.moveTo(pos.x, pos.y);
+                ctx.moveTo(pos.canvasX, pos.canvasY);
             };
             
             const draw = (e) => {
                 if (!isDrawing || !currentPath) return;
                 e.preventDefault();
                 const pos = getPos(e);
-                currentPath.points.push(pos);
-                ctx.lineTo(pos.x, pos.y);
+                currentPath.points.push({ x: pos.x, y: pos.y }); // Store normalized coordinates
+                ctx.lineTo(pos.canvasX, pos.canvasY);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
+                ctx.moveTo(pos.canvasX, pos.canvasY);
             };
             
             const stopDrawing = (e) => {
@@ -1340,10 +1355,22 @@ const PDFReaderWebView = ({ route }) => {
                 
                 ctx.beginPath();
                 ctx.strokeStyle = path.color;
-                ctx.lineWidth = path.lineWidth;
-                ctx.moveTo(path.points[0].x, path.points[0].y);
+                
+                // Scale normalized line width to current canvas size
+                const scaledLineWidth = path.lineWidth * canvas.width;
+                ctx.lineWidth = scaledLineWidth;
+                
+                // Convert normalized coordinates to current canvas coordinates
+                const firstPoint = path.points[0];
+                const firstX = firstPoint.x * canvas.width;
+                const firstY = firstPoint.y * canvas.height;
+                ctx.moveTo(firstX, firstY);
+                
                 for (let i = 1; i < path.points.length; i++) {
-                    ctx.lineTo(path.points[i].x, path.points[i].y);
+                    const point = path.points[i];
+                    const scaledX = point.x * canvas.width;
+                    const scaledY = point.y * canvas.height;
+                    ctx.lineTo(scaledX, scaledY);
                 }
                 ctx.stroke();
             });
