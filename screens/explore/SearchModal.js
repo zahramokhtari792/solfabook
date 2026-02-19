@@ -25,7 +25,7 @@ const SearchModal = () => {
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const search = () => {
         setLoader(true)
-        axios.post(`${uri}/searchInAll`, { search: value, user_id: user?.id })
+        axios.post(`${uri}/searchInAll`, { search: value, user_id: user?.id }, { headers: { 'Accept-Language': lang } })
             .then((res) => {
                 navigation.navigate('SearchResult', { data: res?.data, search: value })
                 hideSearchModal()

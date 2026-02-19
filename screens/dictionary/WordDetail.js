@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux'
 import BookmarkFillIcon from './../../assets/svg/BookmarkFillIcon';
 import { handleError } from '../../helpers/Common'
 import { useLoginModal } from '../../context/LoginProvider'
-import { usePreventScreenCapture } from 'expo-screen-capture'
+import { CaptureProtection } from 'react-native-capture-protection'
 import { useTranslation } from 'react-i18next'
 
 const WordDetail = ({ route }) => {
@@ -28,7 +28,12 @@ const WordDetail = ({ route }) => {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
-    usePreventScreenCapture()
+    useEffect(() => {
+        CaptureProtection.prevent();
+        return () => {
+            CaptureProtection.allow();
+        };
+    }, []);
 
     const bookmarked = () => {
         axios.post(`${uri}/bookmarkDictionary`, { dictionary_id: word?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })

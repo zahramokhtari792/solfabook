@@ -1,5 +1,5 @@
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { use, useCallback, useEffect, useMemo, useState } from 'react';
 import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
@@ -11,6 +11,7 @@ import BlankScreen from '../../components/BlankScreen';
 import { ActivityIndicator } from 'react-native';
 import { themeColor0 } from '../../theme/Color';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 const Explore = () => {
   const [data, setData] = useState([]);
@@ -19,7 +20,7 @@ const Explore = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const { i18n } = useTranslation();
+  const { i18n } = useTranslation(); 
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   // تابع fetchAllFiles را برای pagination بهینه کردیم
@@ -38,7 +39,7 @@ const Explore = () => {
     setLoader(true); // این لودر برای اولین بارگذاری صفحه است
 
     try {
-      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page });
+      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page }, { headers: { 'Accept-Language': lang } });
       const newFiles = response.data.data;
 
       setData(prevData => reset ? newFiles : [...prevData, ...newFiles]);

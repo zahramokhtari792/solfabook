@@ -29,16 +29,16 @@ const PaymentModal = ({ modal, setModal, payment, wallet }) => {
                             <View style={[{ backgroundColor: themeColor0.bgColor(0.3), paddingVertical: 7, paddingHorizontal: 8, borderRadius: 6 }, NewStyles.center]}>
                                 <Ionicons name='wallet' color={themeColor0.bgColor(1)} size={25} />
                             </View>
-                            <Text style={[NewStyles.title10]}>{t("Wallet balance")}: {formatPrice(user?.wallet)} {t('currency')}</Text>
+                            <Text style={[NewStyles.title10]}>{t("Wallet Balance")}: {formatPrice(user?.wallet)} {t('currency unit')}</Text>
                         </View>
                         <View style={[NewStyles.rowWrapper, { width: '90%' }]}>
 
                             <View style={{ width: '48%', }}>
-                                <Button onPress={wallet} title={'پرداخت از کیف پول'} />
+                                <Button onPress={wallet} title={t("Payment from wallet")} />
                             </View>
 
                             <View style={{ width: '48%', }}>
-                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: themeColor4.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={'پرداخت از درگاه'} />
+                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: themeColor4.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={t("Payment from gateway")} />
                             </View>
 
                         </View>

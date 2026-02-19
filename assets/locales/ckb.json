@@ -351,5 +351,18 @@
   "The maximum withdrawal amount is 100,000,000 Toman.": "زۆرترین بڕی کشانەوە ١٠٠ میلیون تۆمانە.",
   "The requested amount exceeds your wallet balance.": "بڕی داواکراو زیاترە لە باڵانسی جزدانەکەت.",
   "You already have a pending withdrawal request.": "تۆ پێشتر داواکاری کشانەوەیەکی هەڵپەسێردراو هەیە.",
-  "You are listening to the demo, for complete access please purchase the album": "تۆ لەگەڵ دیمۆ دەنگدەهێنی، بۆ دەستڕاگەیشتنی تەواو تکایە ئەلبوومەکە بکڕە"
+  "You are listening to the demo, for complete access please purchase it.": "تۆ لە دیمۆیەک دەنگدەهێنی، بۆ دەستڕاگەیشتنی تەواو تکایە ئەم کۆرسە بکڕە.",
+  "You have not active subscriptions": "تۆ هیچ ئاشتەکاری چالاک نییە",
+  "Amount": "بڕی پارە",
+  "Withdraw Requests": "داواکاری کشانەوە",
+  "Cancel": "هەڵوەشایەوە",
+  "Unsuccessful": "شکستی هێنا",
+  "Buy subscription": "بەشداریکردنی کڕین",
+  "View File": "فایل ببینە",
+  "{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}": "{{title}} لە سۆلفابووک وەرگیراوە.\nسۆلفابووک؛ کتێبخانەی مۆسیقا کە هەموو کات بەردەستە\nhttps://solfabook.com/product/{{fileId}}",
+  "Buy Now": "ئێستا بخرە",
+  "Buy": "بخرە",
+  "Payment from wallet": "لە جزدانەوە پارە بدە",
+  "Payment from gateway": "پارەدان لە پۆرتاڵەوە",
+  "My Files": "فایلەکانم"
 }

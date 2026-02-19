@@ -351,5 +351,18 @@
   "The maximum withdrawal amount is 100,000,000 Toman.": " الحد الأقصى لمبلغ السحب هو 100،000،000 تومان.",
   "The requested amount exceeds your wallet balance.": " المبلغ المطلوب يتجاوز رصيد محفظتك.",
   "You already have a pending withdrawal request.": "لديك بالفعل طلب سحب معلق.",
-  "You are listening to the demo, for complete access please purchase the album": "أنت تستمع إلى العرض التجريبي، للوصول الكامل يرجى شراء الألبوم"
+  "You are listening to the demo, for complete access please purchase it.": "أنت تستمع إلى العرض التجريبي، للوصول الكامل يرجى شرائه.",
+  "You have not active subscriptions": "ليس لديك اشتراكات نشطة",
+  "Amount": "المبلغ",
+  "Withdraw Requests": "طلبات السحب",
+  "Cancel": "إلغاء",
+  "Unsuccessful": "غير ناجح",
+  "Buy subscription": "شراء الاشتراك",
+  "View File": "عرض الملف",
+  "{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}": "{{title}} تم استلامه من سل‌فابوک.\nسل‌فابوک؛ مكتبة الموسيقى الخاصة بك دائمًا \nhttps://solfabook.com/product/{{fileId}}",
+  "Buy Now": "اشتري الآن",
+  "Buy": "اشتري",
+  "Payment from wallet": "الدفع من المحفظة",
+  "Payment from gateway": "الدفع الإلكتروني",
+  "My Files":"ملفاتي"
 }

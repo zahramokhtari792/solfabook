@@ -33,22 +33,7 @@ const Wallet = ({ modal, setModal }) => {
         );
     }
     const redirectUrl = Linking.createURL("/?");
-
-    const _addLinkingListenerWallet = () => {
-        const subscription = Linking.addEventListener("url", ({ url }) => {
-            const { queryParams } = Linking.parse(url);
-            if (queryParams?.status == 'success') {
-                dispatch(fetchUser(userToken))
-                showToastOrAlert(t('Your wallet has been successfully topped up.'))
-                setLoading(false);
-            } else if (queryParams?.status == 'failed') {
-                showToastOrAlert(t('The payment encountered an error.'))
-                setLoading(false);
-            }
-            setModal(false)
-        });
-        return () => subscription.remove();
-    }
+ 
 
     const increaseWallet = async () => {
         try {
@@ -107,10 +92,10 @@ const Wallet = ({ modal, setModal }) => {
 
                         <View style={{ flexDirection: 'row', width: '70%', justifyContent: 'space-between' }}>
                             <View style={{ width: '48%' }}>
-                                <Button customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={"لغو"} onPress={() => { setModal(false) }} />
+                                <Button customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={t("Cancel")} onPress={() => { setModal(false) }} />
                             </View>
                             <View style={{ width: '48%' }}>
-                                <Button title={"پرداخت"} onPress={async () => {
+                                <Button title={t("Payment")} onPress={async () => {
                                     if (price >= 10000) {
                                         increaseWallet()
                                     } else {

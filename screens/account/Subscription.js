@@ -128,7 +128,7 @@ export default function Subscription() {
                     }} />
                 )}
             />
-            <SubscriptionPaymentModal title={'خرید اشتراک'} gatewayPayment={subscriptionPayment} walletPayment={subscriptionWalletPayment} message={'کدام روش پرداخت را ترجیح می دهید؟'} paymentModal={paymentModal} setPaymentModal={setPaymentModal} />
+            <SubscriptionPaymentModal title={t("Buy subscription")} gatewayPayment={subscriptionPayment} walletPayment={subscriptionWalletPayment} message={'کدام روش پرداخت را ترجیح می دهید؟'} paymentModal={paymentModal} setPaymentModal={setPaymentModal} />
         </View>
     )
 }

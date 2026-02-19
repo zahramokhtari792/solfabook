@@ -5,13 +5,18 @@ import makeStyles from '../../styles/NewStyles'
 import Pdf from 'react-native-pdf'
 import { dlUrl } from '../../services/URL'
 import Loader from '../../components/Loader'
-import { usePreventScreenCapture } from 'expo-screen-capture'
+import { CaptureProtection } from 'react-native-capture-protection'
 import { useTranslation } from 'react-i18next'
 
 const SamplePDFReader = ({ route }) => {
     const params = route?.params;
     const sample_files = params?.sample_files?.[0];
-    usePreventScreenCapture();
+    React.useEffect(() => {
+        CaptureProtection.prevent();
+        return () => {
+            CaptureProtection.allow();
+        };
+    }, []);
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);

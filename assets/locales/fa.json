@@ -363,7 +363,7 @@
     "Album rating": "امتیاز آلبوم",
     "Publication date": "تاریخ انتشار",
     "Albums": "آلبوم‌ها",
-    "Veiw File": "مشاهده فایل",
+    "View File": "مشاهده فایل",
     "Subscribe to search for more words.": "برای جست و جوی کلمات بیشتر اشتراک تهیه نمایید.",
     "For {{num}} month": "برای {{num}} ماه",
     "Pay for the subscription from your wallet": "خرید اشتراک از کیف پول",
@@ -427,5 +427,9 @@
     "The maximum withdrawal amount is 100,000,000 Toman.": "حداکثر مبلغ برداشت 100,000,000 تومان است.",
     "The requested amount exceeds your wallet balance.": "مبلغ درخواستی بیشتر از موجودی کیف پول شما است.",
     "You already have a pending withdrawal request.": "شما در حال حاضر یک درخواست برداشت در انتظار دارید.",
-    "You are listening to the demo, for complete access please purchase the album":"شما در حال گوش دادن به دموی این فایل هستید، برای دسترسی کامل لطفا آلبوم را خریداری کنید"
+    "You are listening to the demo, for complete access please purchase it.": "شما در حال گوش دادن به دموی این فایل هستید، برای دسترسی کامل لطفا آن را خریداری کنید",
+    "You have not active subscriptions": "شما اشتراک فعال ندارید",
+    "{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}": "{{title}} از سل‌فابوک دریافت شده است.\nسل‌فابوک؛ کتابخانه موسیقی همیشه همراه شما\nhttps://solfabook.com/product/{{fileId}}",
+    "Payment from wallet": "پرداخت از کیف پول",
+    "Payment from gateway": "پرداخت از درگاه"
 }

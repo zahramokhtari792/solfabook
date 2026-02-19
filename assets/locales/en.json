@@ -352,5 +352,16 @@
     "The requested amount exceeds your wallet balance.": "The requested amount exceeds your wallet balance.",
     "You already have a pending withdrawal request.": "You already have a pending withdrawal request.",
     "Your withdrawal request has been submitted successfully.": "Your withdrawal request has been submitted successfully.",
-    "You are listening to the demo, for complete access please purchase the album": "You are listening to the demo, for complete access please purchase the album"
+    "You are listening to the demo, for complete access please purchase it.": "You are listening to the demo, for complete access please purchase it.",
+    "You have not active subscriptions": "You have not active subscriptions",
+    "Amount": "Amount",
+    "Withdraw Requests": "Withdraw Requests",
+    "Cancel": "Cancel",
+    "Unsuccessful": "Unsuccessful",
+    "Buy subscription": "Buy subscription",
+    "View File": "View File",
+    "Buy Now": "Buy Now",
+    "Buy": "Buy",
+    "Payment from wallet": "Payment from wallet",
+    "Payment from gateway": "Gateway payment"
 }

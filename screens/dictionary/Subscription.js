@@ -36,7 +36,7 @@ const Subscription = ({ navigation }) => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${uri}/fetchSubscription`)
+            const response = await axios.get(`${uri}/fetchSubscription`, { headers: { 'Accept-Language': lang } })
             setData(response?.data);
 
         } catch (error) {

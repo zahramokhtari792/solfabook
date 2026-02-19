@@ -46,7 +46,7 @@ const Account = ({ navigation }) => {
                 </View>
               </View> */}
               {user?.apple_check != 1 && <View style={[NewStyles.row, { gap: 5 }]}>
-                <Text style={NewStyles.text10}>{formatPrice(user?.wallet)} {t('currency')}</Text>
+                <Text style={NewStyles.text10}>{formatPrice(user?.wallet)} {t('currency unit')}</Text>
                 <View style={[styles.box, NewStyles.border5]}>
                   <Ionicons name='wallet' color={themeColor0.bgColor(1)} size={16} />
                 </View>

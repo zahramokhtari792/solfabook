@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from './../../components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
 import { fetchUser } from '../../slices/userSlice';
-import { usePreventScreenCapture } from 'expo-screen-capture';
+import { CaptureProtection } from 'react-native-capture-protection';
 
 const Dictionary = ({ navigation }) => {
   const [data, setData] = useState([]);
@@ -41,7 +41,12 @@ const Dictionary = ({ navigation }) => {
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
-  usePreventScreenCapture()
+  useEffect(() => {
+    CaptureProtection.prevent();
+    return () => {
+      CaptureProtection.allow();
+    };
+  }, []);
   useEffect(() => {
     if (!status) return;
     setPlaying(status.playing);

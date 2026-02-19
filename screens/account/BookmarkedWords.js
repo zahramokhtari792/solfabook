@@ -28,7 +28,7 @@ const BookmarkedWords = ({ navigation }) => {
     const player = useAudioPlayer(`${dlUrl}/${audioPath}`);
     const status = useAudioPlayerStatus(player);
 
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
@@ -126,7 +126,7 @@ const BookmarkedWords = ({ navigation }) => {
                     >
                         <View style={{ width: '90%' }}>
                             <Button
-                                title={'شما اشتراک فعالی ندارید'}
+                                title={t('You have not active subscriptions')}
                                 onPress={() => {
                                     navigation.navigate('Subscription');
                                 }}

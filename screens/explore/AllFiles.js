@@ -41,7 +41,7 @@ const AllFiles = ({ route }) => {
     setLoader(true); // این لودر برای اولین بارگذاری صفحه است
 
     try {
-      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, id: params?.categoryId, type: 'file' });
+      const response = await axios.post(`${uri}/filesByCategories`, { page: reset ? 1 : page, id: params?.categoryId, type: 'file' }, { headers: { 'Accept-Language': lang } });
       const newFiles = response.data.data;
 
       setData(prevData => reset ? newFiles : [...prevData, ...newFiles]);

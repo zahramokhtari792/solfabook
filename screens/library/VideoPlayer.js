@@ -11,15 +11,21 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { themeColor0, themeColor4 } from '../../theme/Color'
 import Video from 'react-native-video'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { usePreventScreenCapture } from 'expo-screen-capture'
+import { CaptureProtection } from 'react-native-capture-protection'
 import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system'
 import { Ionicons } from '@expo/vector-icons'
-const VideoPlayer = ({ route }) => {
+const VideoPlayer = ({ route, navigation }) => {
 
-  usePreventScreenCapture();
+  useEffect(() => {
+    CaptureProtection.prevent();
+    return () => {
+      CaptureProtection.allow();
+    };
+  }, []);
   const params = route?.params;
   const file = params?.file;
+  const user = useSelector(state => state.user?.data)
   const [data, setData] = useState([])
   const [loader, setLoader] = useState(true)
   const userToken = useSelector(state => state.auth?.token)
@@ -377,13 +383,13 @@ const VideoPlayer = ({ route }) => {
                   <TouchableOpacity
                     disabled={isDownloadingTrack}
                     onPress={() => {
-                      if (isDownloaded) {
-                        Alert.alert('Download complete', 'Play from local now?', [
-                          { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                          { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
-                        ]);
-                      } else {
-                        downloadVideo(item, index);
+                      if (!isDownloaded) {
+                        if (user?.is_offline_mode == 1) {
+
+                          downloadVideo(item, index);
+                        } else {
+                          navigation.navigate('Subscription');
+                        }
                       }
                     }}
                     style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}

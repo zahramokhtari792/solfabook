@@ -11,7 +11,7 @@ import PlayBackIcon from '../assets/svg/PlayBackIcon';
 import PlayForwardIcon from '../assets/svg/PlayForwardIcon';
 import { dlUrl } from '../services/URL';
 import { useTranslation } from 'react-i18next';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection, CaptureEventType } from 'react-native-capture-protection';
 
 /**
  * Global: Only one audio plays at a time (across screens/components)
@@ -38,6 +38,7 @@ export default function AudioPlayer({
     downloadedTracks,
     initialLocalUri,
     initialSourceType,
+    playNow,
 }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
@@ -90,7 +91,7 @@ export default function AudioPlayer({
 
     const checkIsRecording = async () => {
         try {
-            const status = await CaptureProtection.protectionStatus();
+            const status = await CaptureProtection.isScreenRecording();
             console.log('Protection Status:', status);
             console.log('Screen recording or screenshots are not allowed during audio playback.');
 
@@ -180,6 +181,32 @@ export default function AudioPlayer({
         return unsub;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instanceKey, playing]);
+
+    // Stop audio if screen recording starts
+    useEffect(() => {
+        const sub = CaptureProtection.addListener((eventType) => {
+            if (eventType === CaptureEventType.RECORDING) {
+                setPlaying(false);
+            }
+        });
+
+        return () => {
+            sub?.remove?.();
+        };
+    }, [setPlaying]);
+
+    // Prevent screen recording while audio is playing
+    useEffect(() => {
+        if (playing) {
+            CaptureProtection.prevent({ record: true });
+        } else {
+            CaptureProtection.allow({ record: true });
+        }
+
+        return () => {
+            CaptureProtection.allow({ record: true });
+        };
+    }, [playing]);
 
     const pauseSound = useCallback(() => {
         setPlaying(false);
@@ -322,6 +349,15 @@ export default function AudioPlayer({
             pendingPlay,
             playing,
         });
+        try {
+            const isRecording = await CaptureProtection.isScreenRecording();
+            if (isRecording) {
+                setPlaying(false);
+                return;
+            }
+        } catch (e) {
+            // Ignore recording check errors and proceed
+        }
         if (wantsLocal) {
             if (!localUri) {
                 setPendingPlay(true);
@@ -336,6 +372,8 @@ export default function AudioPlayer({
         setSourceType('remote');
         playSound();
     }, [wantsLocal, localUri, playSound]);
+
+    // playNow is handled by parent screens; AudioPlayer does not consume it directly.
 
     // Start playback once localUri becomes available
     useEffect(() => {
@@ -536,10 +574,8 @@ export default function AudioPlayer({
                     <TouchableOpacity
                         onPress={() => {
                             // if (!checkIsRecording()) {
-                            //     playSound()
+                                handlePlayPress()
                             // }
-                            checkIsRecording()
-                            handlePlayPress()
                         }}
                         disabled={!!loadingErr || !remoteUri || remoteUri.endsWith('/') || isDownloading}
                     >
@@ -574,7 +610,5 @@ export default function AudioPlayer({
         </View>
     );
 }
-
-
 
 

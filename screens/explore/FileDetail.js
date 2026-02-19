@@ -86,8 +86,8 @@ const FileDetail = ({ route, navigation }) => {
 
             // share
             await Share.open({
-                title: lang === 'fa' ? 'اشتراک گذاری' : 'Share',
-                message: lang === 'fa' ? `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://solfabook.com/product/${fileId}` : `${data?.title} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://ios.laravel.solfabook.com/product/${fileId}`,
+                title: t("Share"),
+                message: t('{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}', { title: data?.title, fileId: data?.id }) ,
                 url: uri,                // expo برمی‌گردونه مثل file:///...
                 // type: 'image/webp',      // چون پسوند webp هست
             });
@@ -102,8 +102,8 @@ const FileDetail = ({ route, navigation }) => {
         const { queryParams } = Linking.parse(event?.url);
         if (queryParams?.status == 'OK' && queryParams?.type == 'file_buy') {
 
-            setText('خرید فایل با موفقیت انجام شد');
-            setTextBtn('فایل های من')
+            setText(t("The file purchase was successful."));
+            setTextBtn(t("My Files"))
 
             setVisible(true)
         } else if (queryParams?.status == 'NOK' && queryParams?.type == 'file_buy') {
@@ -136,7 +136,7 @@ const FileDetail = ({ route, navigation }) => {
                     showToastOrAlert(t("The operation was successful."))
                 } else {
 
-                    showToastOrAlert('خرید فایل با موفقیت انجام شد.')
+                    showToastOrAlert(t("The file purchase was successful."))
                 }
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyFiles' } })
             })
@@ -539,7 +539,7 @@ const FileDetail = ({ route, navigation }) => {
                                                 {data?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text4, { fontSize: 12 }]}>{formatPrice(data?.price)}</Text>}
                                                 <Text style={NewStyles.text4}>{formatPrice(finalPrice)}</Text>
                                             </View>
-                                            <Text style={NewStyles.text4}>{t('currency')}</Text>
+                                            <Text style={NewStyles.text4}>{t('currency unit')}</Text>
                                         </View>
                                     </View>}
 
@@ -547,7 +547,7 @@ const FileDetail = ({ route, navigation }) => {
                             {isMine &&
                                 <Button
                                     customStyle={{ marginTop: 0 }}
-                                    title={t("Veiw File")}
+                                    title={t("View File")}
                                     onPress={() => {
                                         if (data?.file_type == 2 || data?.file_type == 5) {
                                             navigation.navigate('PDFReader', { id: data?.id })

@@ -35,7 +35,7 @@ const CHUNK_SIZE = 500 * 1024;
  * <PDFReaderWebView route={{ params: { pdfUrl: 'https://example.com/file.pdf', id: 'unique-id' } }} />
  */
 
-const PDFReaderWebView = ({ route }) => {
+const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf }) => {
     const params = route?.params;
     const userToken = useSelector(state => state.auth?.token);
     const [data, setData] = useState()
@@ -54,10 +54,10 @@ const PDFReaderWebView = ({ route }) => {
             })
     }
 
-    // Use provided PDF URL or fallback to sample PDF for testing
+    // Use provided PDF URL
     const pdfUrl = params?.pdfUrl ?? data;
-
-    // const pdfUrl = 'https://solfabook.com/pdf-test.pdf';
+    const preferLocal = params?.preferLocal === true;
+    const localUri = params?.localUri ?? null;
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
@@ -127,9 +127,23 @@ const PDFReaderWebView = ({ route }) => {
                 setFetchingPdf(true);
                 setError(null);
 
+                const tryReadLocal = async () => {
+                    if (!localUri) return false;
+                    const info = await FileSystem.getInfoAsync(localUri);
+                    if (!info.exists) return false;
+                    const base64 = await FileSystem.readAsStringAsync(localUri, {
+                        encoding: FileSystem.EncodingType.Base64,
+                    });
+                    setPdfBase64(base64);
+                    return true;
+                };
+
+                // Always prefer local when available (especially for offline)
+                const localOk = await tryReadLocal();
+                if (localOk) return;
+
                 // Use expo-file-system to download and read as base64
                 const fileUri = FileSystem.cacheDirectory + 'temp_pdf_' + Date.now() + '.pdf';
-
                 const downloadResult = await FileSystem.downloadAsync(pdfUrl, fileUri);
 
                 if (downloadResult.status === 200) {
@@ -145,16 +159,33 @@ const PDFReaderWebView = ({ route }) => {
                 }
             } catch (err) {
                 console.log('Error fetching PDF:', err);
-                setError('خطا در دانلود PDF: ' + (err.message || 'نامشخص'));
+                // Fallback to local if download failed (offline)
+                try {
+                    const ok = await (async () => {
+                        if (!localUri) return false;
+                        const info = await FileSystem.getInfoAsync(localUri);
+                        if (!info.exists) return false;
+                        const base64 = await FileSystem.readAsStringAsync(localUri, {
+                            encoding: FileSystem.EncodingType.Base64,
+                        });
+                        setPdfBase64(base64);
+                        return true;
+                    })();
+                    if (!ok) {
+                        setError('خطا در دانلود PDF: ' + (err.message || 'نامشخص'));
+                    }
+                } catch (e) {
+                    setError('خطا در دانلود PDF: ' + (err.message || 'نامشخص'));
+                }
             } finally {
                 setFetchingPdf(false);
             }
         };
 
-        if (pdfUrl) {
+        if (pdfUrl || localUri) {
             fetchPdfAsBase64();
         }
-    }, [pdfUrl, retryCount]);
+    }, [pdfUrl, retryCount, preferLocal, localUri]);
 
     const loadHighlights = async () => {
         try {
@@ -513,13 +544,20 @@ const PDFReaderWebView = ({ route }) => {
         .highlight-mode-indicator.visible {
             display: block;
         }
-        .search-match {
-            background-color: rgba(255, 152, 0, 0.5) !important;
-            color: transparent !important;
+        .search-highlight-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .search-match-rect {
+            position: absolute;
+            background-color: rgba(255, 152, 0, 0.5);
             border-radius: 2px;
         }
-        .search-match.current {
-            background-color: rgba(255, 87, 34, 0.8) !important;
+        .search-match-rect.current {
+            background-color: rgba(255, 87, 34, 0.8);
             box-shadow: 0 0 4px rgba(255, 87, 34, 0.8);
         }
         .drawing-canvas {
@@ -1496,6 +1534,20 @@ const PDFReaderWebView = ({ route }) => {
         let currentSearchIndex = -1;
 
         // Search for text in PDF (searches current page only in single-page mode)
+        function getSearchLayer() {
+            let layer = document.getElementById('search-layer');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.id = 'search-layer';
+                layer.className = 'search-highlight-layer';
+                const pageWrapper = document.querySelector('.page-wrapper');
+                if (pageWrapper) {
+                    pageWrapper.appendChild(layer);
+                }
+            }
+            return layer;
+        }
+
         function searchText(query) {
             // Clear previous search results
             clearSearchHighlights();
@@ -1512,19 +1564,58 @@ const PDFReaderWebView = ({ route }) => {
                 return;
             }
 
-            const searchTerm = query.trim().toLowerCase();
+            const searchTerm = query.trim();
+            const escaped = searchTerm.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(escaped, 'gi');
+            const pageWrapper = document.querySelector('.page-wrapper');
+            const textLayer = document.querySelector('.textLayer');
             const allSpans = document.querySelectorAll('.textLayer span');
+            const searchLayer = getSearchLayer();
+            if (!pageWrapper || !textLayer || !searchLayer) return;
+            const wrapperRect = pageWrapper.getBoundingClientRect();
 
-            allSpans.forEach((span, index) => {
-                const text = span.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    span.classList.add('search-match');
+            searchLayer.style.left = '0px';
+            searchLayer.style.top = '0px';
+            searchLayer.style.width = pageWrapper.scrollWidth + 'px';
+            searchLayer.style.height = pageWrapper.scrollHeight + 'px';
+
+            allSpans.forEach((span) => {
+                const textNode = span.firstChild;
+                if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+                const text = textNode.textContent || '';
+                if (!text) return;
+
+                if (!regex.test(text)) {
+                    regex.lastIndex = 0;
+                    return;
+                }
+                regex.lastIndex = 0;
+
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    const start = match.index;
+                    const end = start + match[0].length;
+                    const range = document.createRange();
+                    range.setStart(textNode, start);
+                    range.setEnd(textNode, end);
+                    const rect = range.getBoundingClientRect();
+                    if (!rect || rect.width === 0 || rect.height === 0) continue;
+
+                    const highlight = document.createElement('div');
+                    highlight.className = 'search-match-rect';
+                    highlight.style.left = (rect.left - wrapperRect.left + pageWrapper.scrollLeft) + 'px';
+                    highlight.style.top = (rect.top - wrapperRect.top + pageWrapper.scrollTop) + 'px';
+                    highlight.style.width = rect.width + 'px';
+                    highlight.style.height = rect.height + 'px';
+                    searchLayer.appendChild(highlight);
+
                     searchResults.push({
-                        element: span,
-                        index: index,
+                        element: highlight,
                         page: currentPageNum
                     });
                 }
+
+                regex.lastIndex = 0;
             });
 
             // Navigate to first result if found
@@ -1544,16 +1635,16 @@ const PDFReaderWebView = ({ route }) => {
 
         // Clear search highlights
         function clearSearchHighlights() {
-            document.querySelectorAll('.search-match').forEach(el => {
-                el.classList.remove('search-match');
-                el.classList.remove('current');
-            });
+            const layer = document.getElementById('search-layer');
+            if (layer) {
+                layer.remove();
+            }
         }
 
         // Highlight current search result
         function highlightCurrentResult() {
             // Remove current class from all
-            document.querySelectorAll('.search-match.current').forEach(el => {
+            document.querySelectorAll('.search-match-rect.current').forEach(el => {
                 el.classList.remove('current');
             });
 
@@ -1844,6 +1935,9 @@ const PDFReaderWebView = ({ route }) => {
                 isBookmarked={isCurrentPageBookmarked()}
                 onToggleBookmark={() => toggleBookmark()}
                 onBack={() => navigation.goBack()}
+                downloadedPdf={downloadedPdf}
+                downloadPdf={downloadPdf}
+                downloadingPdf={downloadingPdf}
             />
 
             {showSearch && (

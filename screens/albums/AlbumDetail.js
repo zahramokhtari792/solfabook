@@ -30,7 +30,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AudioPlayer from '../../components/AudioPlayer';
 import { fetchUser } from '../../slices/userSlice';
 import * as FileSystem from 'expo-file-system';
-import { usePreventScreenCapture } from 'expo-screen-capture';
 import { CaptureProtection } from 'react-native-capture-protection';
 
 const AlbumDetail = ({ route, navigation }) => {
@@ -114,7 +113,7 @@ const AlbumDetail = ({ route, navigation }) => {
         axios.post(`${uri}/walletPayment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
                 console.log(res?.data);
-                showToastOrAlert('خرید فایل با موفقیت انجام شد.')
+                showToastOrAlert(t("The file purchase was successful."))
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyAlbum' } })
             })
             .catch((err) => {
@@ -347,8 +346,8 @@ const AlbumDetail = ({ route, navigation }) => {
 
             // share
             await Share.open({
-                title: lang === 'fa' ? 'اشتراک گذاری' : 'Share',
-                message: lang === 'fa' ? `${data?.title} را از سل‌فابوک دریافت کنید.\nسل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://ios.laravel.solfabook.com/product/${fileId}` : `${data?.title} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/${fileId}`,
+                title: t("Share"),
+                message: t('{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}', { title: data?.title, fileId: data?.id }),
                 url: uri,                // expo برمی‌گردونه مثل file:///...
                 // type: 'image/webp',      // چون پسوند webp هست
             });
@@ -563,7 +562,10 @@ const AlbumDetail = ({ route, navigation }) => {
                                                     >
                                                         {
                                                             ((addLoader && fileGalleryId == item?.id)) ? <ActivityIndicator size="small" color={themeColor0.bgColor(1)} /> :
-                                                                item?.in_cart == 0 ? <Text style={NewStyles.text}>{formatPrice(item?.price)} {t("currency unit")}</Text> :
+                                                                item?.in_cart == 0 ? <View>
+                                                                    <Text style={NewStyles.text}>{formatPrice(item?.discounted_price || item?.price)} {t("currency unit")}</Text>
+                                                                    {item?.discounted_price && <Text style={[NewStyles.text3, { textDecorationStyle: 'solid', textDecorationLine: 'line-through', fontSize: 12, textAlign: 'center' }]}>{formatPrice(item?.price)} {t("currency unit")}</Text>}
+                                                                </View> :
                                                                     <Ionicons
                                                                         name={"cart-outline"}
                                                                         size={24}
@@ -734,8 +736,8 @@ const AlbumDetail = ({ route, navigation }) => {
             </View>
             {
                 (tracks?.length > 0 && visiblePlayer) && <View style={[{ backgroundColor: themeColor1.bgColor(0.2), paddingBottom: 10 }]}>
-                    <View style={[NewStyles.rowWrapper, {paddingVertical:10}]}>
-                        <Text style={[NewStyles.text10,{paddingHorizontal:10, flex:1, fontFamily:'VazirThin'}]}>{t("You are listening to the demo, for complete access please purchase the album")}</Text>
+                    <View style={[NewStyles.rowWrapper, { paddingVertical: 10 }]}>
+                        <Text style={[NewStyles.text10, { paddingHorizontal: 10, flex: 1, fontFamily: 'VazirThin' }]}>{t("You are listening to the demo, for complete access please purchase it.")}</Text>
                         <TouchableOpacity style={{ padding: 10 }} onPress={() => {
                             setVisiblePlayer(false);
                             setPlayNow(false);
