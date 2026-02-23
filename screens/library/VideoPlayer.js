@@ -23,6 +23,9 @@ const VideoPlayer = ({ route, navigation }) => {
       CaptureProtection.allow();
     };
   }, []);
+
+  const { t } = useTranslation()
+
   const params = route?.params;
   const file = params?.file;
   const user = useSelector(state => state.user?.data)
@@ -216,9 +219,9 @@ const VideoPlayer = ({ route, navigation }) => {
           } else {
             setDownloadedVideos((prev) => ({ ...prev, [trackId]: true }));
             setDownloadingVideoId(null);
-            Alert.alert('Download complete', 'Play from local now?', [
-              { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-              { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
+            Alert.alert(t('Download complete'), t('Play from local now?'), [
+              { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+              { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
             ]);
             return;
           }
@@ -228,9 +231,9 @@ const VideoPlayer = ({ route, navigation }) => {
         } else {
           setDownloadedVideos((prev) => ({ ...prev, [trackId]: true }));
           setDownloadingVideoId(null);
-          Alert.alert('Download complete', 'Play from local now?', [
-            { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-            { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
+          Alert.alert(t('Download complete'), t('Play from local now?'), [
+            { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+            { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
           ]);
           return;
         }
@@ -284,10 +287,9 @@ const VideoPlayer = ({ route, navigation }) => {
         contentType: remoteType || null,
       });
       setDownloadedVideos((prev) => ({ ...prev, [trackId]: true }));
-      console.log('[VideoPlayer] Download complete', { trackId, downloadedUri, localSize, remoteLength, remoteType });
-      Alert.alert('Download complete', 'Play from local now?', [
-        { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-        { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
+      Alert.alert(t('Download complete'), t('Play from local now?'), [
+        { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+        { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setVideoIndex(index); } }
       ]);
     } catch (e) {
       console.log('[VideoPlayer] Download error', e?.message ?? e);

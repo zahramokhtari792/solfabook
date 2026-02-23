@@ -22,7 +22,7 @@ const MusicPlayer = ({ route, navigation }) => {
             CaptureProtection.allow();
         };
     }, []);
-
+    const { t } = useTranslation();
     const params = route?.params;
     const file = params?.file
     const user = useSelector(state => state.user?.data)
@@ -234,9 +234,9 @@ const MusicPlayer = ({ route, navigation }) => {
                                                         if (info.exists && done.exists) {
                                                             setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
                                                             setDownloadingTrackId(null);
-                                                            Alert.alert('Download complete', 'Play from local now?', [
-                                                                { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                                                                { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+                                                            Alert.alert(t('Download complete'), t('Play from local now?'), [
+                                                                { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                                                                { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
                                                             ]);
                                                             return;
                                                         }
@@ -244,10 +244,9 @@ const MusicPlayer = ({ route, navigation }) => {
                                                         const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
                                                         await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
                                                         setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-                                                        console.log('[MusicPlayer] Download complete', { trackId, downloadedUri });
-                                                        Alert.alert('Download complete', 'Play from local now?', [
-                                                            { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                                                            { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+                                                        Alert.alert(t('Download complete'), t('Play from local now?'), [
+                                                            { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                                                            { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
                                                         ]);
                                                     } catch (e) {
                                                         console.log('[MusicPlayer] Download error', e?.message ?? e);

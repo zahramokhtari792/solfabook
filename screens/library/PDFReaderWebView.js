@@ -39,7 +39,7 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
     const params = route?.params;
     const userToken = useSelector(state => state.auth?.token);
     const [data, setData] = useState()
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const fetchFiles = () => {
@@ -544,21 +544,12 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
         .highlight-mode-indicator.visible {
             display: block;
         }
-        .search-highlight-layer {
-            position: absolute;
-            left: 0;
-            top: 0;
-            z-index: 3;
-            pointer-events: none;
-        }
-        .search-match-rect {
-            position: absolute;
-            background-color: rgba(255, 152, 0, 0.5);
+        .textLayer span.search-match {
+            background-color: rgba(255, 152, 0, 0.3);
             border-radius: 2px;
         }
-        .search-match-rect.current {
-            background-color: rgba(255, 87, 34, 0.8);
-            box-shadow: 0 0 4px rgba(255, 87, 34, 0.8);
+        .textLayer span.search-match.current {
+            background-color: rgba(255, 87, 34, 0.5);
         }
         .drawing-canvas {
             position: absolute;
@@ -1086,6 +1077,9 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
             pendingPage = null;
             currentPageNum = pageNum;
             
+            // Clear only visual highlights, keep search state
+            clearSearchHighlights();
+            
             // Show loading indicator
             pageLoadingEl.classList.add('visible');
             
@@ -1175,6 +1169,11 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
             // Apply saved highlights and drawings
             applySavedHighlights(pageNum);
             applySavedDrawings(pageNum);
+            
+            // Re-apply search if there was an active search
+            if (lastSearchQuery) {
+                reApplySearchOnCurrentPage();
+            }
             
             // Hide loading indicator
             pageLoadingEl.classList.remove('visible');
@@ -1532,29 +1531,75 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
         // ========== SEARCH FUNCTIONALITY ==========
         let searchResults = [];
         let currentSearchIndex = -1;
+        let lastSearchQuery = '';
 
-        // Search for text in PDF (searches current page only in single-page mode)
-        function getSearchLayer() {
-            let layer = document.getElementById('search-layer');
-            if (!layer) {
-                layer = document.createElement('div');
-                layer.id = 'search-layer';
-                layer.className = 'search-highlight-layer';
-                const pageWrapper = document.querySelector('.page-wrapper');
-                if (pageWrapper) {
-                    pageWrapper.appendChild(layer);
-                }
-            }
-            return layer;
+        // Normalize Persian/Arabic text for consistent search
+        function normalizeText(text) {
+            if (!text) return '';
+            return text
+                .replace(/ي/g, 'ی')  // Arabic ye to Persian ye
+                .replace(/ك/g, 'ک')  // Arabic kaf to Persian kaf
+                .replace(/ؤ/g, 'و')  // Remove hamza
+                .replace(/أ/g, 'ا')
+                .replace(/إ/g, 'ا')
+                .replace(/آ/g, 'ا')
+                .replace(/ة/g, 'ه')  // Arabic ta to Persian he
+                .replace(/\u200C/g, '') // Remove zero-width non-joiner
+                .replace(/\s+/g, ' ')   // Normalize whitespace
+                .trim()
+                .toLowerCase();
         }
 
+        // Re-apply search on current page after render
+        function reApplySearchOnCurrentPage() {
+            if (!lastSearchQuery) return;
+            
+            const textLayer = document.querySelector('.textLayer');
+            if (!textLayer) return;
+
+            const searchTerm = normalizeText(lastSearchQuery);
+            const allSpans = Array.from(textLayer.querySelectorAll('span'));
+            
+            // Clear all old results - only search current page
+            searchResults = [];
+            currentSearchIndex = -1;
+            
+            // Add results for current page only
+            allSpans.forEach((span) => {
+                const text = normalizeText(span.textContent || '');
+                if (text && text.includes(searchTerm)) {
+                    span.classList.add('search-match');
+                    searchResults.push({
+                        element: span,
+                        page: currentPageNum,
+                        text: span.textContent
+                    });
+                }
+            });
+            
+            // Highlight first result
+            if (searchResults.length > 0) {
+                currentSearchIndex = 0;
+                highlightCurrentResult();
+            }
+            
+            // Update React Native
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'SEARCH_RESULTS',
+                count: searchResults.length,
+                currentIndex: searchResults.length > 0 ? 1 : 0,
+                currentPage: currentPageNum
+            }));
+        }
+
+        // Simple text search - highlights entire spans containing the search term
         function searchText(query) {
-            // Clear previous search results
             clearSearchHighlights();
             searchResults = [];
             currentSearchIndex = -1;
 
             if (!query || query.trim() === '') {
+                lastSearchQuery = '';
                 window.ReactNativeWebView.postMessage(JSON.stringify({
                     type: 'SEARCH_RESULTS',
                     count: 0,
@@ -1564,67 +1609,32 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                 return;
             }
 
-            const searchTerm = query.trim();
-            const escaped = searchTerm.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-            const regex = new RegExp(escaped, 'gi');
-            const pageWrapper = document.querySelector('.page-wrapper');
+            lastSearchQuery = query;
+            const searchTerm = normalizeText(query);
             const textLayer = document.querySelector('.textLayer');
-            const allSpans = document.querySelectorAll('.textLayer span');
-            const searchLayer = getSearchLayer();
-            if (!pageWrapper || !textLayer || !searchLayer) return;
-            const wrapperRect = pageWrapper.getBoundingClientRect();
+            if (!textLayer) return;
 
-            searchLayer.style.left = '0px';
-            searchLayer.style.top = '0px';
-            searchLayer.style.width = pageWrapper.scrollWidth + 'px';
-            searchLayer.style.height = pageWrapper.scrollHeight + 'px';
-
+            const allSpans = Array.from(textLayer.querySelectorAll('span'));
+            
             allSpans.forEach((span) => {
-                const textNode = span.firstChild;
-                if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
-                const text = textNode.textContent || '';
-                if (!text) return;
-
-                if (!regex.test(text)) {
-                    regex.lastIndex = 0;
-                    return;
-                }
-                regex.lastIndex = 0;
-
-                let match;
-                while ((match = regex.exec(text)) !== null) {
-                    const start = match.index;
-                    const end = start + match[0].length;
-                    const range = document.createRange();
-                    range.setStart(textNode, start);
-                    range.setEnd(textNode, end);
-                    const rect = range.getBoundingClientRect();
-                    if (!rect || rect.width === 0 || rect.height === 0) continue;
-
-                    const highlight = document.createElement('div');
-                    highlight.className = 'search-match-rect';
-                    highlight.style.left = (rect.left - wrapperRect.left + pageWrapper.scrollLeft) + 'px';
-                    highlight.style.top = (rect.top - wrapperRect.top + pageWrapper.scrollTop) + 'px';
-                    highlight.style.width = rect.width + 'px';
-                    highlight.style.height = rect.height + 'px';
-                    searchLayer.appendChild(highlight);
-
+                const originalText = span.textContent || '';
+                const normalizedText = normalizeText(originalText);
+                
+                if (normalizedText && normalizedText.includes(searchTerm)) {
+                    span.classList.add('search-match');
                     searchResults.push({
-                        element: highlight,
-                        page: currentPageNum
+                        element: span,
+                        page: currentPageNum,
+                        text: originalText
                     });
                 }
-
-                regex.lastIndex = 0;
             });
 
-            // Navigate to first result if found
             if (searchResults.length > 0) {
                 currentSearchIndex = 0;
                 highlightCurrentResult();
             }
 
-            // Send result count to React Native (note: this is for current page only)
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SEARCH_RESULTS',
                 count: searchResults.length,
@@ -1635,24 +1645,23 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
 
         // Clear search highlights
         function clearSearchHighlights() {
-            const layer = document.getElementById('search-layer');
-            if (layer) {
-                layer.remove();
+            const textLayer = document.querySelector('.textLayer');
+            if (textLayer) {
+                textLayer.querySelectorAll('.search-match').forEach(el => {
+                    el.classList.remove('search-match', 'current');
+                });
             }
         }
 
         // Highlight current search result
         function highlightCurrentResult() {
-            // Remove current class from all
-            document.querySelectorAll('.search-match-rect.current').forEach(el => {
+            document.querySelectorAll('.search-match.current').forEach(el => {
                 el.classList.remove('current');
             });
 
             if (searchResults.length > 0 && currentSearchIndex >= 0) {
                 const current = searchResults[currentSearchIndex];
                 current.element.classList.add('current');
-                
-                // Scroll to the element
                 current.element.scrollIntoView({
                     behavior: 'smooth',
                     block: 'center'
@@ -1694,6 +1703,7 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
             clearSearchHighlights();
             searchResults = [];
             currentSearchIndex = -1;
+            lastSearchQuery = '';
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'SEARCH_RESULTS',
                 count: 0,
@@ -1959,17 +1969,17 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                 {loading && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                        <Text style={[NewStyles.text12, { marginTop: 10, color: themeColor0.bgColor(1) }]}>
-                            در حال بارگذاری...
+                        <Text style={[NewStyles.text, { marginTop: 10, color: themeColor0.bgColor(1) }]}>
+                           {t("Loading...")}
                         </Text>
                     </View>
                 )}
                 {error && (
                     <View style={styles.errorOverlay}>
-                        <Text style={[NewStyles.text14, { color: 'red', textAlign: 'center', marginBottom: 10 }]}>
-                            خطا در بارگذاری
+                        <Text style={[NewStyles.text6, { color: 'red', textAlign: 'center', marginBottom: 10 }]}>
+                           {t("Error on loading")}
                         </Text>
-                        <Text style={[NewStyles.text12, { color: '#666', textAlign: 'center' }]}>
+                        <Text style={[NewStyles.text6, { color: '#666', textAlign: 'center' }]}>
                             {error}
                         </Text>
                         <TouchableOpacity
@@ -1982,14 +1992,14 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                                 setRetryCount(prev => prev + 1);
                             }}
                         >
-                            <Text style={styles.clearButtonText}>تلاش مجدد</Text>
+                            <Text style={styles.clearButtonText}>{t("Retry")}</Text>
                         </TouchableOpacity>
                     </View>
                 )}
                 {fetchingPdf && !pdfBase64 && !error && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
-                        <Text style={[NewStyles.text, { marginTop: 10 }]}>در حال دانلود PDF...</Text>
+                        <Text style={[NewStyles.text, { marginTop: 10 }]}>{t("Downloading PDF ...")}</Text>
                     </View>
                 )}
                 {pdfBase64 && (

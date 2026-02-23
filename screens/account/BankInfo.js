@@ -13,6 +13,10 @@ import BackHeader from './../../components/BackHeader';
 import { useTranslation } from 'react-i18next'
 
 const BankInfo = ({ navigation }) => {
+    const { i18n, t } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const userToken = useSelector(state => state?.auth?.token);
     const user = useSelector(state => state?.user?.data);
     const [cardNumber, setCardNumber] = useState(user?.card_no)
@@ -33,17 +37,13 @@ const BankInfo = ({ navigation }) => {
             setLoading(false);
             navigation.goBack()
 
-            showToastOrAlert('اطلاعات بانکی شما با موفقیت ویرایش شد')
+            showToastOrAlert(t("Bank information updated successfully."))
         }).catch(err => {
             handleError(err)
         }).finally(() => {
             setLoading(false)
         })
     }
-    const { i18n } = useTranslation();
-    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
 
     return (
         <SafeAreaView style={NewStyles.container}>

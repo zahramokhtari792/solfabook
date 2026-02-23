@@ -277,12 +277,6 @@ export default function AudioPlayer({
 
             const encoded = encodeURI(remoteUri);
             const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
-            console.log('[AudioPlayer] Download complete', {
-                index,
-                remotePath,
-                localPath,
-                downloadedUri,
-            });
             await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setLocalUri(downloadedUri);
             return true;

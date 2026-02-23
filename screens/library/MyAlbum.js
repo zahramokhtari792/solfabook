@@ -32,7 +32,7 @@ const MyAlbum = () => {
     setLoader(true)
     axios.post(`${uri}/deleteMyFile`, { id: selectedFile }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
       .then((res) => {
-        showToastOrAlert(res?.data?.message);
+        showToastOrAlert(t(res?.data?.message));
       })
       .catch((err) => {
         handleError(err)

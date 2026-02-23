@@ -80,7 +80,7 @@ export default function Decrease({ navigation }) {
 
                     data={data}
                     keyExtractor={(item) => item?.id?.toString()}
-                    ListHeaderComponent={data.length > 0 ? <Text style={NewStyles.title}>درخواست‌های شما</Text> : null}
+                    ListHeaderComponent={data.length > 0 ? <Text style={NewStyles.title}>{t("Your withdrawal requests")}</Text> : null}
                     renderItem={({ item }) => {
                         return (
                             <WithdrawalItem item={item} />

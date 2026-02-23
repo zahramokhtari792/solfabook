@@ -45,7 +45,7 @@ const Contact = () => {
         setLoading(true)
         axios.post(`${uri}/contactUsSubmit`, { name: name, phone: phone, email: email, title: title, description: message })
             .then((res) => {
-                showToastOrAlert('پیام شما با موفقیت ثبت شد.')
+                showToastOrAlert(t('Your message has been sent successfully.'))
                 setTitle()
                 setName()
                 setEmail()
@@ -92,12 +92,12 @@ const Contact = () => {
                                 if (validateEmail(email) && validatePhone(phone)) {
                                     submitForm()
                                 } else if (!validateEmail(email)) {
-                                    showToastOrAlert('ایمیل وارد شده نامعتبر است.')
+                                    showToastOrAlert(t("The email address you entered is not valid."))
                                 } else if (!validatePhone(phone)) {
-                                    showToastOrAlert('شماره تلفن وارد شده نامعتبر است.')
+                                    showToastOrAlert(t("The phone number you entered is not valid."))
                                 }
                             } else {
-                                showToastOrAlert('تکمیل تمامی فیلدها ضروری است.')
+                                showToastOrAlert(t("Please fill in all the required fields."))
                             }
                         }} />
                     </View>

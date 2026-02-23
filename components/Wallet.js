@@ -21,7 +21,7 @@ const Wallet = ({ modal, setModal }) => {
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const dispatch = useDispatch()
-    const [items] = useState([{ id: 1, name: '30 هزار تومان', price: '30000' }, { id: 2, name: '40 هزار تومان', price: '40000' }, { id: 3, name: '50 هزار تومان', price: '50000' }, { id: 4, name: '100 هزار تومان', price: '100000' }, { id: 5, name: '150 هزار تومان', price: '150000' }]);
+    const [items] = useState([{ id: 1, name: t("30,000 T"), price: '30000' }, { id: 2, name: t("40,000 T"), price: '40000' }, { id: 3, name: t("50,000 T"), price: '50000' }, { id: 4, name: t("100,000 T"), price: '100000' }, { id: 5, name: t("150,000 T"), price: '150000' }]);
     const [price, setPrice] = useState('');
     const [loading, setLoading] = useState(false)
 

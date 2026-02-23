@@ -19,6 +19,8 @@ import { useTranslation } from 'react-i18next';
 import * as FileSystem from 'expo-file-system';
 
 const PDFReader = ({ route }) => {
+
+    const { t } = useTranslation()
     const params = route?.params;
     const id = params?.id;
     const userToken = useSelector(state => state.auth?.token);
@@ -56,7 +58,7 @@ const PDFReader = ({ route }) => {
             .then((res) => {
                 setData(res?.data?.file_pdf)
                 console.log(res?.data?.file_pdf);
-                
+
                 setAudio(res?.data?.file_audio)
             })
             .catch((err) => {
@@ -240,9 +242,9 @@ const PDFReader = ({ route }) => {
             if (info.exists && done.exists) {
                 setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
                 setDownloadingTrackId(null);
-                Alert.alert('Download complete', 'Play from local now?', [
-                    { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                    { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+                Alert.alert(t('Download complete'), t('Play from local now?'), [
+                    { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                    { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
                 ]);
                 return;
             }
@@ -253,10 +255,9 @@ const PDFReader = ({ route }) => {
             const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
             await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-            console.log('[PDFReader] Audio download complete', { trackId, downloadedUri });
-            Alert.alert('Download complete', 'Play from local now?', [
-                { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+            Alert.alert(t('Download complete'), t('Play from local now?'), [
+                { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
             ]);
         } catch (e) {
             console.log('[PDFReader] Audio download error', e?.message ?? e);
@@ -277,9 +278,9 @@ const PDFReader = ({ route }) => {
             if (info.exists && done.exists) {
                 setDownloadedPdf(true);
                 setLocalPdfUri(info.uri);
-                Alert.alert('Download complete', 'Use local PDF now?', [
-                    { text: 'No', style: 'cancel', onPress: () => setPreferLocalPdf(false) },
-                    { text: 'Yes', onPress: () => setPreferLocalPdf(true) }
+                Alert.alert(t('Download complete'), t('Use local PDF now?'), [
+                    { text: t('No'), style: 'cancel', onPress: () => setPreferLocalPdf(false) },
+                    { text: t('Yes'), onPress: () => setPreferLocalPdf(true) }
                 ]);
                 return;
             }
@@ -294,12 +295,11 @@ const PDFReader = ({ route }) => {
             await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setDownloadedPdf(true);
             setLocalPdfUri(result.uri);
-            Alert.alert('Download complete', 'Use local PDF now?', [
-                { text: 'No', style: 'cancel', onPress: () => setPreferLocalPdf(false) },
-                { text: 'Yes', onPress: () => setPreferLocalPdf(true) }
+            Alert.alert(t('Download complete'), t('Use local PDF now?'), [
+                { text: t('No'), style: 'cancel', onPress: () => setPreferLocalPdf(false) },
+                { text: t('Yes'), onPress: () => setPreferLocalPdf(true) }
             ]);
         } catch (e) {
-            console.log('[PDFReader] Download error', e?.message ?? e);
         } finally {
             setDownloadingPdf(false);
         }

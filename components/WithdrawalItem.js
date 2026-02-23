@@ -20,19 +20,19 @@ export default function WithdrawalItem({ item }) {
         value ? (
             <Pressable style={NewStyles.rowWrapper} onPress={action}>
                 <Text style={NewStyles.text3}>{t(label)}</Text>
-                <Text style={textStyle}>{value}</Text>
+                <Text style={textStyle}>{t(value)}</Text>
             </Pressable>
         ) : null;
 
     return (
         <View style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]}>
-            {renderRow(`شناسه: ${item?.id ?? '---'}`, formatDateTime(item?.created_at))}
-            {renderRow('Amount', `${formatPrice(item?.price)} ${t('T')}`)}
+            {renderRow(`ID: ${item?.id ?? '---'}`, formatDateTime(item?.created_at))}
+            {renderRow('Amount', `${formatPrice(item?.price)} ${t('currency unit')}`)}
             {renderRow('IBAN', `${item?.iban}`)}
-            {renderRow('Status', item?.status == 0 ? 'در حال رسیدگی' : item?.status == 1 ? 'تأیید شده' : item?.status == 3 ? 'تکمیل شده' : 'رد شده', item?.status == 0 ? NewStyles.text1 : item?.status == 1 ? NewStyles.text7 : item?.status == 3 ? NewStyles.text7 : NewStyles.text6)}
-            {item?.file_path && renderRow('رسید پرداخت', `مشاهده`, NewStyles.text, () => Linking.openURL(`${imageUri}/${item?.file_path}`))}
-            {item?.updated_at && item?.status == 3 && renderRow('تاریخ پایان', formatDateTime(item?.updated_at))}
-            {item?.response && renderRow('توضیحات', ` `)}
+            {renderRow('Status', item?.status == 0 ? 'Pending' : item?.status == 1 ? "Approved" : item?.status == 3 ? 'Completed' : 'Rejected', item?.status == 0 ? NewStyles.text1 : item?.status == 1 ? NewStyles.text7 : item?.status == 3 ? NewStyles.text7 : NewStyles.text6)}
+            {item?.file_path && renderRow('Payment receipt', `View`, NewStyles.text, () => Linking.openURL(`${imageUri}/${item?.file_path}`))}
+            {item?.updated_at && item?.status == 3 && renderRow('End Date', formatDateTime(item?.updated_at))}
+            {item?.response && renderRow('Description', ` `)}
             {item?.response && renderRow(``, `${item?.response}`, [NewStyles.text10, { flex: 1 }])}
         </View>
     )

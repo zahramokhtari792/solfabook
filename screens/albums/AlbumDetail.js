@@ -223,7 +223,7 @@ const AlbumDetail = ({ route, navigation }) => {
         axios.post(`${uri}/submitRate`, { rate: score, comment: message, file_id: fileId, useful: useful, attractive: attractive, weighty: weighty, informative: informative }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
 
-                showToastOrAlert(res?.data?.message);
+                showToastOrAlert(t(res?.data?.message));
                 checkLikedSaved();
                 setScore(null)
                 setemessage(null)
@@ -321,7 +321,7 @@ const AlbumDetail = ({ route, navigation }) => {
         setLoader(true)
         axios.post(`${uri}/deleteFileComment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
-                showToastOrAlert(res?.data?.message)
+                showToastOrAlert(t(res?.data?.message))
             })
             .catch((err) => {
                 handleError(err);

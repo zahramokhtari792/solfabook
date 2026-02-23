@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 const PictureAudio = ({ route }) => {
     const params = route?.params;
     const id = params?.id;
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const userToken = useSelector(state => state.auth?.token);
@@ -149,9 +149,9 @@ const PictureAudio = ({ route }) => {
             if (info.exists && done.exists) {
                 setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
                 setDownloadingTrackId(null);
-                Alert.alert('Download complete', 'Play from local now?', [
-                    { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                    { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+                Alert.alert(t('Download complete'), t('Play from local now?'), [
+                    { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                    { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
                 ]);
                 return;
             }
@@ -162,10 +162,9 @@ const PictureAudio = ({ route }) => {
             const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
             await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-            console.log('[PictureAudio] Download complete', { trackId, downloadedUri });
-            Alert.alert('Download complete', 'Play from local now?', [
-                { text: 'No', style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                { text: 'Yes', onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
+            Alert.alert(t('Download complete'), t('Play from local now?'), [
+                { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
+                { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
             ]);
         } catch (e) {
             console.log('[PictureAudio] Download error', e?.message ?? e);

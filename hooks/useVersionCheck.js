@@ -4,6 +4,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { uri } from '../services/URL';
+import { useTranslation } from 'react-i18next';
 
 const showToast = (message) => {
   if (Platform.OS === 'android') {
@@ -48,6 +49,8 @@ export const useVersionCheck = () => {
   const [updateInfo, setUpdateInfo] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { i18n } = useTranslation()
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
   const checkVersion = async (forceCheck = false) => {
     try {
@@ -80,6 +83,7 @@ export const useVersionCheck = () => {
           platform: Platform.OS,
           current_version: currentVersion,
         },
+        headers: { 'Accept-Language': lang }
       });
 
       console.log('✅ API Response:', response.data);
@@ -148,7 +152,7 @@ export const useVersionCheck = () => {
 
   useEffect(() => {
     console.log('🎬 useVersionCheck mounted - starting initial check');
-    checkVersion();
+    checkVersion(true);
   }, []);
 
   useEffect(() => {

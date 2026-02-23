@@ -105,7 +105,7 @@ const PublisherProfile = ({ route, navigation }) => {
                 {textShown && !showFullText && <TouchableOpacity style={[NewStyles.row, NewStyles.center]} onPress={() => {
                   setShowFullText(true)
                 }}>
-                  <Text style={[NewStyles.text, { marginHorizontal: 10 }]}>بیشتر</Text>
+                  <Text style={[NewStyles.text, { marginHorizontal: 10 }]}>{t("more")}</Text>
                   <Ionicons name='chevron-down' color={themeColor0.bgColor(1)} size={20} />
                 </TouchableOpacity>}
                 {(rated == 0 || !userToken) && <TouchableOpacity style={[NewStyles.row, { marginVertical: 5, marginHorizontal: 20 }, NewStyles.center]} onPress={() => {

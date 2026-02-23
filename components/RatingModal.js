@@ -23,7 +23,7 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
         axios.post(`${uri}/ratePublisher`, { rate: (score0 + score1 + score2) / 3, publisher_id: publisher_id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then(response => {
                 action()
-                showToastOrAlert(response?.data?.message)
+                showToastOrAlert(t(response?.data?.message))
 
             })
             .catch(error => console.log(error))

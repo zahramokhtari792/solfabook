@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const UpdateModal = ({ visible, onClose, updateInfo }) => {
 
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
@@ -40,17 +40,17 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
 
                     {/* Title */}
                     <Text style={[NewStyles.title10, styles.title]}>
-                        {updateInfo.force_update ? '⚠️ به‌روزرسانی ضروری' : '🎉 نسخه جدید آماده است!'}
+                        {updateInfo.force_update ? t("Force Update Required") : t("New Version Available")}
                     </Text>
 
                     {/* Version Info */}
                     <View style={[styles.versionContainer, NewStyles.row]}>
                         <Text style={[NewStyles.text10, styles.versionText]}>
-                            نسخه فعلی: <Text style={[NewStyles.title10, styles.versionNumber]}>{updateInfo.current_version}</Text>
+                            {t("Current version")}: <Text style={[NewStyles.title10, styles.versionNumber]}>{updateInfo.current_version}</Text>
                         </Text>
-                        <Ionicons name="arrow-back" size={20} color={themeColor3.bgColor(1)} />
+                        <Ionicons name={lang!='en' ? "arrow-back" : "arrow-forward"} size={20} color={themeColor3.bgColor(1)} />
                         <Text style={[NewStyles.text10, styles.versionText]}>
-                            نسخه جدید: <Text style={[NewStyles.title10, styles.versionNumber, { color: themeColor0.bgColor(1) }]}>{updateInfo.latest_version}</Text>
+                            {t("New version")}: <Text style={[NewStyles.title10, styles.versionNumber, { color: themeColor0.bgColor(1) }]}>{updateInfo.latest_version}</Text>
                         </Text>
                     </View>
 
@@ -68,7 +68,7 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
                             onPress={handleUpdate}
                         >
                             <Ionicons name="download-outline" size={20} color="#fff" />
-                            <Text style={[NewStyles.title4]}>به‌روزرسانی</Text>
+                            <Text style={[NewStyles.title4]}>{t("Update")}</Text>
                         </TouchableOpacity>
 
                         {!updateInfo.force_update && (
@@ -76,15 +76,13 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
                                 style={[styles.laterButton, { borderColor: themeColor3.bgColor(0.5) }]}
                                 onPress={onClose}
                             >
-                                <Text style={[NewStyles.text10, { color: themeColor3.bgColor(1) }]}>بعداً</Text>
+                                <Text style={[NewStyles.text10, { color: themeColor3.bgColor(1) }]}>{t("Later")}</Text>
                             </TouchableOpacity>
                         )}
                     </View>
 
                     {updateInfo.force_update && (
-                        <Text style={[NewStyles.text3, styles.forceUpdateNote]}>
-                            برای ادامه استفاده از برنامه، به‌روزرسانی الزامی است.
-                        </Text>
+                        <Text style={[NewStyles.text3, styles.forceUpdateNote]}>{t("An update is required to continue using the app.")}</Text>
                     )}
                 </View>
             </View>
