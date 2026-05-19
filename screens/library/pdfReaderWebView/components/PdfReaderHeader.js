@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { themeColor0, themeColor5 } from '../../../../theme/Color';
 import BackArrowIcon from './../../../../assets/svg/BackArrowIcon';
 import SearchIcon from './../../../../assets/svg/SearchIcon';
@@ -129,7 +129,7 @@ const PdfReaderHeader = ({
                             <Ionicons name="arrow-undo" size={24} color={themeColor0.bgColor(1)} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.iconButton} onPress={onClearAllDrawings}>
-                            <Ionicons name="trash" size={24} color={themeColor0.bgColor(1)} />
+                            <MaterialCommunityIcons name={"eraser"} size={24} color={themeColor0.bgColor(1)} />
                         </TouchableOpacity>
                     </>
                 )}

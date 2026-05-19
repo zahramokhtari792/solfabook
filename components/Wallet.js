@@ -2,7 +2,7 @@ import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Tex
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Linking from "expo-linking";
 import { themeColor0, themeColor1, themeColor10, themeColor4 } from '../theme/Color';
-import makeStyles from '../styles/NewStyles';
+import makeStyles, { langIsRTL } from '../styles/NewStyles';
 import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import TransparentButton from './TransparentButton';
@@ -82,13 +82,13 @@ const Wallet = ({ modal, setModal }) => {
                             {t('Recharge wallet')}
                         </Text>
                         <View style={{ height: 80, paddingVertical: 20, }}>
-                            <FlatList horizontal inverted style={{}} showsHorizontalScrollIndicator={false} key={items.id} keyExtractor={items.id} data={items} renderItem={item} />
+                            <FlatList horizontal inverted={langIsRTL(lang)} style={{}} showsHorizontalScrollIndicator={false} key={items.id} keyExtractor={items.id} data={items} renderItem={item} />
                         </View>
 
                         <Text style={NewStyles.text10}>
                             {t('Enter your desired amount.')}
                         </Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]} keyboardType='phone-pad' placeholder='10,000 تومان' value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }]} keyboardType='phone-pad' placeholder={`10,000 ${t("currency unit")}`} value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
 
                         <View style={{ flexDirection: 'row', width: '70%', justifyContent: 'space-between' }}>
                             <View style={{ width: '48%' }}>

@@ -20,7 +20,7 @@ export default function AboutUs() {
 
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false); 
+    const [refreshing, setRefreshing] = useState(false);
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
@@ -49,14 +49,14 @@ export default function AboutUs() {
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <FlatList
-                contentContainerStyle={[styles.contentContainerStyle, NewStyles.center]}
+                contentContainerStyle={[styles.contentContainerStyle]}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl colors={[themeColor1.bgColor(1)]} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}
                 ListEmptyComponent={<BlankScreen />}
                 data={data}
                 keyExtractor={(item) => item?.id?.toString()}
                 renderItem={({ item, index }) => (
-                    <View>
+                    <View style={{ width: '100%' }}>
                         <ImageBackground style={styles.imageBackground} blurRadius={2} source={{ uri: `${imageUri}/${item?.image_path}` }}>
                             <LinearGradient style={[{ flex: 1, paddingHorizontal: '5%' }, NewStyles.center]} colors={[themeColor0.bgColor(0.5), themeColor0.bgColor(0.4), themeColor10.bgColor(0.4), themeColor10.bgColor(0.7)]}>
                                 <Text style={[NewStyles.title4, { fontSize: 20 }]}>{item?.title}</Text>
@@ -71,7 +71,7 @@ export default function AboutUs() {
                 )}
                 ListFooterComponent={() => {
                     return (
-                        <View>
+                        <View style={[{width:'100%', }, NewStyles.center]}>
 
                             <Text style={NewStyles.text3}>{appVersion()} V</Text>
                         </View>
@@ -86,7 +86,8 @@ export default function AboutUs() {
 const styles = StyleSheet.create({
     contentContainerStyle: {
         paddingBottom: 20,
-        gap: 20
+        gap: 20,
+        width:'100%'
     },
     imageBackground: {
         width: '100%',

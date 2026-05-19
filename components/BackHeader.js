@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity, Pressable, Image } from 'react-native'
 import React, { useMemo } from 'react'
-import makeStyles, { deviceWidth } from '../styles/NewStyles'
+import makeStyles, { deviceWidth, langIsRTL } from '../styles/NewStyles'
 import { themeColor0, themeColor1, themeColor14, themeColor3, themeColor4, themeColor5 } from '../theme/Color'
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -26,7 +26,7 @@ const BackHeader = ({ bgColor = 1, title, transparent, customBack, isCustom }) =
                         <SearchIcon color={themeColor0.bgColor(1)} />
                     </Pressable>
                 </View>
-                <View style={{ flex: 1, alignItems: lang != 'en' ? 'flex-start' : 'flex-end', }}>
+                <View style={{ flex: 1, alignItems: langIsRTL(lang) ? 'flex-start' : 'flex-end', }}>
                     <TouchableOpacity style={[NewStyles.border10, NewStyles.center, { height: 35, width: 35, }]} onPress={() => {
                         if (isCustom) {
                             customBack()

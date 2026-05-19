@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, FlatList, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, ImageBackground, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import makeStyles from '../../styles/NewStyles'
 import Loader from '../../components/Loader'
@@ -11,7 +11,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { themeColor0, themeColor4 } from '../../theme/Color'
 import Video from 'react-native-video'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { CaptureProtection } from 'react-native-capture-protection'
+import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system'
 import { Ionicons } from '@expo/vector-icons'
@@ -323,36 +323,68 @@ const VideoPlayer = ({ route, navigation }) => {
       <ImageBackground style={[{ flex: 1, paddingTop: 65 }]} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
         {
           videoSource ? (
-            <Video
-              key={`video_${playerKey}`}
-              source={videoSource}
-              style={{ aspectRatio: 1, width: '100%' }}
-              resizeMode="contain"
-              controls
-              paused={false}
-              onLoad={() => {
-                console.log('[VideoPlayer] onLoad', {
-                  source: sourceType,
-                  uri: sourceType === 'local' ? localUri : videoUri,
-                });
-              }}
-              onError={(e) => {
-                console.log('[VideoPlayer] onError', {
-                  source: sourceType,
-                  uri: sourceType === 'local' ? localUri : videoUri,
-                  error: e?.error ?? e,
-                });
-                if (sourceType === 'local') {
-                  invalidateLocalCache();
-                }
-              }}
-              onFullscreenPlayerWillPresent={() => {
-                ScreenOrientation.unlockAsync();
-              }}
-              onFullscreenPlayerDidDismiss={() => {
-                ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-              }}
-            />
+            <View
+              style={[
+                {
+                  width: '100%',
+                  overflow: 'hidden',
+                  backgroundColor: 'black',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+                Platform.OS === 'web'
+                  ? {
+                    height: 300,
+                    minHeight: 300,
+                    flexShrink: 0,
+                  }
+                  : {
+                    aspectRatio: 1,
+                  },
+              ]}
+            >
+              <Video
+                key={`video_${playerKey}`}
+                source={videoSource}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                }}
+                resizeMode="contain"
+                controls
+                paused={false}
+                onLoad={() => {
+                  console.log('[VideoPlayer] onLoad', {
+                    source: sourceType,
+                    uri: sourceType === 'local' ? localUri : videoUri,
+                  });
+                }}
+                onError={(e) => {
+                  console.log('[VideoPlayer] onError', {
+                    source: sourceType,
+                    uri: sourceType === 'local' ? localUri : videoUri,
+                    error: e?.error ?? e,
+                  });
+
+                  if (sourceType === 'local') {
+                    invalidateLocalCache();
+                  }
+                }}
+                onFullscreenPlayerWillPresent={() => {
+                  if (Platform.OS !== 'web') {
+                    ScreenOrientation.unlockAsync();
+                  }
+                }}
+                onFullscreenPlayerDidDismiss={() => {
+                  if (Platform.OS !== 'web') {
+                    ScreenOrientation.lockAsync(
+                      ScreenOrientation.OrientationLock.PORTRAIT_UP
+                    );
+                  }
+                }}
+              />
+            </View>
           ) : (
             <View style={{ aspectRatio: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
               <Text style={[NewStyles.text10, { textAlign: 'center' }]}>No video available</Text>

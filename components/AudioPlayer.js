@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Platform } from 'react-native';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import PlayBackIcon from '../assets/svg/PlayBackIcon';
 import PlayForwardIcon from '../assets/svg/PlayForwardIcon';
 import { dlUrl } from '../services/URL';
 import { useTranslation } from 'react-i18next';
-import { CaptureProtection, CaptureEventType } from 'react-native-capture-protection';
+import { CaptureProtection, CaptureEventType } from '../helpers/CaptureProtection';
 
 /**
  * Global: Only one audio plays at a time (across screens/components)
@@ -64,6 +64,7 @@ export default function AudioPlayer({
     const [isLoaded, setIsLoaded] = useState(false);
     const [loadingErr, setLoadingErr] = useState(null);
     const [pendingPlay, setPendingPlay] = useState(false);
+    const [rate, setRate] = useState(1);
 
     // Seek snap-back fix: lock progress updates until player reaches target
     const seekTargetRef = useRef(null); // ms
@@ -303,7 +304,8 @@ export default function AudioPlayer({
                 isDownloading: false,
             });
             setIsDownloading(false);
-        }}, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
+        }
+    }, [cacheDir, isDownloading, localPath, localUri, remoteUri]);
 
     const wantsLocal = (
         (preferLocalMap && preferLocalMap[trackId] === true) ||
@@ -397,6 +399,7 @@ export default function AudioPlayer({
         ? (seekableMs > 0 ? Math.min(total, seekableMs) : total)
         : 0;
 
+
     return (
         <View>
             <Video
@@ -406,6 +409,7 @@ export default function AudioPlayer({
                 audioOnly
                 paused={!playing}
                 playInBackground
+                rate={rate}
                 playWhenInactive
                 ignoreSilentSwitch="ignore"
                 progressUpdateInterval={250}
@@ -494,7 +498,7 @@ export default function AudioPlayer({
                 }}
             />
 
-            <View style={{ marginTop: 10 }}>
+            <View style={[{ marginTop: 10, }, Platform.OS === 'web' && { paddingHorizontal: 15 }]}>
 
 
                 <Slider
@@ -551,7 +555,7 @@ export default function AudioPlayer({
                 </View>
             </View>
 
-            <View style={[NewStyles.row, NewStyles.center, { gap: 10, flexDirection:'row-reverse' }]}>
+            <View style={[NewStyles.row, NewStyles.center, { gap: 10, flexDirection: 'row-reverse' }]}>
                 {audio?.length > 1 && (
                     <TouchableOpacity
                         onPress={next}
@@ -568,7 +572,7 @@ export default function AudioPlayer({
                     <TouchableOpacity
                         onPress={() => {
                             // if (!checkIsRecording()) {
-                                handlePlayPress()
+                            handlePlayPress()
                             // }
                         }}
                         disabled={!!loadingErr || !remoteUri || remoteUri.endsWith('/') || isDownloading}
@@ -601,6 +605,35 @@ export default function AudioPlayer({
                     </TouchableOpacity>
                 )}
             </View>
+            <ScrollView horizontal style={[{ marginTop: 15, gap: 10 }]} contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }} showsHorizontalScrollIndicator={false}>
+                {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map((item) => (
+                    <TouchableOpacity
+                        key={item}
+                        onPress={() => setRate(item)}
+                        style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 20,
+                            backgroundColor:
+                                rate === item
+                                    ? themeColor0.bgColor(1)
+                                    : themeColor1.bgColor(0.2),
+                        }}
+                    >
+                        <Text
+                            style={{
+                                color:
+                                    rate === item
+                                        ? '#fff'
+                                        : themeColor0.bgColor(1),
+                                fontSize: 14,
+                            }}
+                        >
+                            {item}x
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
         </View>
     );
 }

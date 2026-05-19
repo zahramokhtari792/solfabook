@@ -12,7 +12,7 @@ import ModalPlayer from './ModalPlayer';
 import { TouchableOpacity } from 'react-native';
 import AlbumIcon from '../../assets/svg/AlbumIcon';
 import { themeColor0 } from '../../theme/Color';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection } from '../../helpers/CaptureProtection';
 import { useTranslation } from 'react-i18next';
 import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';

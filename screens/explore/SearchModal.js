@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
-import makeStyles from '../../styles/NewStyles';
+import makeStyles, { langIsRTL } from '../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -57,7 +57,7 @@ const SearchModal = () => {
                         }}>
                             <Ionicons name='search' color={themeColor0.bgColor(1)} size={24} />
                         </TouchableOpacity>
-                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, lang != 'en' ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', }]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
+                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
                             onEndEditing={() => {
                                 if (value && value?.trim()) {
                                     search()

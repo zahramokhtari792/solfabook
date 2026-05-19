@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { themeColor0, themeColor3, themeColor10, themeColor4, themeColor5, themeColor1, } from '../theme/Color';
 import Home from './home/Home';
@@ -17,6 +17,7 @@ import Categories from './category/Categories';
 import MyFiles from './library/MyFiles';
 import AlbumTab from './albums/AlbumTab';
 import { Ionicons } from '@expo/vector-icons';
+import { langIsRTL } from '../styles/NewStyles';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,13 +35,13 @@ export default function MainLayout() {
                 headerShown: true,
                 headerTitle: '',
                 headerBackTitle: 'Back',
-                headerTitleStyle: { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin'},
+                headerTitleStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin'},
                 headerTintColor: themeColor10.bgColor(1),
-                tabBarStyle: { backgroundColor: themeColor4.bgColor(1) },
-                tabBarLabelStyle: { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin'},
+                tabBarStyle:[ { backgroundColor: themeColor4.bgColor(1) }, Platform.OS === 'web' ? { height: 70 } : {}],
+                tabBarLabelStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin'},
                 tabBarActiveTintColor: themeColor0.bgColor(1),
                 tabBarInactiveTintColor: themeColor1.bgColor(1),
-                headerLeftContainerStyle: lang != 'en' ? { paddingLeft: '5%' } : { paddingRight: '5%' },
+                headerLeftContainerStyle: langIsRTL(lang) ? { paddingLeft: '5%' } : { paddingRight: '5%' },
                 headerShadowVisible: false,
                 header: () => {
                     return (

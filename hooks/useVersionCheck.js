@@ -51,7 +51,6 @@ export const useVersionCheck = () => {
   const [loading, setLoading] = useState(true);
   const { i18n } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-
   const checkVersion = async (forceCheck = false) => {
     try {
       // در وب نیازی به چک نیست
@@ -63,7 +62,7 @@ export const useVersionCheck = () => {
       // چک کردن آخرین زمان بررسی
       if (!forceCheck) {
         const lastCheck = await AsyncStorage.getItem(LAST_CHECK_KEY);
-
+        
         if (lastCheck) {
           const timeSinceLastCheck = Date.now() - parseInt(lastCheck);
           if (timeSinceLastCheck < CHECK_INTERVAL) {
@@ -72,10 +71,11 @@ export const useVersionCheck = () => {
           }
         }
       }
-
+      
+      const langApp = await AsyncStorage.getItem("lang"); 
       // گرفتن ورژن فعلی
       const currentVersion = Constants.expoConfig?.version || '1.0.0';
-      console.log('🔍 Checking version - Current:', currentVersion, 'API URL:', `${uri}/checkAppVersion`);
+      console.log('🔍 Checking version - Current:', currentVersion, 'API URL:', `${uri}/checkAppVersion`, langApp);
 
       // فراخوانی API
       const response = await axios.get(`${uri}/checkAppVersion`, {
@@ -83,7 +83,7 @@ export const useVersionCheck = () => {
           platform: Platform.OS,
           current_version: currentVersion,
         },
-        headers: { 'Accept-Language': lang }
+        headers: { 'Accept-Language': langApp }
       });
 
       console.log('✅ API Response:', response.data);
@@ -136,15 +136,15 @@ export const useVersionCheck = () => {
       }
 
       // فقط وقتی چک دستی بود پیام خطا بده
-      if (forceCheck) {
-        if (error.response) {
-          showToast(`خطا در بررسی نسخه: ${error.response.status} - ${error.response.data?.message || 'خطای سرور'}`);
-        } else if (error.request) {
-          showToast('خطا در اتصال به سرور. لطفاً اتصال اینترنت خود را بررسی کنید.');
-        } else {
-          showToast('خطا در بررسی به‌روزرسانی: ' + error.message);
-        }
-      }
+      // if (forceCheck) {
+      //   if (error.response) {
+      //     showToast(`خطا در بررسی نسخه: ${error.response.status} - ${error.response.data?.message || 'خطای سرور'}`);
+      //   } else if (error.request) {
+      //     showToast('خطا در اتصال به سرور. لطفاً اتصال اینترنت خود را بررسی کنید.');
+      //   } else {
+      //     showToast('خطا در بررسی به‌روزرسانی: ' + error.message);
+      //   }
+      // }
 
       setLoading(false);
     }

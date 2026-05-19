@@ -1,6 +1,6 @@
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ImageBackground, RefreshControl, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import makeStyles, { deviceWidthScreen } from '../../styles/NewStyles'
+import makeStyles, { deviceWidthScreen, langIsRTL } from '../../styles/NewStyles'
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
@@ -12,7 +12,6 @@ import HeartIconFill from './../../assets/svg/HeartIconFill';
 import HeartIcon from './../../assets/svg/HeartIcon';
 import BookmarkFillIcon from './../../assets/svg/BookmarkFillIcon';
 import BookmarkIcon from './../../assets/svg/BookmarkIcon';
-import Share from 'react-native-share';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLoginModal } from '../../context/LoginProvider';
 import { useTranslation } from 'react-i18next';
@@ -29,8 +28,8 @@ import AlertModal from '../../components/AlertModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import AudioPlayer from '../../components/AudioPlayer';
 import { fetchUser } from '../../slices/userSlice';
-import * as FileSystem from 'expo-file-system';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection } from '../../helpers/CaptureProtection';
+import { shareContent } from '../../helpers/ShareHelper';
 
 const AlbumDetail = ({ route, navigation }) => {
     const params = route?.params;
@@ -143,23 +142,23 @@ const AlbumDetail = ({ route, navigation }) => {
                         <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                             {item.useful == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>مفیدبود🙂</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>مفیدبود🙂</Text>
                                 </View>
                             }
 
                             {item.weighty == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>پرباربود🤔</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>پرباربود🤔</Text>
                                 </View>
                             }
                             {item.attractive == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>جذاب بود🧐</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>جذاب بود🧐</Text>
                                 </View>
                             }
                             {item.informative == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>آموزنده بود🤓</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>آموزنده بود🤓</Text>
                                 </View>
                             }
                         </View>
@@ -334,22 +333,11 @@ const AlbumDetail = ({ route, navigation }) => {
     }
     const shareFile = async () => {
         try {
-            // فقط اسم فایل رو بگیر
-            const fileName = data?.image_gallery?.image_path.split('/').pop(); // 👉 918211752756797.webp
-            const localPath = `${FileSystem.cacheDirectory}${fileName}`;
-
-            // encode URL (برای اطمینان)
             const fromUrl = encodeURI(`${dlUrl}/${data?.image_gallery?.image_path}`);
-
-            // دانلود فایل توی cache
-            const { uri } = await FileSystem.downloadAsync(fromUrl, localPath);
-
-            // share
-            await Share.open({
+            await shareContent({
                 title: t("Share"),
                 message: t('{{title}} has been received from Solfabook.\nSolfabook; your always-on music library \nhttps://solfabook.com/product/{{fileId}}', { title: data?.title, fileId: data?.id }),
-                url: uri,                // expo برمی‌گردونه مثل file:///...
-                // type: 'image/webp',      // چون پسوند webp هست
+                originalUrl: fromUrl,
             });
         } catch (error) {
             console.log('Error =>', error);
@@ -417,10 +405,11 @@ const AlbumDetail = ({ route, navigation }) => {
                                 <TouchableOpacity style={{ padding: 8 }} onPress={() => {
                                     if (Platform.OS === 'ios') {
                                         if (data?.base64) {
-                                            Share.open({
+                                            shareContent({
                                                 title: `اشتراک گذاری`,
                                                 message: `${data?.title} را از سل‌فابوک دریافت کنید.\n سل‌فا‌بوک؛ کتابخانه موسیقی همیشه همراهت \nhttps://ios.laravel.solfabook.com/product/${fileId}`,
-                                                url: data?.base64
+                                                fileUri: data?.base64,
+                                                originalUrl: `${dlUrl}/${data?.image_gallery?.image_path}`,
                                             })
                                         }
                                     } else {
@@ -483,8 +472,8 @@ const AlbumDetail = ({ route, navigation }) => {
                                 Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeColor0.bgColor(1) }} />}
 
-                            {(data?.des || data?.description) && <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginVertical: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
+                            {(data?.des || data?.description) && <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
+                                <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginVertical: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
                                 <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), width: '100%', padding: 10, borderRadius: 8 }}>
                                     <Text style={NewStyles.text10} numberOfLines={3}>{data?.des ? data?.des : data?.description}</Text>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }} onPress={() => {
@@ -499,8 +488,8 @@ const AlbumDetail = ({ route, navigation }) => {
                                 <FlatList
                                     ListHeaderComponent={() => {
                                         return (
-                                            <View style={{ alignItems: lang != 'en' ? 'flex-end' : 'flex-start' }}>
-                                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Album tracks")}</Text>
+                                            <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
+                                                <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album tracks")}</Text>
                                             </View>
                                         )
                                     }}
@@ -583,12 +572,12 @@ const AlbumDetail = ({ route, navigation }) => {
 
                         <View style={{ paddingHorizontal: '5%' }}>
                             <View style={NewStyles.rowWrapper}>
-                                <View style={{ alignItems: 'flex-end' }}>
-                                    <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("Album rating")}</Text>
+                                <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
+                                    <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album rating")}</Text>
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
-                                        <Text style={{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', marginHorizontal: 5, }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
+                                        <Text style={{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
                                         {data?.file_comment_avg_rate >= 1 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 2 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 3 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
@@ -620,7 +609,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: 'right', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this album...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: themeColor10.bgColor(1) }} verticalAlign='top' placeholder={t('My opinion about this album...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -643,7 +632,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>
                                             <View style={[{ marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 100 }, myComment.is_show == 0 ? { backgroundColor: themeColor11.bgColor(0.2) } : { backgroundColor: themeColor7.bgColor(0.2) }]}>
-                                                <Text style={[{ fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
+                                                <Text style={[{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
                                             </View>
                                         </View>
                                         <TouchableOpacity onPress={() => {
@@ -675,23 +664,23 @@ const AlbumDetail = ({ route, navigation }) => {
                                             <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                                                 {myComment.useful == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Usefull')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Usefull')}</Text>
                                                     </View>
                                                 }
 
                                                 {myComment.weighty == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Fruitful')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fruitful')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.attractive == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Fascinating')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fascinating')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.informative == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t('Informative')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Informative')}</Text>
                                                     </View>
                                                 }
                                             </View>
@@ -702,8 +691,8 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </View>
                                 </View>
                             }
-                            <View style={{ alignItems: 'flex-end' }}>
-                                <Text style={[styles.sectiontitle, { marginTop: 20, marginBottom: 10, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
+                            <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
+                                <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
                             </View>
 
                         </View>
@@ -764,7 +753,6 @@ const styles = StyleSheet.create({
     },
     sectiontitle: {
         fontSize: 16,
-        textAlign: 'right',
         marginBottom: 15,
         borderLeftColor: themeColor0.bgColor(1),
         borderLeftWidth: 2,

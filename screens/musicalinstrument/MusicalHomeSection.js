@@ -1,6 +1,6 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import makeStyles, { langIsRTL } from '../../styles/NewStyles'
 import { imageUri, mainUri } from '../../services/URL'
 import { themeColor4 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
@@ -13,7 +13,7 @@ const MusicalHomeSection = ({ data, title }) => {
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <View style={{ width: '100%' }}>
-            <View style={[NewStyles.rowWrapper, { marginBottom: 20, marginTop: 20 }, lang != 'en' ? { paddingRight: 10 } : { paddingLeft: 10 }]}>
+            <View style={[NewStyles.rowWrapper, { marginBottom: 20, marginTop: 20 }, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }]}>
                 <Text style={[NewStyles.title10,]}>{title}</Text>
             </View>
             <Pressable style={[{ width: '100%', }, NewStyles.center, NewStyles.shadow]} onPress={() => {

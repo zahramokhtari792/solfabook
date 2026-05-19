@@ -3,7 +3,7 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, Linking, Platform } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4 } from '../theme/Color';
-import { makeStyles } from '../styles/NewStyles';
+import { langIsRTL, makeStyles } from '../styles/NewStyles';
 import { useTranslation } from 'react-i18next';
 
 const UpdateModal = ({ visible, onClose, updateInfo }) => {
@@ -48,7 +48,7 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
                         <Text style={[NewStyles.text10, styles.versionText]}>
                             {t("Current version")}: <Text style={[NewStyles.title10, styles.versionNumber]}>{updateInfo.current_version}</Text>
                         </Text>
-                        <Ionicons name={lang!='en' ? "arrow-back" : "arrow-forward"} size={20} color={themeColor3.bgColor(1)} />
+                        <Ionicons name={langIsRTL(lang) ? "arrow-back" : "arrow-forward"} size={20} color={themeColor3.bgColor(1)} />
                         <Text style={[NewStyles.text10, styles.versionText]}>
                             {t("New version")}: <Text style={[NewStyles.title10, styles.versionNumber, { color: themeColor0.bgColor(1) }]}>{updateInfo.latest_version}</Text>
                         </Text>

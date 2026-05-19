@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux'
 import BookmarkFillIcon from './../../assets/svg/BookmarkFillIcon';
 import { handleError } from '../../helpers/Common'
 import { useLoginModal } from '../../context/LoginProvider'
-import { CaptureProtection } from 'react-native-capture-protection'
+import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
 
 const WordDetail = ({ route }) => {

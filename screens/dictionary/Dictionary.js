@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from './../../components/Button';
 import { LinearGradient } from 'expo-linear-gradient';
 import { fetchUser } from '../../slices/userSlice';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection } from '../../helpers/CaptureProtection';
 
 const Dictionary = ({ navigation }) => {
   const [data, setData] = useState([]);

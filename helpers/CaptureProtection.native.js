@@ -1,0 +1,1 @@
+export { CaptureProtection, CaptureEventType } from 'react-native-capture-protection';

@@ -66,6 +66,7 @@ import { useVersionCheckContext, VersionCheckProvider } from './context/VersionC
 import AlbumCart from './screens/albums/AlbumCart';
 import ar from './assets/locales/ar.json';
 import ckb from './assets/locales/ckb.json';
+import tr from './assets/locales/tr.json';
 import PDFReaderScreen from './screens/library/PDFReaderScreen';
 
 function VersionCheckModal() {
@@ -91,6 +92,7 @@ i18n
       fa: { translation: fa },
       ar: { translation: ar },
       ckb: { translation: ckb },
+      tr: { translation: tr },
     },
     lng: 'en',
     fallbackLng: 'en',

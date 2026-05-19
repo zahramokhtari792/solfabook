@@ -8,6 +8,7 @@ import Button from './Button';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { showToastOrAlert } from '../helpers/Common';
+import { langIsRTL } from '../styles/NewStyles';
 
 const RatingModal = ({ modal, setModal, publisher_id, action }) => {
 
@@ -37,12 +38,12 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
             <TouchableWithoutFeedback onPress={() => { setModal(false); }}>
                 <View style={{ height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: themeColor10.bgColor(0.2) }}>
                     <View style={styles.modal}>
-                        <Text style={{ fontSize: 16, color: themeColor0.bgColor(1), paddingHorizontal: 30, textAlign: 'center', fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
+                        <Text style={{ fontSize: 16, color: themeColor0.bgColor(1), paddingHorizontal: 30, textAlign: 'center', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }}>
                             {t('Share your opinion with us.')}
                         </Text>
 
                         <View style={{ width: '100%', alignItems: 'center', }}>
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Content quality")}
                             </Text>
                             <Slider
@@ -57,7 +58,7 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
                                 onValueChange={(value) => { setScore0(value) }}
                             />
 
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Credibility and history")}
                             </Text>
                             <Slider
@@ -72,7 +73,7 @@ const RatingModal = ({ modal, setModal, publisher_id, action }) => {
                                 onValueChange={(value) => { setScore1(value) }}
                             />
 
-                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }}>
+                            <Text style={{ textAlign: 'center', color: themeColor1.bgColor(1), fontSize: 14, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }}>
                                 {t("Trustworthiness")}
                             </Text>
                             <Slider

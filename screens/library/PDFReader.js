@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
 import { dlUrl, uri } from './../../services/URL';
@@ -11,7 +11,7 @@ import PDFReaderWebView from './PDFReaderWebView';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AudioPlayer from '../../components/AudioPlayer';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection } from '../../helpers/CaptureProtection';
 import AlbumIcon from '../../assets/svg/AlbumIcon';
 import { themeColor0 } from '../../theme/Color';
 import ModalPlayer from './ModalPlayer';
@@ -19,6 +19,10 @@ import { useTranslation } from 'react-i18next';
 import * as FileSystem from 'expo-file-system';
 
 const PDFReader = ({ route }) => {
+    if (Platform.OS === 'web') {
+        const PDFReaderWeb = require('./PDFReaderWebView.web').default;
+        return <PDFReaderWeb route={route} />;
+    }
 
     const { t } = useTranslation()
     const params = route?.params;
@@ -151,12 +155,18 @@ const PDFReader = ({ route }) => {
 
 
     useEffect(() => {
+        if (Platform.OS === 'web') {
+            return undefined;
+        }
+
         // وقتی صفحه باز شد → اجازه چرخش بده
-        ScreenOrientation.unlockAsync();
+        ScreenOrientation.unlockAsync().catch(() => undefined);
 
         return () => {
-            // وقتی صفحه بسته شد → دوباره قفل کن (مثلاً فقط portrait)
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+            if (Platform.OS !== 'web') {
+                // وقتی صفحه بسته شد → دوباره قفل کن (مثلاً فقط portrait)
+                ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => undefined);
+            }
         };
     }, []);
 

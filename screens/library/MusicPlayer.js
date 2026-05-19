@@ -11,7 +11,7 @@ import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color';
 import Loader from '../../components/Loader';
 import AudioPlayer from '../../components/AudioPlayer';
 import { Ionicons } from '@expo/vector-icons';
-import { CaptureProtection } from 'react-native-capture-protection';
+import { CaptureProtection } from '../../helpers/CaptureProtection';
 import { useTranslation } from 'react-i18next';
 import * as FileSystem from 'expo-file-system';
 

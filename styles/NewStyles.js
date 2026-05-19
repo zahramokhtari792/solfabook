@@ -22,7 +22,7 @@ export const gradientColors = [
 
 const RTL_LANGS = new Set(['fa', 'ar', 'he', 'ur', 'ps', 'ckb']);
 
-const langIsRTL = (lang) => {
+export const langIsRTL = (lang) => {
     const code = (lang || '').toLowerCase().split('-')[0];
     return RTL_LANGS.has(code);
 };

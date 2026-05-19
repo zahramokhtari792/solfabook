@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import React, { useMemo } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { themeColor0, themeColor1, themeColor4 } from '../theme/Color';
-import makeStyles from '../styles/NewStyles';
+import makeStyles, { langIsRTL } from '../styles/NewStyles';
 import { useTranslation } from 'react-i18next';
 
 
@@ -19,7 +19,7 @@ const OptionsComponents = ({ icon, txt, onPress, }) => {
                 </View>
                 <Text style={[NewStyles.text10, { paddingHorizontal: 10, }]}>{txt}</Text>
             </View>
-            <Ionicons name={lang != 'en' ? 'chevron-back' : 'chevron-forward'} color={themeColor0.bgColor(1)} size={20} />
+            <Ionicons name={langIsRTL(lang) ? 'chevron-back' : 'chevron-forward'} color={themeColor0.bgColor(1)} size={20} />
         </TouchableOpacity>
 
     )

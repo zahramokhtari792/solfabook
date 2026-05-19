@@ -13,7 +13,7 @@ import Button from '../../components/Button';
 import TransparentButton from '../../components/TransparentButton';
 import { setToken } from '../../slices/authSlice';
 import { useTranslation } from 'react-i18next';
-import makeStyles from '../../styles/NewStyles';
+import makeStyles, { langIsRTL } from '../../styles/NewStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { handleError, showToastOrAlert } from '../../helpers/Common';
 import { useLoginModal } from '../../context/LoginProvider';
@@ -34,6 +34,8 @@ export default function LoginModal() {
     const [error, setError] = useState('');
     const [deviceInfo, setDeviceInfo] = useState('');
     const device = useSelector(state => state.auth?.deviceInfo)
+    console.log("device:", device);
+    
     const ref = useBlurOnFulfill({ value, cellCount: 6 });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
         value,
@@ -171,7 +173,7 @@ export default function LoginModal() {
                                 </View>
                                 :
                                 <View style={styles.wrapper}>
-                                    <Text style={NewStyles.text10}>{t('A verification code has been sent to')} {phone}.</Text>
+                                    <Text style={NewStyles.text10}>{t('A verification code has been sent to {{phone}}.', { phone })}</Text>
                                     <CodeField
                                         ref={ref}
                                         {...props}
@@ -184,7 +186,7 @@ export default function LoginModal() {
                                         renderCell={({ index, symbol, isFocused }) => (
                                             <Text
                                                 key={index}
-                                                style={[styles.cell, NewStyles.border10, { fontFamily: lang != 'en' ? 'VazirBold' : 'VazirThin' }]}
+                                                style={[styles.cell, NewStyles.border10, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}
                                                 onLayout={getCellOnLayoutHandler(index)}>
                                                 {symbol || (isFocused ? <Cursor /> : null)}
                                             </Text>

@@ -153,6 +153,34 @@ const Language = () => {
 
         />
       </View>
+      <View style={[styles.itemWrapper, NewStyles.rowWrapper]}>
+        <BouncyCheckbox
+          size={25}
+          fillColor={themeColor0.bgColor(1)}
+          unFillColor={themeColor5.bgColor(1)}
+          iconStyle={{ borderColor: themeColor0.bgColor(1) }}
+          text={'Turkish'}
+          innerIconStyle={{ borderWidth: 1 }}
+          textStyle={[NewStyles.text, { textDecorationLine: 'none' }]}
+          onPress={() => {
+            i18n
+              .changeLanguage('tr')
+              .then(() => {
+                if(token){
+
+                  dispatch(fetchUser({token, lang:'tr'}))
+                }
+              })
+              .catch(err => {
+                console.log('something went wrong while applying RTL');
+              });
+            saveLanguage('tr');
+          }}
+          disableBuiltInState
+          isChecked={lang == 'tr' ? true : false}
+
+        />
+      </View>
     </SafeAreaView>
   )
 }
