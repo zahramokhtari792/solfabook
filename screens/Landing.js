@@ -31,6 +31,8 @@ export default function Landing() {
             // Windows: "{2cf7cb3c-da7a-d508-0d7f-696bb51185b4}"
             dispatch(setDeviceInfo(uniqueId))
         });
+      
+       
         
     }
     useEffect(() => {

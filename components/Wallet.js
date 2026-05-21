@@ -33,7 +33,7 @@ const Wallet = ({ modal, setModal }) => {
         );
     }
     const redirectUrl = Linking.createURL("/?");
- 
+
 
     const increaseWallet = async () => {
         try {
@@ -75,8 +75,8 @@ const Wallet = ({ modal, setModal }) => {
             setModal(false)
         }}>
 
-            <TouchableWithoutFeedback onPress={() => { setModal(false); }}>
-                <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0} style={{ flex: 1, backgroundColor: themeColor10.bgColor(0.2), }}>
+            <TouchableWithoutFeedback onPress={() => { if (Platform.OS !== 'web') { setModal(false); } }}>
+                <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 0} style={{ flex: 1, backgroundColor: themeColor10.bgColor(0.2), }}>
                     <View style={[styles.modal, NewStyles.shadow]}>
                         <Text style={[NewStyles.title, { textAlign: 'center' }]}>
                             {t('Recharge wallet')}
@@ -88,7 +88,7 @@ const Wallet = ({ modal, setModal }) => {
                         <Text style={NewStyles.text10}>
                             {t('Enter your desired amount.')}
                         </Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }]} keyboardType='phone-pad' placeholder={`10,000 ${t("currency unit")}`} value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='phone-pad' placeholder={`10,000 ${t("currency unit")}`} value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
 
                         <View style={{ flexDirection: 'row', width: '70%', justifyContent: 'space-between' }}>
                             <View style={{ width: '48%' }}>

@@ -1,4 +1,4 @@
-import { Linking, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Linking, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import makeStyles from '../../styles/NewStyles'
@@ -76,15 +76,15 @@ const Contact = () => {
                     <Text style={[NewStyles.title, { paddingVertical: 20, fontSize: 20 }]}>{t("Get in touch with us.")}</Text>
                     <View style={{ gap: 10, width: '100%', paddingHorizontal: '5%' }}>
                         <Text style={NewStyles.text}>{t("Message subject")} <Text>*</Text></Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10]} placeholder={`${t("Message subject")}`} value={title} onChangeText={(text) => setTitle(text)} maxLength={191} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={`${t("Message subject")}`} value={title} onChangeText={(text) => setTitle(text)} maxLength={191} />
                         <Text style={NewStyles.text}>{t("Name and surname")} <Text>*</Text></Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10]} placeholder={`${t("Name and surname")}`} value={name} onChangeText={(text) => setName(text)} maxLength={191} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={`${t("Name and surname")}`} value={name} onChangeText={(text) => setName(text)} maxLength={191} />
                         <Text style={NewStyles.text}>{t("Email")} <Text>*</Text></Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10]} placeholder={t("Email")} value={email} onChangeText={(text) => setEmail(text)} maxLength={191} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={t("Email")} value={email} onChangeText={(text) => setEmail(text)} maxLength={191} />
                         <Text style={NewStyles.text}>{t("Phone Number")} <Text>*</Text></Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10]} placeholder={t("Phone Number")} value={phone} onChangeText={(text) => setPhone(text)} maxLength={191} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text10, { borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.border10, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={t("Phone Number")} value={phone} onChangeText={(text) => setPhone(text)} maxLength={191} />
                         <Text style={NewStyles.text}>{t("Message")} <Text>*</Text></Text>
-                        <TextInput style={[NewStyles.textInput, { height: 150, textAlignVertical: 'top', paddingTop: 10, borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.text10, NewStyles.border10]} multiline={true} maxLength={191} placeholder={t("Message")} value={message} onChangeText={(text) => setMessage(text)} />
+                        <TextInput style={[NewStyles.textInput, { height: 150, textAlignVertical: 'top', paddingTop: 10, borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.text10, NewStyles.border10, Platform.OS === 'web' && NewStyles.noZoomInput]} multiline={true} maxLength={191} placeholder={t("Message")} value={message} onChangeText={(text) => setMessage(text)} />
                     </View>
                     <View style={{ width: '100%', paddingHorizontal: '5%' }}>
                         <Button loading={loading} title={t('Send Message')} onPress={() => {

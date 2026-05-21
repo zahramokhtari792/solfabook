@@ -65,10 +65,10 @@ export default function Decrease({ navigation }) {
         <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: Platform.OS === 'ios' ? 'off' : 'additive' }}>
             <ScrollView contentContainerStyle={styles.contentContainerStyle} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}>
                 <Text style={NewStyles.text}>{t('Enter your desired amount in Tomans.')} <Text style={NewStyles.title6}>*</Text></Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, NewStyles.shadow]} keyboardType='number-pad' placeholder={t('Amount in Tomans')} placeholderTextColor={themeColor3.bgColor(1)} maxLength={10} value={amount?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => { setAmount(text?.replace(/,/g, "")) }} />
+                <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, NewStyles.shadow, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='number-pad' placeholder={t('Amount in Tomans')} placeholderTextColor={themeColor3.bgColor(1)} maxLength={10} value={amount?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => { setAmount(text?.replace(/,/g, "")) }} />
                 <Text style={NewStyles.text}>{t('Enter your IBAN number.')} <Text style={NewStyles.title6}>*</Text></Text>
-                <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, NewStyles.shadow]} placeholder={t('IBAN Number')} placeholderTextColor={themeColor3.bgColor(1)} value={iban} onChangeText={(text) => { setIban(text?.replace(/,/g, "")) }} />
-                <FlatList
+                <TextInput style={[NewStyles.textInput, NewStyles.text10, NewStyles.border10, NewStyles.shadow, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={t('IBAN Number')} placeholderTextColor={themeColor3.bgColor(1)} value={iban} onChangeText={(text) => { setIban(text?.replace(/,/g, "")) }} />
+                {Platform.OS !== 'web' ? <FlatList
                     contentContainerStyle={[styles.flatListContainer, NewStyles.center]}
                     showsVerticalScrollIndicator={false}
                     scrollEnabled={false}
@@ -87,6 +87,15 @@ export default function Decrease({ navigation }) {
                         )
                     }}
                 />
+                    :
+                    <View style={styles.flatListContainer}>
+                        {data?.map((item)=>{
+                            return(
+                                <WithdrawalItem key={item?.id} item={item} />
+                            )
+                        })}
+                    </View>
+                }
             </ScrollView>
             <View style={[NewStyles.nav, NewStyles.shadow, { paddingBottom: 15 }]}>
                 <Button title={t('Submit')} loading={loading} onPress={() => decreaseWallet()} />

@@ -1,4 +1,4 @@
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useMemo, useState } from 'react';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
@@ -159,11 +159,11 @@ export default function Profile() {
                 <View style={styles.wrapper}>
                     <Text style={NewStyles.text}>{t('You have entered with mobile number {{phone}}.', { phone: user?.phone })}</Text>
                     <Text style={NewStyles.text}>{t('Name')} <Text style={NewStyles.text6}>*</Text></Text>
-                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Name')}`} value={name} onChangeText={(text) => setName(text)} />
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Name')}`} value={name} onChangeText={(text) => setName(text)} />
                     <Text style={NewStyles.text}>{t('Last Name')} <Text style={NewStyles.text6}>*</Text></Text>
-                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Last Name')}`} value={lname} onChangeText={(text) => setLname(text)} />
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Last Name')}`} value={lname} onChangeText={(text) => setLname(text)} />
                     <Text style={NewStyles.text}>{t('Email')}</Text>
-                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Email Address')}`} value={email} onChangeText={(text) => setEmail(text)} />
+                    <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='default' placeholderTextColor={themeColor3.bgColor(0.5)} placeholder={`${t('Email Address')}`} value={email} onChangeText={(text) => setEmail(text)} />
                     {user?.apple_check != 1 && <Text style={NewStyles.text}>{t('Date Of Birth')}</Text>}
                     {user?.apple_check != 1 && <Pressable style={[NewStyles.textInput, NewStyles.border10, NewStyles.center, { alignItems: 'flex-end' }, NewStyles.shadow]} onPress={() => {
                         setDatePickerModal(true)
@@ -181,9 +181,9 @@ export default function Profile() {
                 </View>
             </KeyboardAwareScrollView>
             {/* </ScrollView> */}
-            <View>
+            {/* <View> */}
                 <DatePickerModal birthDate={birthDate} setBirthDate={setBirthDate} setDatePickerModal={setDatePickerModal} datePickerModal={datePickerModal} />
-            </View>
+            {/* </View> */}
         </SafeAreaView>
     )
 }

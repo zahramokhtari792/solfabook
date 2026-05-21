@@ -31,6 +31,8 @@ export default function Transactions() {
             setData(response?.data);
 
         } catch (error) {
+            console.log(error);
+            
             const message = error.response ? t('An unexpected error occurred!') : t('Network error!');
             showToastOrAlert(message);
         } finally {

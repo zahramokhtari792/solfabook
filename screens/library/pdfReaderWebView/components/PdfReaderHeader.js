@@ -146,9 +146,11 @@ const PdfReaderHeader = ({
                     </TouchableOpacity>
                 )}
 
-                <TouchableOpacity style={styles.iconButton} onPress={onToggleSearch}>
-                    <SearchIcon color={themeColor0.bgColor(1)} />
-                </TouchableOpacity>
+                {onToggleSearch && (
+                    <TouchableOpacity style={styles.iconButton} onPress={onToggleSearch}>
+                        <SearchIcon color={themeColor0.bgColor(1)} />
+                    </TouchableOpacity>
+                )}
 
 
 

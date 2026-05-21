@@ -317,6 +317,10 @@ export const makeStyles = (lang = 'fa') => {
             marginVertical: 10,
             backgroundColor: themeColor0.bgColor(0.5),
         },
+        noZoomInput: {
+            fontSize: 16,
+            lineHeight: 20, 
+        },
     });
 };
 export default makeStyles;

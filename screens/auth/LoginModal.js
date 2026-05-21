@@ -138,7 +138,7 @@ export default function LoginModal() {
                         {!code ?
                             <View style={styles.wrapper}>
                                 <Text style={NewStyles.text10}>{t('Please enter your phone number. A verification code will be sent to your phone number.')}</Text>
-                                <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10]} keyboardType='number-pad' placeholderTextColor={themeColor3.bgColor(1)} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
+                                <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='number-pad' placeholderTextColor={themeColor3.bgColor(1)} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
                                 <Text style={NewStyles.text10}>{t('Your submission indicates your agreement to our terms of service and privacy policy.')}</Text>
                                 <View style={[NewStyles.row, { alignSelf: 'center' }]}>
                                     <TouchableOpacity onPress={() => {
@@ -159,7 +159,7 @@ export default function LoginModal() {
                             loginWithPassword ?
                                 <View style={[styles.wrapper, { width: '95%' }]}>
                                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>{t('Please enter your password.')}</Text>
-                                    <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={themeColor3.bgColor(1)} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
+                                    <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={themeColor3.bgColor(1)} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
                                     <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (password) { setLoading(true); passwordVerification(); } else { showToastOrAlert('رمز عبور خود را وارد کنید.') } }} />
                                     <View style={NewStyles.center}>

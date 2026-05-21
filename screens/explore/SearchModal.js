@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { useSearchModal } from '../../context/SearchProvider';
 import { Modal } from 'react-native';
@@ -44,8 +44,8 @@ const SearchModal = () => {
     return (
         <Modal animationType='fade' style={{}} transparent={true} visible={searchModal} onRequestClose={() => { hideSearchModal() }}>
 
-            <SafeAreaView edges={{ top: 'off', bottom: 'maximum' }} style={{ backgroundColor: themeColor10.bgColor(0.5), flex: 1, alignItems: 'center' }}>
-                <View style={{ alignItems: 'center', marginTop: '5%' }}>
+            <SafeAreaView edges={{ top: 'off', bottom: 'maximum' }} style={{ backgroundColor: themeColor10.bgColor(0.5), flex: 1, alignItems: 'center', }}>
+                <View style={[{ alignItems: 'center', marginTop: '5%' }, Platform.OS === 'web' && { width: '100%' }]}>
                     <TouchableOpacity style={{ alignSelf: 'flex-end', marginBottom: '5%', padding: 15 }} onPress={() => { hideSearchModal() }}>
                         <Ionicons name='close' color={themeColor4.bgColor(1)} size={24} />
                     </TouchableOpacity>
@@ -57,7 +57,7 @@ const SearchModal = () => {
                         }}>
                             <Ionicons name='search' color={themeColor0.bgColor(1)} size={24} />
                         </TouchableOpacity>
-                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
+                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
                             onEndEditing={() => {
                                 if (value && value?.trim()) {
                                     search()

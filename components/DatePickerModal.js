@@ -1,23 +1,24 @@
-import { View, Modal, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, Modal, StyleSheet, TouchableWithoutFeedback, Platform } from 'react-native';
 import React, { useMemo } from 'react';
 import DatePicker, { getFormatedDate } from 'react-native-modern-datepicker';
 
-import makeStyles from '../styles/NewStyles';
+import makeStyles, { deviceWidth } from '../styles/NewStyles';
 import { themeColor1, themeColor4 } from '../theme/Color';
 import { useTranslation } from 'react-i18next';
+import Button from './Button';
 
 export default function DatePickerModal({ datePickerModal, setDatePickerModal, birthDate, setBirthDate }) {
 
     var date = new Date();
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <Modal animationType='fade' transparent={true} visible={datePickerModal} onRequestClose={() => { setDatePickerModal(!datePickerModal) }}>
-            <TouchableWithoutFeedback onPress={() => { setDatePickerModal(false) }}>
+            <TouchableWithoutFeedback onPress={() => { if (Platform.OS !== 'web') { setDatePickerModal(false) } }}>
                 <View style={[styles.wrapper, NewStyles.center]}>
-                    <View style={[styles.modalView, NewStyles.center]}>
+                    <View style={[styles.modalView, NewStyles.center, NewStyles.border10]}>
                         <DatePicker
                             mode='calendar'
                             isGregorian={false}
@@ -40,6 +41,14 @@ export default function DatePickerModal({ datePickerModal, setDatePickerModal, b
                                 setBirthDate(p.slice(0, 10));
                             }}
                         />
+                    <View style={{ width: deviceWidth * 0.7,  }}>
+                        <Button
+                            title={t("Close")}
+                            onPress={()=>{
+                                setDatePickerModal(false)
+                            }}
+                        />
+                    </View>
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -53,11 +62,12 @@ const styles = StyleSheet.create({
         backgroundColor: themeColor1.bgColor(0.8),
     },
     modalView: {
-        height: '50%',
+        // height: '50%',
         marginHorizontal: '5%',
         backgroundColor: themeColor4.bgColor(1),
     },
     calendar: {
-        position: 'absolute',
+        width: deviceWidth * 0.85,
+        height: 350,
     }
 });

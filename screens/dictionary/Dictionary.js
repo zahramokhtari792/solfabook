@@ -1,4 +1,4 @@
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Platform, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import makeStyles from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
@@ -133,7 +133,7 @@ const Dictionary = ({ navigation }) => {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <CustomStatusBar />
       <View style={[{ width: '90%', alignSelf: 'center', borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor1.bgColor(1), marginVertical: 10, paddingHorizontal: 10 }, NewStyles.border100, NewStyles.row]}>
-        <TextInput value={search} placeholderTextColor={themeColor1.bgColor(1)} onChangeText={(value) => { setSearch(value); }} placeholder={t('Search...')} style={[NewStyles.text10, { flex: 1, textAlign: 'auto', height: 50 }, NewStyles.border100]} onEndEditing={() => {
+        <TextInput value={search} placeholderTextColor={themeColor1.bgColor(1)} onChangeText={(value) => { setSearch(value); }} placeholder={t('Search...')} style={[NewStyles.text10, { flex: 1, textAlign: 'auto', height: 50 }, NewStyles.border100, Platform.OS === 'web' && NewStyles.noZoomInput]} onEndEditing={() => {
           if (user?.active_subscription == 1) {
             fetchWords(true);
           } else {

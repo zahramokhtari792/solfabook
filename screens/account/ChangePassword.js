@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +73,7 @@ export default function ChangePassword() {
             <ScrollView contentContainerStyle={styles.contentContainerStyle} refreshControl={<RefreshControl colors={[themeColor1.bgColor(1)]} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)); }} />}>
                 <Text style={NewStyles.text1}>{t('8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character.')}</Text>
                 <View style={[NewStyles.textInput, NewStyles.shadow, { justifyContent: 'center', paddingHorizontal: 'auto' }, NewStyles.border10, NewStyles.rowWrapper]}>
-                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }]} secureTextEntry={!showPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
+                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }, Platform.OS === 'web' && NewStyles.noZoomInput]} secureTextEntry={!showPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password')}`} value={password} onChangeText={setPassword} />
                     <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => {
                         setShowPassword(pre => !pre)
                     }}>
@@ -82,7 +82,7 @@ export default function ChangePassword() {
                 </View>
                 <Text style={NewStyles.text1}>{t('Enter Password Confirmation.')}</Text>
                 <View style={[NewStyles.textInput, NewStyles.shadow, { justifyContent: 'center', paddingHorizontal: 'auto' }, NewStyles.border10, NewStyles.rowWrapper]}>
-                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }]} secureTextEntry={!confitmShowPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
+                    <TextInput style={[NewStyles.text1, { paddingHorizontal: 15, flex: 1 }, Platform.OS === 'web' && NewStyles.noZoomInput]} secureTextEntry={!confitmShowPassword} keyboardType='default' placeholderTextColor={themeColor3.bgColor(1)} placeholder={`${t('Password Confirmation')}`} value={passwordConfirmation} onChangeText={setPasswordConfirmation} />
                     <TouchableOpacity style={{ paddingHorizontal: 15 }} onPress={() => {
                         setConfitmShowPassword(pre => !pre)
                     }}>

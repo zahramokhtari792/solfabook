@@ -1,7 +1,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles from '../../styles/NewStyles';
+import makeStyles, { langIsRTL } from '../../styles/NewStyles';
 import FilesProduct from '../../components/FilesProduct';
 import CategoriItem from '../category/CategoriItem';
 import AlbumCategoryItem from '../albums/AlbumCategoryItem';
@@ -35,7 +35,7 @@ const SearchResult = ({ route }) => {
                                 item?.type == 'file' &&
                                 <FlatList
                                     horizontal
-                                    inverted
+                                    inverted={langIsRTL(lang) ? true : false}
                                     maxToRenderPerBatch={3}
                                     windowSize={4}
                                     contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
@@ -52,7 +52,7 @@ const SearchResult = ({ route }) => {
                                 item?.type == 'category' &&
                                 <FlatList
                                     horizontal
-                                    inverted
+                                    inverted={langIsRTL(lang) ? true : false}
                                     maxToRenderPerBatch={3}
                                     windowSize={4}
                                     contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
@@ -69,7 +69,7 @@ const SearchResult = ({ route }) => {
                                 item?.type == 'album_category' &&
                                 <FlatList
                                     horizontal
-                                    inverted
+                                    inverted={langIsRTL(lang) ? true : false}
                                     maxToRenderPerBatch={3}
                                     windowSize={4}
                                     contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
@@ -86,7 +86,7 @@ const SearchResult = ({ route }) => {
                                 (item?.type == 'my_file' || item?.type == 'my_album') &&
                                 <FlatList
                                     horizontal
-                                    inverted
+                                    inverted={langIsRTL(lang) ? true : false}
                                     maxToRenderPerBatch={3}
                                     windowSize={4}
                                     contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}

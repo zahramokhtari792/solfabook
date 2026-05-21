@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { themeColor0, themeColor6 } from '../../../../theme/Color';
 import { useTranslation } from 'react-i18next';
+import makeStyles from '../../../../styles/NewStyles';
 
 const PdfSearchBar = ({
     styles,
@@ -15,12 +16,14 @@ const PdfSearchBar = ({
     onNextResult,
     onCloseSearch,
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     return (
         <View style={styles.searchContainer}>
             <View style={styles.searchInputWrapper}>
                 <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, Platform.OS === 'web' && NewStyles.noZoomInput]}
                     placeholder={t("Search in PDF")}
                     placeholderTextColor={themeColor0.bgColor(0.5)}
                     value={searchQuery}
@@ -30,7 +33,7 @@ const PdfSearchBar = ({
                 />
                 {searchQuery.length > 0 && (
                     <TouchableOpacity style={styles.clearSearchBtn} onPress={onClearSearch}>
-                       <Ionicons name='close' size={20} color={themeColor6.bgColor(1)} />
+                        <Ionicons name='close' size={20} color={themeColor6.bgColor(1)} />
                     </TouchableOpacity>
                 )}
             </View>

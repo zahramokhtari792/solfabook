@@ -167,16 +167,17 @@ export default function App() {
                           <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
                           <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
                           <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                          <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={{
-                            headerShown: false,
-                            presentation: 'formSheet',
-                            sheetGrabberVisible: true,
-                            sheetCornerRadius: 25,
-                            sheetAllowedDetents: [0.25, 0.5, 0.75],
-                            contentStyle: {
-                              backgroundColor: themeColor4.bgColor(1),
-                            },
-                          }} />
+                          <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={
+                            Platform.OS != 'web' ? {
+                              headerShown: false,
+                              presentation: 'formSheet',
+                              sheetGrabberVisible: true,
+                              sheetCornerRadius: 25,
+                              sheetAllowedDetents: [0.25, 0.5, 0.75],
+                              contentStyle: {
+                                backgroundColor: themeColor4.bgColor(1),
+                              },
+                            } : { header: () => { return (<BackHeader />) } }} />
                           <Stack.Screen name='MoreAboutFile' component={MoreAboutFile} options={{
                             header: () => { return (<BackHeader />) }
                           }} />
