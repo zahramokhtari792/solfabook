@@ -395,5 +395,6 @@
   "End Date": "تاريخ الانتهاء",
   "ID": "هوية شخصية",
   "Your message has been sent successfully.": "تم إرسال رسالتك بنجاح.",
-  "The phone number you entered is not valid.": "رقم الهاتف الذي أدخلته غير صالح."
+  "The phone number you entered is not valid.": "رقم الهاتف الذي أدخلته غير صالح.",
+  "A verification code has been sent to {{phone}}.":"تم إرسال رمز التحقق إلى {{phone}}."
 }

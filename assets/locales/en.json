@@ -394,5 +394,6 @@
     "End Date": "End Date",
     "ID": "ID",
     "Your message has been sent successfully.": "Your message has been sent successfully.",
-    "The phone number you entered is not valid.": "The phone number you entered is not valid."
+    "The phone number you entered is not valid.": "The phone number you entered is not valid.",
+    "A verification code has been sent to {{phone}}.":"A verification code has been sent to {{phone}}."
 }

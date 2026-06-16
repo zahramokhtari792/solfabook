@@ -395,5 +395,6 @@
   "End Date": "بەرواری کۆتایی",
   "ID":"ناسنامە",
   "Your message has been sent successfully.": "پەیامەکەت بە سەرکەوتوویی ناردرا.",
-  "The phone number you entered is not valid.": "ئەو ژمارەی تەلەفۆنەی کە داخڵت کردووە کارا نییە."
+  "The phone number you entered is not valid.": "ئەو ژمارەی تەلەفۆنەی کە داخڵت کردووە کارا نییە.",
+  "A verification code has been sent to {{phone}}.":"کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا."
 }

@@ -14,8 +14,15 @@ import makeStyles from '../styles/NewStyles';
 import CustomStatusBar from '../components/CustomStatusBar';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import NetInfo from '@react-native-community/netinfo';
+import { useInternetStatus } from '../hooks/useInternetStatus';
+
 
 export default function Landing() {
+
+    
+    const isOnline = useInternetStatus();
+    // const isOnline = false
 
     const dispatch = useDispatch();
     const { i18n } = useTranslation();
@@ -25,19 +32,24 @@ export default function Landing() {
     const navigation = useNavigation();
     const userToken = useSelector(state => state?.auth?.token);
     const getDeviceId = async () => {
-        DeviceInfo.getUniqueId().then((uniqueId) => { 
+        DeviceInfo.getUniqueId().then((uniqueId) => {
             // iOS: "FCDBD8EF-62FC-4ECB-B2F5-92C9E79AC7F9"
             // Android: "dd96dec43fb81c97"
             // Windows: "{2cf7cb3c-da7a-d508-0d7f-696bb51185b4}"
             dispatch(setDeviceInfo(uniqueId))
         });
-      
-       
-        
+
+
+
     }
+
+
+
     useEffect(() => {
         getDeviceId()
+
     }, [])
+
     const loadLanguage = async () => {
         try {
             const language = await AsyncStorage.getItem('lang');
@@ -45,7 +57,7 @@ export default function Landing() {
                 dispatch(setLanguage(language));
                 i18n.changeLanguage(language);
             } else {
-                i18n.changeLanguage('en');
+                i18n.changeLanguage('fa');
             }
         } catch (error) {
             console.error('Error loading language', error);
@@ -55,17 +67,25 @@ export default function Landing() {
     const fetchUserToken = async () => {
         try {
             const userToken = await AsyncStorage.getItem('userToken');
-            dispatch(setToken(userToken));
+            dispatch(setToken(userToken)); 
+            if (isOnline && userToken) {
+                navigation.navigate('MainLayout');
+            } else if (!isOnline && userToken) {
+                navigation.navigate('OfflineStack');
+
+            } else {
+                navigation.navigate('MainLayout');
+            }
         } catch (error) {
-            console.error('Error fetching user token', error);
+            // console.error('Error fetching user token', error);
+            navigation.navigate('MainLayout');
         }
     };
 
     useEffect(() => {
         loadLanguage();
         fetchUserToken();
-        // dispatch(fetchContacts());
-        navigation.navigate('MainLayout');
+
     }, []);
 
     useEffect(() => {

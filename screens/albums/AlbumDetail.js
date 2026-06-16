@@ -200,13 +200,12 @@ const AlbumDetail = ({ route, navigation }) => {
     const addToAlbumCart = (file_gallery_id) => {
         setFileGalleryId(file_gallery_id)
         setAddLoader(true)
-        axios.post(`${uri}/addToAlbumCart`, { file_gallery_id: file_gallery_id, publisher_id: data?.publisher_id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
+        axios.post(`${uri}/addToAlbumCart`, { file_gallery_id: file_gallery_id, publisher_id: data?.publisher_id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}`, 'Accept-Language': lang } })
             .then((res) => {
                 console.log(res?.data);
                 fetchTrackList();
             })
-            .catch((err) => {
-                console.log(err);
+            .catch((err) => { 
                 setAddLoader(false)
                 handleError(err)
             })
@@ -308,6 +307,9 @@ const AlbumDetail = ({ route, navigation }) => {
                 }
             })
             .catch(err => {
+                console.log('====================================');
+                console.log(err);
+                console.log('====================================');
                 handleError(err)
             })
             .finally(() => {

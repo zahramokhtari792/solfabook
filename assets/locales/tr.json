@@ -394,5 +394,6 @@
   "End Date": "Bitiş Tarihi",
   "ID": "İD",
   "Your message has been sent successfully.": "Mesajınız başarıyla gönderildi.",
-  "The phone number you entered is not valid.": "Girdiğiniz telefon numarası geçerli değil."
+  "The phone number you entered is not valid.": "Girdiğiniz telefon numarası geçerli değil.",
+  "A verification code has been sent to {{phone}}.":"{{phone}} numarasına bir doğrulama kodu gönderildi."
 }

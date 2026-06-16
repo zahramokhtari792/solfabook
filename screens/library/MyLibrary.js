@@ -13,9 +13,12 @@ import { useTranslation } from 'react-i18next'
 import { themeColor0 } from '../../theme/Color'
 import { useSelector } from 'react-redux'
 import SignInLanding from '../auth/SignInLanding'
+import { useInternetStatus } from '../../hooks/useInternetStatus'
 
 const Tab = createMaterialTopTabNavigator();
 const MyLibrary = () => {
+  const isOnline = useInternetStatus();
+
   const { t } = useTranslation()
   const userToken = useSelector(state => state.auth?.token);
   const user = useSelector(state => state.user?.data);
@@ -36,8 +39,8 @@ const MyLibrary = () => {
       }}>
         <Tab.Screen name="MyFiles" component={MyFiles} options={{ title: t('File') }} />
         <Tab.Screen name="MyAlbum" component={MyAlbum} options={{ title: t('Album') }} />
-        <Tab.Screen name="Bookmarks" component={Bookmarks} options={{ title: t('Saved') }} />
-        <Tab.Screen name="MyFavorite" component={MyFavorite} options={{ title: t('Favorite') }} />
+        {isOnline && <Tab.Screen name="Bookmarks" component={Bookmarks} options={{ title: t('Saved') }} />}
+        {isOnline && <Tab.Screen name="MyFavorite" component={MyFavorite} options={{ title: t('Favorite') }} />}
       </Tab.Navigator>
     </SafeAreaView>
   )

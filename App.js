@@ -68,6 +68,13 @@ import ar from './assets/locales/ar.json';
 import ckb from './assets/locales/ckb.json';
 import tr from './assets/locales/tr.json';
 import PDFReaderScreen from './screens/library/PDFReaderScreen';
+import { useInternetStatus } from './hooks/useInternetStatus';
+import OfflineStack from './screens/offline/OfflineStack';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { queryClient } from './lib/queryClient';
+import { persister } from './lib/persister';
+
 
 function VersionCheckModal() {
   const { updateInfo, showModal, closeModal } = useVersionCheckContext();
@@ -94,8 +101,8 @@ i18n
       ckb: { translation: ckb },
       tr: { translation: tr },
     },
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'fa',
+    fallbackLng: 'fa',
     interpolation: { escapeValue: false },
   });
 
@@ -109,7 +116,7 @@ export default function App() {
     'VazirBold': require('./assets/fonts/Vazirmatn-Bold.ttf'),
   });
   const { i18n } = useTranslation();
-  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'fa';
 
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   if (!loaded && !error) {
@@ -120,85 +127,90 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <SafeAreaView mode='padding' edges={{ top: 'maximum', bottom: 'off' }} style={NewStyles.container}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister }}
+          >
+            <I18nextProvider i18n={i18n}>
+              <NavigationContainer>
+                <KeyboardProvider>
+                  <Provider store={store}>
+                    <VersionCheckProvider>
+                      <LoginProvider>
+                        <SearchProvider>
+                          <Stack.Navigator>
+                            <Stack.Screen name='Landing' component={Landing} options={{ headerShown: false, gestureEnabled: false }} />
+                            <Stack.Screen name='MainLayout' component={MainLayout} options={{ headerShown: false, gestureEnabled: false, headerShadowVisible: false }} />
+                            <Stack.Screen name='Categories' component={Categories} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Language' component={Language} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='TermsAndConditions' component={TermsAndConditions} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Blog' component={Blog} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Contact' component={Contact} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='PrivacyPolicy' component={PrivacyPolicy} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AboutUs' component={AboutUs} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AlbumTab' component={AlbumTab} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Account' component={Account} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Profile' component={Profile} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AllFiles' component={AllFiles} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Transactions' component={Transactions} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Decrease' component={Decrease} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Settings' component={Settings} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='FileDetail' component={FileDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AlbumCart' component={AlbumCart} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='ChangePassword' component={ChangePassword} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='PDFReader' component={PDFReader} options={{ headerShown: false }} />
+                            <Stack.Screen name='PDFReaderWebView' component={PDFReaderWebView} options={{ headerShown: false }} />
+                            <Stack.Screen name='PDFReaderScreen' component={PDFReaderScreen} options={{ headerShown: false }} />
+                            <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Dictionary' component={Dictionary} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='WordDetail' component={WordDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='Subscription' component={Subscription} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='BookmarkedWords' component={BookmarkedWords} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='SearchResult' component={SearchResult} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='MusicalInstrumentIntro' component={MusicalInstrumentIntro} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='MusicalInstrument' component={MusicalInstrument} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                            <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                            <Stack.Screen name='OfflineStack' component={OfflineStack} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={
+                              Platform.OS != 'web' ? {
+                                headerShown: false,
+                                presentation: 'formSheet',
+                                sheetGrabberVisible: true,
+                                sheetCornerRadius: 25,
+                                sheetAllowedDetents: [0.25, 0.5, 0.75],
+                                contentStyle: {
+                                  backgroundColor: themeColor4.bgColor(1),
+                                },
+                              } : { header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='MoreAboutFile' component={MoreAboutFile} options={{
+                              header: () => { return (<BackHeader />) }
+                            }} />
+                            <Stack.Screen name='FullDescription' component={FullDescription} options={{
+                              header: () => { return (<BackHeader />) }
+                            }} />
+                            <Stack.Screen name='SamplePDFReader' component={SamplePDFReader} options={{
+                              header: () => { return (<BackHeader />) }
+                            }} />
 
-          <I18nextProvider i18n={i18n}>
-            <NavigationContainer>
-              <KeyboardProvider>
-                <Provider store={store}>
-                  <VersionCheckProvider>
-                    <LoginProvider>
-                      <SearchProvider>
-                        <Stack.Navigator>
-                          <Stack.Screen name='Landing' component={Landing} options={{ headerShown: false, gestureEnabled: false }} />
-                          <Stack.Screen name='MainLayout' component={MainLayout} options={{ headerShown: false, gestureEnabled: false, headerShadowVisible: false }} />
-                          <Stack.Screen name='Categories' component={Categories} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Language' component={Language} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='TermsAndConditions' component={TermsAndConditions} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Blog' component={Blog} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Contact' component={Contact} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='PrivacyPolicy' component={PrivacyPolicy} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AboutUs' component={AboutUs} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AlbumTab' component={AlbumTab} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Account' component={Account} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Profile' component={Profile} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AllFiles' component={AllFiles} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Transactions' component={Transactions} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Decrease' component={Decrease} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Settings' component={Settings} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='FileDetail' component={FileDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AlbumCart' component={AlbumCart} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='ChangePassword' component={ChangePassword} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='PDFReader' component={PDFReader} options={{ headerShown: false }} />
-                          <Stack.Screen name='PDFReaderWebView' component={PDFReaderWebView} options={{ headerShown: false }} />
-                          <Stack.Screen name='PDFReaderScreen' component={PDFReaderScreen} options={{ headerShown: false }} />
-                          <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Dictionary' component={Dictionary} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='WordDetail' component={WordDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='Subscription' component={Subscription} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='BookmarkedWords' component={BookmarkedWords} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='SearchResult' component={SearchResult} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='MusicalInstrumentIntro' component={MusicalInstrumentIntro} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='MusicalInstrument' component={MusicalInstrument} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                          <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                          <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={
-                            Platform.OS != 'web' ? {
-                              headerShown: false,
-                              presentation: 'formSheet',
-                              sheetGrabberVisible: true,
-                              sheetCornerRadius: 25,
-                              sheetAllowedDetents: [0.25, 0.5, 0.75],
-                              contentStyle: {
-                                backgroundColor: themeColor4.bgColor(1),
-                              },
-                            } : { header: () => { return (<BackHeader />) } }} />
-                          <Stack.Screen name='MoreAboutFile' component={MoreAboutFile} options={{
-                            header: () => { return (<BackHeader />) }
-                          }} />
-                          <Stack.Screen name='FullDescription' component={FullDescription} options={{
-                            header: () => { return (<BackHeader />) }
-                          }} />
-                          <Stack.Screen name='SamplePDFReader' component={SamplePDFReader} options={{
-                            header: () => { return (<BackHeader />) }
-                          }} />
-
-                        </Stack.Navigator>
-                        <LoginModal />
-                        <SearchModal />
-                      </SearchProvider>
-                    </LoginProvider>
-                    <VersionCheckModal />
-                  </VersionCheckProvider>
-                </Provider>
-              </KeyboardProvider>
-            </NavigationContainer>
-          </I18nextProvider>
+                          </Stack.Navigator>
+                          <LoginModal />
+                          <SearchModal />
+                        </SearchProvider>
+                      </LoginProvider>
+                      <VersionCheckModal />
+                    </VersionCheckProvider>
+                  </Provider>
+                </KeyboardProvider>
+              </NavigationContainer>
+            </I18nextProvider>
+          </PersistQueryClientProvider>
         </SafeAreaView>
       </SafeAreaProvider>
     </GestureHandlerRootView>

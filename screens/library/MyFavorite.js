@@ -11,8 +11,13 @@ import Loader from '../../components/Loader';
 import FilesProduct from '../../components/FilesProduct';
 import BlankScreen from '../../components/BlankScreen';
 import { useTranslation } from 'react-i18next';
+import { useInternetStatus } from '../../hooks/useInternetStatus';
 
 const MyFavorite = () => {
+
+  const isOnline = useInternetStatus();
+  // const isOnline = false
+
   const [data, setData] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   const [loader, setLoader] = useState(true)

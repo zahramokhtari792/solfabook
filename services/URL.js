@@ -1,5 +1,5 @@
-export const mainUri = 'https://solfabook.com';
-export const uri = 'https://solfabook.com/api';
-export const imageUri = 'https://solfabook.com/storage';
-export const staticUri = 'https://solfabook.com/assets';
-export const dlUrl = 'https://dl.solfabook.com/files';
+export const mainUri = 'https://solfa-book.com';
+export const uri = 'https://solfa-book.com/api';
+export const imageUri = 'https://solfa-book.com/storage';
+export const staticUri = 'https://solfa-book.com/assets';
+export const dlUrl = 'https://dl.solfa-book.com/files';
