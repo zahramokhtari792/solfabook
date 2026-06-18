@@ -11,7 +11,7 @@ import Bookmarks from './Bookmarks';
 import MyFavorite from './MyFavorite';
 import { useTranslation } from 'react-i18next'
 import { themeColor0 } from '../../theme/Color'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import SignInLanding from '../auth/SignInLanding'
 import { useInternetStatus } from '../../hooks/useInternetStatus'
 import { fetchUser } from '../../slices/userSlice'
@@ -28,6 +28,7 @@ const MyLibrary = () => {
   const [loader, setLoader] = useState(false)
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const dispatch = useDispatch()
   useEffect(() => {
     if (userToken && isOnline && !user) {
       setLoader(true)
