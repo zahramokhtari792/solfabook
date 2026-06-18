@@ -30,15 +30,13 @@ const MyLibrary = () => {
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
   const dispatch = useDispatch()
   useEffect(() => {
-    if (userToken && isOnline && !user) {
-      setLoader(true)
+    if (userToken && isOnline && !user) { 
       dispatch(fetchUser(userToken))
-      setLoader(false)
     }
-  }, [isOnline, userToken])
+  }, [isOnline, userToken, user, dispatch])
 
 
-  if(loader && userLoading){
+  if(userToken && userLoading && isOnline){
     return(
       <Loader/>
     )
