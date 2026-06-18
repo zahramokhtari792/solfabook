@@ -34,6 +34,7 @@ import PaymentModal from '../../components/PaymentModal';
 import AlertModal from '../../components/AlertModal';
 import { fetchUser } from '../../slices/userSlice';
 import { shareContent } from '../../helpers/ShareHelper';
+import { queryClient } from '../../lib/queryClient';
 
 const FileDetail = ({ route, navigation }) => {
     const params = route?.params;
@@ -104,6 +105,7 @@ const FileDetail = ({ route, navigation }) => {
     const gateWayPayment = async () => {
         setPayModal(false)
         try {
+            queryClient.invalidateQueries({ queryKey: ['my-files'] });
             let result = await Linking.openURL(`${uri}/gatewayPayment?linkingUri=${redirectUrl}&file_id=${fileId}&user_id=${user?.id}`);
             let redirectData;
             if (result.url) {
@@ -127,6 +129,7 @@ const FileDetail = ({ route, navigation }) => {
                     showToastOrAlert(t("The file purchase was successful."))
                 }
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyFiles' } })
+                queryClient.invalidateQueries({ queryKey: ['my-files'] });
             })
             .catch((err) => {
                 handleError(err)
@@ -368,7 +371,6 @@ const FileDetail = ({ route, navigation }) => {
         }
     }, [userToken])
 
-
     useFocusEffect(
         React.useCallback(() => {
             const subscription = Linking.addEventListener('url', handleRedirect);
@@ -509,17 +511,27 @@ const FileDetail = ({ route, navigation }) => {
 
                             {!isMine && <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
                                 if (user && userToken) {
-                                    if (finalPrice == 0) {
+                                    if (data?.need_subscription == 1 && user?.active_subscription == 0) {
+                                        navigation.navigate('Subscription');
+                                    } else if (data?.need_subscription == 1 && user?.active_subscription == 1) {
                                         walletPayment()
-                                    } else {
-                                        setPayModal(true)
+                                    } else if (data?.need_subscription == 0) {
+
+                                        if (finalPrice == 0) {
+                                            walletPayment()
+                                        } else {
+                                            setPayModal(true)
+                                        }
                                     }
                                 } else {
                                     showModal()
                                 }
                             }}>
-                                {finalPrice == 0 && <Text style={[NewStyles.title4]}>{t("Get free")}</Text>}
-                                {finalPrice > 0 &&
+                                {(finalPrice == 0 && data?.need_subscription == 0) && <Text style={[NewStyles.title4]}>{t("Get free")}</Text>}
+                                {
+                                    data?.need_subscription == 1 && <Text style={[NewStyles.title4]}>{(user && userToken && user?.active_subscription == 1) ? t("Get") : t("Buy subscription")}</Text>
+                                }
+                                {(finalPrice > 0 && data?.need_subscription == 0) &&
                                     <View style={[NewStyles.row, { height: 45, gap: 5 }]}>
                                         <Text style={[NewStyles.title4]}>{t('Buy')}</Text>
                                         <View style={{ height: '50%', width: 2, backgroundColor: themeColor4.bgColor(1), marginHorizontal: 5 }} />

@@ -396,5 +396,8 @@
   "ID":"ناسنامە",
   "Your message has been sent successfully.": "پەیامەکەت بە سەرکەوتوویی ناردرا.",
   "The phone number you entered is not valid.": "ئەو ژمارەی تەلەفۆنەی کە داخڵت کردووە کارا نییە.",
-  "A verification code has been sent to {{phone}}.":"کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا."
+  "A verification code has been sent to {{phone}}.":"کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا.",
+  "No internet connection":"هیچ پەیوەندیەکی ئینتەرنێتی نییە",
+  "Get": "بەدەست بهێنە",
+  "Subscribe to receive the file.": "بەشداریکردن بۆ وەرگرتنی فایل."
 }

@@ -241,7 +241,7 @@ export const handleError = (error) => {
         showToastOrAlert(`${message}`);
       } else if (error?.response?.status == 401) {
         showToastOrAlert('لطفا وارد شوید.');
-      } else {
+      } else { 
         showToastOrAlert('یک خطای غیرمنتظره رخ داده است.');
       }
     } catch (e) {

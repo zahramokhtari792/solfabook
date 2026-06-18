@@ -1,57 +1,40 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
-import i18n from 'i18next';
+import { View } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import { useTranslation } from 'react-i18next';
 
 import { setDeviceInfo, setToken } from '../slices/authSlice';
 import { setLanguage } from '../slices/languageSlice';
-import { fetchUser } from '../slices/userSlice';
-import { fetchContacts } from '../slices/contactSlice';
-
-import DeviceInfo from 'react-native-device-info';
 import makeStyles from '../styles/NewStyles';
 import CustomStatusBar from '../components/CustomStatusBar';
-import { View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import NetInfo from '@react-native-community/netinfo';
 import { useInternetStatus } from '../hooks/useInternetStatus';
-
+import { fetchUser } from './../slices/userSlice';
 
 export default function Landing() {
 
-    
-    const isOnline = useInternetStatus();
-    // const isOnline = false
-
     const dispatch = useDispatch();
+    const navigation = useNavigation();
+    const isOnline = useInternetStatus(); // null | true | false
+
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
-    const navigation = useNavigation();
-    const userToken = useSelector(state => state?.auth?.token);
-    const getDeviceId = async () => {
-        DeviceInfo.getUniqueId().then((uniqueId) => {
-            // iOS: "FCDBD8EF-62FC-4ECB-B2F5-92C9E79AC7F9"
-            // Android: "dd96dec43fb81c97"
-            // Windows: "{2cf7cb3c-da7a-d508-0d7f-696bb51185b4}"
-            dispatch(setDeviceInfo(uniqueId))
-        });
 
+    const [bootReady, setBootReady] = useState(false);
+    const [storedToken, setStoredToken] = useState(undefined);
 
-
-    }
-
-
+    /* -------------------------------------------------- */
+    /* Load language + device id                          */
+    /* -------------------------------------------------- */
 
     useEffect(() => {
-        getDeviceId()
 
-    }, [])
+        const init = async () => {
 
-    const loadLanguage = async () => {
-        try {
+            // language
             const language = await AsyncStorage.getItem('lang');
             if (language) {
                 dispatch(setLanguage(language));
@@ -59,40 +42,39 @@ export default function Landing() {
             } else {
                 i18n.changeLanguage('fa');
             }
-        } catch (error) {
-            console.error('Error loading language', error);
-        }
-    };
 
-    const fetchUserToken = async () => {
-        try {
-            const userToken = await AsyncStorage.getItem('userToken');
-            dispatch(setToken(userToken)); 
-            if (isOnline && userToken) {
-                navigation.navigate('MainLayout');
-            } else if (!isOnline && userToken) {
-                navigation.navigate('OfflineStack');
+            // device id
+            const uniqueId = await DeviceInfo.getUniqueId();
+            dispatch(setDeviceInfo(uniqueId));
 
-            } else {
-                navigation.navigate('MainLayout');
-            }
-        } catch (error) {
-            // console.error('Error fetching user token', error);
-            navigation.navigate('MainLayout');
-        }
-    };
+            // token
+            const token = await AsyncStorage.getItem('userToken');
+            setStoredToken(token);
+            dispatch(setToken(token));
+            dispatch(fetchUser(token))
 
-    useEffect(() => {
-        loadLanguage();
-        fetchUserToken();
+            setBootReady(true);
+        };
+
+        init();
 
     }, []);
 
+    /* -------------------------------------------------- */
+    /* Decide navigation (ONLY when ready)                */
+    /* -------------------------------------------------- */
+
     useEffect(() => {
-        if (userToken) {
-            dispatch(fetchUser(userToken));
-        }
-    }, [userToken]);
+
+        if (!bootReady) return;
+        if (isOnline === null) return; // internet not resolved yet
+
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainLayout' }],
+        });
+
+    }, [bootReady, isOnline]);
 
     return (
         <View style={NewStyles.container}>
@@ -100,4 +82,3 @@ export default function Landing() {
         </View>
     );
 }
-

@@ -1,5 +1,5 @@
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import makeStyles from '../../styles/NewStyles'
 import CustomStatusBar from '../../components/CustomStatusBar'
 import Loader from '../../components/Loader'
@@ -14,6 +14,7 @@ import { themeColor0 } from '../../theme/Color'
 import { useSelector } from 'react-redux'
 import SignInLanding from '../auth/SignInLanding'
 import { useInternetStatus } from '../../hooks/useInternetStatus'
+import { fetchUser } from '../../slices/userSlice'
 
 const Tab = createMaterialTopTabNavigator();
 const MyLibrary = () => {
@@ -22,11 +23,27 @@ const MyLibrary = () => {
   const { t } = useTranslation()
   const userToken = useSelector(state => state.auth?.token);
   const user = useSelector(state => state.user?.data);
+  const userLoading = useSelector(state => state.user?.loading);
   const { i18n } = useTranslation();
+  const [loader, setLoader] = useState(false)
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  useEffect(() => {
+    if (userToken && isOnline && !user) {
+      setLoader(true)
+      dispatch(fetchUser(userToken))
+      setLoader(false)
+    }
+  }, [isOnline, userToken])
 
-  if (!userToken || !user) {
+
+  if(loader && userLoading){
+    return(
+      <Loader/>
+    )
+  }
+
+  if (((!userToken || !user) && isOnline) || (!userToken && !isOnline)) {
     return (
       <SignInLanding />
     )

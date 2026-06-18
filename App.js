@@ -129,7 +129,11 @@ export default function App() {
         <SafeAreaView mode='padding' edges={{ top: 'maximum', bottom: 'off' }} style={NewStyles.container}>
           <PersistQueryClientProvider
             client={queryClient}
-            persistOptions={{ persister }}
+            persistOptions={{
+              persister: persister,
+              maxAge: 1000 * 60 * 60 * 24 * 30, 
+              buster: 'v1_cache',
+            }}
           >
             <I18nextProvider i18n={i18n}>
               <NavigationContainer>
@@ -177,7 +181,7 @@ export default function App() {
                             <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
                             <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                            <Stack.Screen name='OfflineStack' component={OfflineStack} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='OfflineStack' component={OfflineStack} options={{ headerShown: false }} />
                             <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={
                               Platform.OS != 'web' ? {
                                 headerShown: false,

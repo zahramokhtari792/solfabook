@@ -1,285 +1,483 @@
-import { ActivityIndicator, Alert, Animated, FlatList, Image, ImageBackground, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
-import { dlUrl, uri } from '../../services/URL';
-import { useSelector } from 'react-redux';
-import { handleError } from '../../helpers/Common';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles from '../../styles/NewStyles';
-import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color';
-import Loader from '../../components/Loader';
-import AudioPlayer from '../../components/AudioPlayer';
-import { Ionicons } from '@expo/vector-icons';
-import { CaptureProtection } from '../../helpers/CaptureProtection';
-import { useTranslation } from 'react-i18next';
-import * as FileSystem from 'expo-file-system';
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import axios from 'axios'
+import { dlUrl, uri } from '../../services/URL'
+import { useSelector } from 'react-redux'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import makeStyles from '../../styles/NewStyles'
+import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color'
+import Loader from '../../components/Loader'
+import AudioPlayer from '../../components/AudioPlayer'
+import { Ionicons } from '@expo/vector-icons'
+import { CaptureProtection } from '../../helpers/CaptureProtection'
+import { useTranslation } from 'react-i18next'
+import * as FileSystem from 'expo-file-system'
+import { useQuery } from '@tanstack/react-query'
 
 const MusicPlayer = ({ route, navigation }) => {
-    useEffect(() => {
-        CaptureProtection.prevent();
-        return () => {
-            CaptureProtection.allow();
-        };
-    }, []);
-    const { t } = useTranslation();
-    const params = route?.params;
-    const file = params?.file
-    const user = useSelector(state => state.user?.data)
-    const [galleries, setGallery] = useState([])
-    const [audio, setAudio] = useState([])
-    const [loader, setLoader] = useState(true)
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [musicIndex, setMusicIndex] = useState(0);
-    const [playing, setPlaying] = useState(false);
-    const [playNow, setPlayNow] = useState(false);
-    const [downloadingTrackId, setDownloadingTrackId] = useState(null);
-    const [downloadedTracks, setDownloadedTracks] = useState({});
-    const [preferLocalMap, setPreferLocalMap] = useState({});
-    const [initialAudioReady, setInitialAudioReady] = useState(false);
-    const [initialLocalUri, setInitialLocalUri] = useState(null);
-    const [initialSourceType, setInitialSourceType] = useState('remote');
-    const userToken = useSelector(state => state.auth?.token);
-    const fadeAnim = useRef(new Animated.Value(1)).current;
-    const { i18n } = useTranslation();
-    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
-    const fetchFiles = () => {
-        axios.post(`${uri}/fetchFiles`, { id: file?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
-            .then((res) => {
-                setAudio(res?.data?.file_audio)
-                setGallery(res?.data?.galleries)
 
-            })
-            .catch((err) => {
-                handleError(err)
-            })
-            .finally(() => {
-                setLoader(false)
-            })
-    }
+  const { t, i18n } = useTranslation()
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
+  const NewStyles = useMemo(() => makeStyles(lang), [lang])
 
-    const getLocalPaths = (item, index) => {
-        const trackId = item?.id ?? item?.file_gallery_id ?? index;
-        const cacheDir = `${FileSystem.documentDirectory}audio-cache/`;
-        const fileName = item?.file_path ? item.file_path.split('/').pop() : `${trackId}.bin`;
-        const safeFileName = `${trackId}_${fileName}`;
-        const localPath = `${cacheDir}${safeFileName}`;
-        const localDonePath = `${localPath}.complete`;
-        return { trackId, localPath, localDonePath };
-    };
+  const params = route?.params
+  const file = params?.file
 
-    const refreshDownloadedTracks = async (list) => {
-        if (!Array.isArray(list) || list.length === 0) return;
-        try {
-            const next = {};
-            await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}audio-cache/`, { intermediates: true });
-            for (let i = 0; i < list.length; i++) {
-                const { trackId, localPath, localDonePath } = getLocalPaths(list[i], i);
-                const info = await FileSystem.getInfoAsync(localPath);
-                const done = await FileSystem.getInfoAsync(localDonePath);
-                if (info.exists && done.exists) {
-                    next[trackId] = true;
-                }
-            }
-            setDownloadedTracks(next);
-        } catch (e) {
-            // ignore
-        }
-    };
+  const user = useSelector(state => state.user?.data)
+  const userToken = useSelector(state => state.auth?.token)
 
-    useFocusEffect(useCallback(() => {
-        fetchFiles()
-    }, []))
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [musicIndex, setMusicIndex] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [playNow, setPlayNow] = useState(false)
 
-    useEffect(() => {
-        if (audio?.length) {
-            refreshDownloadedTracks(audio);
-        }
-    }, [audio]);
+  const [downloadingTrackId, setDownloadingTrackId] = useState(null)
+  const [downloadedTracks, setDownloadedTracks] = useState({})
+  const [preferLocalMap, setPreferLocalMap] = useState({})
 
-    useEffect(() => {
-        let active = true;
-        if (!audio?.length) return;
-        setInitialAudioReady(false);
-        (async () => {
-            try {
-                const current = audio[musicIndex];
-                if (!current) {
-                    if (active) {
-                        setInitialLocalUri(null);
-                        setInitialSourceType('remote');
-                        setInitialAudioReady(true);
-                    }
-                    return;
-                }
-                const { trackId, localPath, localDonePath } = getLocalPaths(current, musicIndex);
-                const info = await FileSystem.getInfoAsync(localPath);
-                const done = await FileSystem.getInfoAsync(localDonePath);
-                if (active && info.exists && done.exists) {
-                    setInitialLocalUri(info.uri);
-                    setInitialSourceType('local');
-                    setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-                } else if (active) {
-                    setInitialLocalUri(null);
-                    setInitialSourceType('remote');
-                }
-            } catch (e) {
-                if (active) {
-                    setInitialLocalUri(null);
-                    setInitialSourceType('remote');
-                }
-            } finally {
-                if (active) setInitialAudioReady(true);
-            }
-        })();
-        return () => { active = false; };
-    }, [audio, musicIndex]);
-    useEffect(() => {
-        if (galleries?.length < 2) return;
+  const [initialAudioReady, setInitialAudioReady] = useState(false)
+  const [initialLocalUri, setInitialLocalUri] = useState(null)
+  const [initialSourceType, setInitialSourceType] = useState('remote')
 
-        const interval = setInterval(() => {
-            // Fade out
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 500,
-                useNativeDriver: true,
-            }).start(() => {
-                // تغییر عکس
-                const nextIndex = (currentIndex + 1) % galleries?.length;
-                setCurrentIndex(nextIndex);
+  const [cachedCovers, setCachedCovers] = useState({})
 
-                // Fade in
-                Animated.timing(fadeAnim, {
-                    toValue: 1,
-                    duration: 500,
-                    useNativeDriver: true,
-                }).start();
-            });
-        }, 15000);
+  const fadeAnim = useRef(new Animated.Value(1)).current
 
-        return () => clearInterval(interval);
-    }, [currentIndex, galleries?.length]);
+  useEffect(() => {
+    CaptureProtection.prevent()
+    return () => CaptureProtection.allow()
+  }, [])
 
-    if (loader) {
-        return (
-            <Loader />
-        )
-    }
-    return (
-        <SafeAreaView style={[NewStyles.container]} edges={{ top: 'off', bottom: 'additive' }}>
-            <ImageBackground style={{ flex: 1, paddingTop: 65 }} source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }} imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }} blurRadius={25}>
-                <Animated.Image
-                    source={{ uri: `${dlUrl}/${galleries[currentIndex]?.image_path}` }}
-                    style={[{ aspectRatio: 1, width: '80%', objectFit: 'contain', borderRadius: 17, alignSelf: 'center', marginTop: 10, opacity: fadeAnim }]}
-                />
-                <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10, paddingHorizontal: '5%' }]}>{audio?.[musicIndex]?.title}</Text>
-                {
-                    audio && initialAudioReady ? (
-                        <AudioPlayer
-                            audio={audio}
-                            setIndex={setMusicIndex}
-                            index={musicIndex}
-                            playing={playing}
-                            setPlaying={setPlaying}
-                            playNow={playNow}
-                            preferLocalMap={preferLocalMap}
-                            downloadedTracks={downloadedTracks}
-                            initialLocalUri={initialLocalUri}
-                            initialSourceType={initialSourceType}
-                        />
-                    ) : (
-                        <ActivityIndicator size="large" color={themeColor10.bgColor(1)} />
-                    )
-                }
+  const fetchFiles = async () => {
 
-                <FlatList
-                    data={audio}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => {
-                        return (
-                            <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: themeColor4.bgColor(1), width: '100%' }} />
-                        )
-                    }}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    renderItem={({ item, index }) => {
-                        const { trackId, localPath, localDonePath } = getLocalPaths(item, index);
-                        const isDownloaded = !!downloadedTracks[trackId];
-                        const isDownloadingTrack = downloadingTrackId === trackId;
-                        return (
-                            <TouchableOpacity onPress={() => {
-                                setMusicIndex(index);
-                                if (isDownloaded) {
-                                    setPreferLocalMap((prev) => ({ ...prev, [trackId]: true }));
-                                }
-                                if (index == musicIndex) {
-                                    setPlaying((p) => !p);
-                                } else {
-                                    setPlaying(true);
-                                }
-                            }} style={[NewStyles.row, { width: '90%', alignSelf: 'center', paddingHorizontal: 10, alignItems: 'center', paddingBottom: 15, marginTop: 20, gap: 35 }]}>
-                                <Text style={[NewStyles.text10, { flex: 1, textAlign: 'left' }]}>{item?.title}</Text>
-                                <View style={[NewStyles.rowWrapper, { gap: 35, }]}>
-                                    <TouchableOpacity
-                                        disabled={isDownloadingTrack}
-                                        onPress={async () => {
-                                            if (!item?.file_path) return;
-                                            if (!isDownloaded) {
-                                                if (user?.is_offline_mode == 1) {
-                                                    try {
-                                                        setDownloadingTrackId(trackId);
-                                                        await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}audio-cache/`, { intermediates: true });
-                                                        const info = await FileSystem.getInfoAsync(localPath);
-                                                        const done = await FileSystem.getInfoAsync(localDonePath);
-                                                        if (info.exists && done.exists) {
-                                                            setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-                                                            setDownloadingTrackId(null);
-                                                            Alert.alert(t('Download complete'), t('Play from local now?'), [
-                                                                { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                                                                { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
-                                                            ]);
-                                                            return;
-                                                        }
-                                                        const encoded = encodeURI(`${dlUrl}/${item.file_path}`);
-                                                        const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
-                                                        await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
-                                                        setDownloadedTracks((prev) => ({ ...prev, [trackId]: true }));
-                                                        Alert.alert(t('Download complete'), t('Play from local now?'), [
-                                                            { text: t('No'), style: 'cancel', onPress: () => setPreferLocalMap((prev) => ({ ...prev, [trackId]: false })) },
-                                                            { text: t('Yes'), onPress: () => { setPreferLocalMap((prev) => ({ ...prev, [trackId]: true })); setMusicIndex(index); setPlaying(true); } }
-                                                        ]);
-                                                    } catch (e) {
-                                                        console.log('[MusicPlayer] Download error', e?.message ?? e);
-                                                    } finally {
-                                                        setDownloadingTrackId(null);
-                                                    }
-                                                } else {
-                                                    navigation.navigate('Subscription');
-                                                }
-                                            }
-                                        }}
-                                        style={[{ width: 20, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }]}
-                                    >
-                                        {isDownloadingTrack ? (
-                                            <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
-                                        ) : isDownloaded ? (
-                                            <Ionicons name="checkmark-circle" color={themeColor10.bgColor(1)} size={20} />
-                                        ) : (
-                                            <Ionicons name="download-outline" color={themeColor10.bgColor(1)} size={20} />
-                                        )}
-                                    </TouchableOpacity>
-                                    <View style={{ width: 20, aspectRatio: 1 }}>
-                                        <Ionicons name={(index == musicIndex && playing) ? 'pause' : 'play'} color={themeColor10.bgColor(1)} size={20} />
-                                    </View>
-                                    <Text style={[NewStyles.text10, { textAlign: 'left' }]}>{index + 1}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )
-                    }}
-                />
-            </ImageBackground>
-        </SafeAreaView>
+    const res = await axios.post(
+      `${uri}/fetchFiles`,
+      { id: file?.id },
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
     )
+
+    return {
+      audio: res?.data?.file_audio || [],
+      galleries: res?.data?.galleries || []
+    }
+  }
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['music-player-files', file?.id, userToken],
+    queryFn: fetchFiles,
+    enabled: !!userToken && !!file?.id,
+
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 60 * 24 * 30,
+
+    networkMode: 'offlineFirst',
+
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
+
+  const audio = useMemo(() => data?.audio || [], [data])
+  const galleries = useMemo(() => data?.galleries || [], [data])
+
+  const getLocalPaths = (item, index) => {
+
+    const trackId = item?.id ?? item?.file_gallery_id ?? index
+    const cacheDir = `${FileSystem.documentDirectory}audio-cache/`
+
+    const fileName = item?.file_path
+      ? item.file_path.split('/').pop()
+      : `${trackId}.bin`
+
+    const safeFileName = `${trackId}_${fileName}`
+
+    const localPath = `${cacheDir}${safeFileName}`
+    const localDonePath = `${localPath}.complete`
+
+    return { trackId, localPath, localDonePath }
+  }
+
+  const refreshDownloadedTracks = async (list) => {
+
+    if (!Array.isArray(list) || list.length === 0) return
+
+    try {
+
+      const next = {}
+
+      await FileSystem.makeDirectoryAsync(
+        `${FileSystem.documentDirectory}audio-cache/`,
+        { intermediates: true }
+      )
+
+      for (let i = 0; i < list.length; i++) {
+
+        const { trackId, localPath, localDonePath } = getLocalPaths(list[i], i)
+
+        const info = await FileSystem.getInfoAsync(localPath)
+        const done = await FileSystem.getInfoAsync(localDonePath)
+
+        if (info.exists && done.exists) {
+          next[trackId] = true
+        }
+
+      }
+
+      setDownloadedTracks(next)
+
+    } catch (e) { }
+
+  }
+
+  useEffect(() => {
+    if (audio?.length) {
+      refreshDownloadedTracks(audio)
+    }
+  }, [audio])
+
+  const cacheCover = async (path) => {
+
+    try {
+
+      const fileName = path.split('/').pop()
+      const cacheDir = `${FileSystem.documentDirectory}image-cache/`
+
+      await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true })
+
+      const localPath = `${cacheDir}${fileName}`
+
+      const info = await FileSystem.getInfoAsync(localPath)
+
+      if (info.exists) return info.uri
+
+      const result = await FileSystem.downloadAsync(`${dlUrl}/${path}`, localPath)
+
+      return result.uri
+
+    } catch (e) {
+
+      return `${dlUrl}/${path}`
+
+    }
+
+  }
+
+  useEffect(() => {
+
+    if (!galleries?.length) return
+
+    const loadImages = async () => {
+
+      const map = {}
+
+      for (let i = 0; i < galleries.length; i++) {
+
+        const item = galleries[i]
+
+        if (!item?.image_path) continue
+
+        const uri = await cacheCover(item.image_path)
+
+        map[item.image_path] = uri
+      }
+
+      setCachedCovers(map)
+
+    }
+
+    loadImages()
+
+  }, [galleries])
+
+  useEffect(() => {
+
+    let active = true
+
+    if (!audio?.length) return
+
+    setInitialAudioReady(false)
+
+    ;(async () => {
+
+      try {
+
+        const current = audio[musicIndex]
+
+        if (!current) {
+          if (active) {
+            setInitialLocalUri(null)
+            setInitialSourceType('remote')
+            setInitialAudioReady(true)
+          }
+          return
+        }
+
+        const { trackId, localPath, localDonePath } = getLocalPaths(current, musicIndex)
+
+        const info = await FileSystem.getInfoAsync(localPath)
+        const done = await FileSystem.getInfoAsync(localDonePath)
+
+        if (active && info.exists && done.exists) {
+
+          setInitialLocalUri(info.uri)
+          setInitialSourceType('local')
+
+          setDownloadedTracks(prev => ({
+            ...prev,
+            [trackId]: true
+          }))
+
+        } else {
+
+          setInitialLocalUri(null)
+          setInitialSourceType('remote')
+
+        }
+
+      } finally {
+
+        if (active) setInitialAudioReady(true)
+
+      }
+
+    })()
+
+    return () => { active = false }
+
+  }, [audio, musicIndex])
+
+  useEffect(() => {
+
+    if (galleries?.length < 2) return
+
+    const interval = setInterval(() => {
+
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+
+        const nextIndex = (currentIndex + 1) % galleries.length
+
+        setCurrentIndex(nextIndex)
+
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start()
+
+      })
+
+    }, 15000)
+
+    return () => clearInterval(interval)
+
+  }, [currentIndex, galleries?.length])
+
+  if (isLoading && !data) {
+    return <Loader />
+  }
+
+  const coverUri =
+    cachedCovers[galleries[currentIndex]?.image_path] ??
+    `${dlUrl}/${galleries[currentIndex]?.image_path}`
+
+  return (
+
+    <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
+
+      <ImageBackground
+        style={{ flex: 1, paddingTop: 65 }}
+        source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }}
+        imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }}
+        blurRadius={25}
+      >
+
+        <Animated.Image
+          source={{ uri: coverUri }}
+          style={{
+            aspectRatio: 1,
+            width: '80%',
+            borderRadius: 17,
+            alignSelf: 'center',
+            marginTop: 10,
+            opacity: fadeAnim
+          }}
+        />
+
+        <Text style={[NewStyles.text10, { textAlign: 'center', marginVertical: 10 }]}>
+          {audio?.[musicIndex]?.title}
+        </Text>
+
+        {
+          audio && initialAudioReady
+            ? (
+              <AudioPlayer
+                audio={audio}
+                setIndex={setMusicIndex}
+                index={musicIndex}
+                playing={playing}
+                setPlaying={setPlaying}
+                playNow={playNow}
+                preferLocalMap={preferLocalMap}
+                downloadedTracks={downloadedTracks}
+                initialLocalUri={initialLocalUri}
+                initialSourceType={initialSourceType}
+              />
+            )
+            : (
+              <ActivityIndicator size="large" color={themeColor10.bgColor(1)} />
+            )
+        }
+
+        <FlatList
+          data={audio}
+          keyExtractor={(item, index) => String(item?.id ?? index)}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          renderItem={({ item, index }) => {
+
+            const { trackId, localPath, localDonePath } = getLocalPaths(item, index)
+
+            const isDownloaded = !!downloadedTracks[trackId]
+            const isDownloadingTrack = downloadingTrackId === trackId
+
+            return (
+
+              <TouchableOpacity
+                onPress={() => {
+
+                  setMusicIndex(index)
+
+                  if (isDownloaded) {
+                    setPreferLocalMap(prev => ({ ...prev, [trackId]: true }))
+                  }
+
+                  if (index === musicIndex) {
+                    setPlaying(p => !p)
+                  } else {
+                    setPlaying(true)
+                  }
+
+                }}
+                style={[
+                  NewStyles.row,
+                  {
+                    width: '90%',
+                    alignSelf: 'center',
+                    paddingHorizontal: 10,
+                    alignItems: 'center',
+                    paddingBottom: 15,
+                    marginTop: 20,
+                    gap: 35
+                  }
+                ]}
+              >
+
+                <Text style={[NewStyles.text10, { flex: 1 }]}>
+                  {item?.title}
+                </Text>
+
+                <View style={[NewStyles.rowWrapper, { gap: 35 }]}>
+
+                  <TouchableOpacity
+                    disabled={isDownloadingTrack}
+                    onPress={async () => {
+
+                      if (!item?.file_path) return
+
+                      if (!isDownloaded) {
+
+                        if (user?.is_offline_mode == 1) {
+
+                          try {
+
+                            setDownloadingTrackId(trackId)
+
+                            await FileSystem.makeDirectoryAsync(
+                              `${FileSystem.documentDirectory}audio-cache/`,
+                              { intermediates: true }
+                            )
+
+                            const encoded = encodeURI(`${dlUrl}/${item.file_path}`)
+
+                            await FileSystem.downloadAsync(encoded, localPath)
+
+                            await FileSystem.writeAsStringAsync(localDonePath, 'ok')
+
+                            setDownloadedTracks(prev => ({
+                              ...prev,
+                              [trackId]: true
+                            }))
+
+                          } finally {
+
+                            setDownloadingTrackId(null)
+
+                          }
+
+                        } else {
+
+                          navigation.navigate('Subscription')
+
+                        }
+
+                      }
+
+                    }}
+                  >
+
+                    {
+                      isDownloadingTrack
+                        ? <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
+                        : isDownloaded
+                          ? <Ionicons name="checkmark-circle" color={themeColor10.bgColor(1)} size={20} />
+                          : <Ionicons name="download-outline" color={themeColor10.bgColor(1)} size={20} />
+                    }
+
+                  </TouchableOpacity>
+
+                  <Ionicons
+                    name={(index == musicIndex && playing) ? 'pause' : 'play'}
+                    color={themeColor10.bgColor(1)}
+                    size={20}
+                  />
+
+                  <Text style={NewStyles.text10}>
+                    {index + 1}
+                  </Text>
+
+                </View>
+
+              </TouchableOpacity>
+
+            )
+
+          }}
+        />
+
+      </ImageBackground>
+
+    </SafeAreaView>
+
+  )
+
 }
 
 export default MusicPlayer

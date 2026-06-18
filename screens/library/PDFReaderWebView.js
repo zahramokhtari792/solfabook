@@ -48,7 +48,7 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                 setData(`${dlUrl}/${res?.data?.file_pdf?.[0]?.file_path}`)
             })
             .catch((err) => {
-                handleError(err)
+                // handleError(err)
             })
             .finally(() => {
             })

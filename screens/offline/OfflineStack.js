@@ -1,12 +1,26 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, View } from 'react-native'
+import React, { useEffect } from 'react'
 import MyLibrary from '../library/MyLibrary'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useInternetStatus } from '../../hooks/useInternetStatus'
 
-const OfflineStack = () => {
+const OfflineStack = ({ navigation }) => {
+  const isOnline = useInternetStatus();
+
+  useEffect(() => {
+    // فقط اگر وضعیت اینترنت "قطعاً" آنلاین شد (true)، ریست کن
+    if (isOnline === true) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainLayout' }],
+      });
+    }
+  }, [isOnline, navigation]);
+
   return (
-    <View>
-      <MyLibrary/>
-    </View>
+    <SafeAreaView style={{ flex: 1 }} edges={{ top: 'additive', bottom: 'additive' }}>
+      <MyLibrary />
+    </SafeAreaView>
   )
 }
 

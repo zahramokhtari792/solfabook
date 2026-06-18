@@ -18,6 +18,7 @@ import MyFiles from './library/MyFiles';
 import AlbumTab from './albums/AlbumTab';
 import { Ionicons } from '@expo/vector-icons';
 import { langIsRTL } from '../styles/NewStyles';
+import { useInternetStatus } from '../hooks/useInternetStatus';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,7 +27,7 @@ export default function MainLayout() {
     const { t } = useTranslation();
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-
+    const isOnline = useInternetStatus();
     return (
         <Tab.Navigator
             initialRouteName='Home'
@@ -35,10 +36,10 @@ export default function MainLayout() {
                 headerShown: true,
                 headerTitle: '',
                 headerBackTitle: 'Back',
-                headerTitleStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin'},
+                headerTitleStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
                 headerTintColor: themeColor10.bgColor(1),
-                tabBarStyle:[ { backgroundColor: themeColor4.bgColor(1) }, Platform.OS === 'web' ? { height: 70 } : {}],
-                tabBarLabelStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin'},
+                tabBarStyle: [{ backgroundColor: themeColor4.bgColor(1) }, Platform.OS === 'web' ? { height: 70 } : {}],
+                tabBarLabelStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
                 tabBarActiveTintColor: themeColor0.bgColor(1),
                 tabBarInactiveTintColor: themeColor1.bgColor(1),
                 headerLeftContainerStyle: langIsRTL(lang) ? { paddingLeft: '5%' } : { paddingRight: '5%' },
@@ -59,30 +60,30 @@ export default function MainLayout() {
 
                 }}
             />
-            <Tab.Screen name='AlbumTab' component={AlbumTab}
+            {isOnline && <Tab.Screen name='AlbumTab' component={AlbumTab}
                 options={{
                     title: `${t('Albums')}`,
                     tabBarIcon: ({ color }) => { return <Ionicons name="albums" size={28} color={color} /> },
                 }}
-            />
-            <Tab.Screen name='Explore' component={Explore}
+            />}
+            {isOnline && <Tab.Screen name='Explore' component={Explore}
                 options={{
                     title: `${t('Explore')}`,
                     tabBarIcon: ({ color }) => { return <MainBookIcon color={color} /> },
                 }}
-            />
-            <Tab.Screen name='Categories' component={Categories}
+            />}
+            {isOnline && <Tab.Screen name='Categories' component={Categories}
                 options={{
                     title: `${t('Categories')}`,
                     tabBarIcon: ({ color }) => { return <CategoryIcon color={color} /> },
                 }}
-            />
-            <Tab.Screen name='Home' component={Home}
+            />}
+            {isOnline && <Tab.Screen name='Home' component={Home}
                 options={{
                     title: `${t('Home')}`,
                     tabBarIcon: ({ color }) => { return <HomeIcon color={color} /> }
                 }}
-            />
+            />}
 
         </Tab.Navigator >
     )

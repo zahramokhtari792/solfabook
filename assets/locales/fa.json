@@ -460,5 +460,8 @@
     "ID": "شناسه",
     "Your message has been sent successfully.": "پیام شما با موفقیت ارسال شد.",
     "The phone number you entered is not valid.": "شماره تلفنی که وارد کردید معتبر نیست.",
-    "A verification code has been sent to {{phone}}.": "یک کد تایید به {{phone}} ارسال شده است."
+    "A verification code has been sent to {{phone}}.": "یک کد تایید به {{phone}} ارسال شده است.",
+    "No internet connection": "اتصال به اینترنت در دسترس نیست",
+    "Get": "دریافت",
+    "Subscribe to receive the file.":"برای دریافت فایل، اشتراک تهیه کنید"
 }

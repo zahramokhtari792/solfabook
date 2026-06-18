@@ -4,11 +4,12 @@ import { ImageBackground } from 'expo-image';
 import { dlUrl } from '../services/URL';
 import makeStyles, { deviceWidth, deviceWidthScreen, langIsRTL } from '../styles/NewStyles';
 import { Dimensions } from 'react-native';
-import { themeColor11, themeColor12, themeColor4 } from '../theme/Color';
+import { themeColor0, themeColor11, themeColor12, themeColor4 } from '../theme/Color';
 import StarIcon from '../assets/svg/StarIcon';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '../helpers/Common';
 import { useNavigation } from '@react-navigation/native';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 
 const FilesProduct = ({ item, type, explore }) => {
 
@@ -40,11 +41,18 @@ const FilesProduct = ({ item, type, explore }) => {
         return (
             <Pressable style={[cardConfig, NewStyles.border8, NewStyles.shadow, { marginVertical: 20 }]} onPress={() => { navigation.navigate('FileDetail', { id: item?.id }) }}>
                 {type == 'horizontal' && <ImageBackground source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={{ height: '100%', width: '100%' }} imageStyle={[NewStyles.border8]}>
-                    {((item?.discounted_price && item?.discounted_price != null)) &&
-                        <View style={{ alignSelf: 'flex-end', height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
-                            <Text style={{ color: '#fff', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
-                        </View>
-                    }
+                    <View style={[{ position: 'absolute', zIndex: 1, alignSelf: 'flex-end', gap: 5 }, NewStyles.row]}>
+                        {((item?.discounted_price && item?.discounted_price != null)) &&
+                            <View style={{ height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
+                                <Text style={{ color: '#fff', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
+                            </View>
+                        }
+                        {item?.need_subscription == 1 &&
+                            <View style={[{ height: 35, width: 35, backgroundColor: themeColor0.bgColor(1), alignItems: 'center', }, NewStyles.border100, NewStyles.center]}>
+                                <FontAwesome6 name={"crown"} size={15} color={themeColor4.bgColor(1)} />
+                            </View>
+                        }
+                    </View>
                 </ImageBackground>}
 
             </Pressable>
@@ -59,11 +67,18 @@ const FilesProduct = ({ item, type, explore }) => {
                     navigation.navigate('FileDetail', { id: item?.id })
                 }
             }}>
-                {((item?.discounted_price && item?.discounted_price != null)) &&
-                    <View style={{ position: 'absolute', zIndex: 1, alignSelf: 'flex-end', height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
-                        <Text style={{ color: '#fff', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
-                    </View>
-                }
+                <View style={[{ position: 'absolute', zIndex: 1, alignSelf: 'flex-end', gap: 5 }, NewStyles.row]}>
+                    {((item?.discounted_price && item?.discounted_price != null)) &&
+                        <View style={{ height: 35, width: 35, backgroundColor: 'red', borderTopRightRadius: 8, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, alignItems: 'center', paddingTop: 5 }}>
+                            <Text style={{ color: '#fff', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 12 }}>{parseInt((1 - item?.discounted_price / item.price) * 100)}% </Text>
+                        </View>
+                    }
+                    {item?.need_subscription == 1 &&
+                        <View style={[{ height: 35, width: 35, backgroundColor: themeColor0.bgColor(1), alignItems: 'center', }, NewStyles.border100, NewStyles.center]}>
+                            <FontAwesome6 name={"crown"} size={15} color={themeColor4.bgColor(1)} />
+                        </View>
+                    }
+                </View>
                 <Image source={{ uri: `${dlUrl}/${item?.image_gallery?.image_path}` }} style={[{ aspectRatio: 1, width: '100%' }, NewStyles.border8]} />
                 <View style={{ alignItems: 'flex-end', justifyContent: 'flex-end', width: '100%', padding: 10, gap: 5, }}>
                     <Text style={[NewStyles.text10]} numberOfLines={2}>

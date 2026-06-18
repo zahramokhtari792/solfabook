@@ -1,108 +1,95 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native'
+import { FlatList, StyleSheet, Text, View, Dimensions } from 'react-native'
 import React, { useMemo } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles, { langIsRTL } from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles';
 import FilesProduct from '../../components/FilesProduct';
 import CategoriItem from '../category/CategoriItem';
 import AlbumCategoryItem from '../albums/AlbumCategoryItem';
 import { useTranslation } from 'react-i18next';
 import MyFileComponent from '../library/MyFileComponent';
 
+const { width } = Dimensions.get('window');
+const ITEM_WIDTH = width * 0.42;
+
 const SearchResult = ({ route }) => {
+
     const params = route?.params;
-    const { t } = useTranslation()
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+
+    const sections = useMemo(() => {
+        return params?.data?.filter(s => s?.data?.length > 0) ?? [];
+    }, [params?.data]);
+
+    const renderCard = (item, type) => {
+
+        switch (type) {
+
+            case 'file':
+                return <FilesProduct type={"vertical"} item={item} explore />;
+
+            case 'category':
+                return <CategoriItem item={item} />;
+
+            case 'album_category':
+                return <AlbumCategoryItem item={item} />;
+
+            case 'my_file':
+            case 'my_album':
+                return <MyFileComponent showTrash={false} item={item.file} />;
+
+            default:
+                return null;
+        }
+    };
+
+    const renderSection = ({ item }) => {
+
+        return (
+            <View style={{ marginBottom: 20 }}>
+
+                <View style={{ paddingHorizontal: '5%', marginBottom: 8 }}>
+                    <Text style={NewStyles.text10}>
+                        {t(item.title)}
+                    </Text>
+                </View>
+
+                <FlatList
+                    data={item.data}
+                    numColumns={2}
+                    keyExtractor={(i, idx) => `${item.type}-${idx}`}
+                    scrollEnabled={false}
+                    columnWrapperStyle={{
+                        justifyContent: 'center',
+                        gap: 14,
+                    }}
+                    renderItem={({ item: subItem }) => (
+                        <View style={{ marginBottom: 10 }}>
+                            {renderCard(subItem, item.type)}
+                        </View>
+                    )}
+                />
+
+            </View>
+        )
+    };
+
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
+
             <View style={{ paddingVertical: 15 }}>
-                <Text style={[NewStyles.title10, { textAlign: 'center' }]}>{t("Search results in")} <Text style={NewStyles.title}>{params?.search}</Text></Text>
+                <Text style={[NewStyles.title10, { textAlign: 'center' }]}>
+                    {t("Search results in")} <Text style={NewStyles.title}>{params?.search}</Text>
+                </Text>
             </View>
 
             <FlatList
+                data={sections}
+                keyExtractor={(item) => item.id}
+                renderItem={renderSection}
                 showsVerticalScrollIndicator={false}
-                data={params?.data?.filter(item => item?.data?.length > 0)}
-                keyExtractor={item => item?.id}
-                contentContainerStyle={{ gap: 10 }}
-                renderItem={({ item }) => {
-                    return (
-                        <View>
-                            <View style={{ paddingHorizontal: '5%' }}>
-                                <Text style={NewStyles.text10}>{t(item?.title)}</Text>
-                            </View>
-                            {
-                                item?.type == 'file' &&
-                                <FlatList
-                                    horizontal
-                                    inverted={langIsRTL(lang) ? true : false}
-                                    maxToRenderPerBatch={3}
-                                    windowSize={4}
-                                    contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
-                                    showsHorizontalScrollIndicator={false}
-                                    data={item?.data}
-                                    renderItem={({ item: subItem }) => {
-                                        return (
-                                            <FilesProduct item={subItem} explore={true} />
-                                        )
-                                    }}
-                                />
-                            }
-                            {
-                                item?.type == 'category' &&
-                                <FlatList
-                                    horizontal
-                                    inverted={langIsRTL(lang) ? true : false}
-                                    maxToRenderPerBatch={3}
-                                    windowSize={4}
-                                    contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
-                                    showsHorizontalScrollIndicator={false}
-                                    data={item?.data}
-                                    renderItem={({ item: subItem }) => {
-                                        return (
-                                            <CategoriItem item={subItem} />
-                                        )
-                                    }}
-                                />
-                            }
-                            {
-                                item?.type == 'album_category' &&
-                                <FlatList
-                                    horizontal
-                                    inverted={langIsRTL(lang) ? true : false}
-                                    maxToRenderPerBatch={3}
-                                    windowSize={4}
-                                    contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
-                                    showsHorizontalScrollIndicator={false}
-                                    data={item?.data}
-                                    renderItem={({ item: subItem }) => {
-                                        return (
-                                            <AlbumCategoryItem item={subItem} />
-                                        )
-                                    }}
-                                />
-                            }
-                            {
-                                (item?.type == 'my_file' || item?.type == 'my_album') &&
-                                <FlatList
-                                    horizontal
-                                    inverted={langIsRTL(lang) ? true : false}
-                                    maxToRenderPerBatch={3}
-                                    windowSize={4}
-                                    contentContainerStyle={{ gap: 10, paddingHorizontal: '5%', marginVertical: 5 }}
-                                    showsHorizontalScrollIndicator={false}
-                                    data={item?.data}
-                                    renderItem={({ item: subItem }) => {
-                                        return (
-                                            <MyFileComponent showTrash={false} item={subItem.file} />
-                                        )
-                                    }}
-                                />
-                            }
-
-                        </View>
-                    )
-                }}
+                contentContainerStyle={{ paddingBottom: 40 }}
             />
 
         </SafeAreaView>

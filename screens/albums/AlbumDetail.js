@@ -30,6 +30,7 @@ import AudioPlayer from '../../components/AudioPlayer';
 import { fetchUser } from '../../slices/userSlice';
 import { CaptureProtection } from '../../helpers/CaptureProtection';
 import { shareContent } from '../../helpers/ShareHelper';
+import { queryClient } from '../../lib/queryClient';
 
 const AlbumDetail = ({ route, navigation }) => {
     const params = route?.params;
@@ -86,6 +87,7 @@ const AlbumDetail = ({ route, navigation }) => {
         if (queryParams?.status == 'OK') {
             setText('خرید آلبوم با موفقیت انجام شد');
             setTextBtn('آلبوم های من')
+            
             setVisible(true)
         } else if (queryParams?.status == 'NOK') {
             showToastOrAlert(t('The payment encountered an error.'))
@@ -95,6 +97,7 @@ const AlbumDetail = ({ route, navigation }) => {
     const gateWayPayment = async () => {
         setPayModal(false)
         try {
+            queryClient.invalidateQueries({ queryKey: ['my-albums'] });
             let result = await Linking.openURL(`${uri}/gatewayPayment?linkingUri=${redirectUrl}&file_id=${fileId}&user_id=${user?.id}`);
             let redirectData;
             if (result.url) {
@@ -111,6 +114,7 @@ const AlbumDetail = ({ route, navigation }) => {
         setLoader(true)
         axios.post(`${uri}/walletPayment`, { file_id: fileId }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
+                queryClient.invalidateQueries({ queryKey: ['my-albums'] });
                 console.log(res?.data);
                 showToastOrAlert(t("The file purchase was successful."))
                 navigation.navigate('MainLayout', { screen: 'MyLibrary', params: { screen: 'MyAlbum' } })
