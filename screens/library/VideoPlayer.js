@@ -238,6 +238,18 @@ const VideoPlayer = ({ route, navigation }) => {
     }
 
   }
+  useEffect(() => {
+    ScreenOrientation.unlockAsync().catch(() => { });
+    return () => {
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT_UP
+      ).catch(() => { });
+    };
+  }, []);
+  useEffect(() => {
+    CaptureProtection.prevent();
+    return () => CaptureProtection.allow();
+  }, []);
 
   if (isLoading && !data) {
     return <Loader />

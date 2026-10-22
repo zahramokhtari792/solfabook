@@ -130,3 +130,47 @@ export const themeColor12 = {
     //dark gray
     ...palate[12],
 };
+
+// Semantic colors for the Light / Dark UI.
+// Keep themeColor0..themeColor12 above unchanged for existing imports and bgColor(opacity).
+// The light palette reuses the actual legacy bgColor() outputs, including their rgba format.
+// "primary" is the brand/button color; "primaryText" is its readable text/link variant.
+// A surface color must never be used as the foreground of a primary button: use onPrimary.
+export const themePalettes = Object.freeze({
+    light: Object.freeze({
+        primary: themeColor0.bgColor(1),
+        primaryText: themeColor0.bgColor(1),
+        onPrimary: themeColor4.bgColor(1),
+        background: themeColor5.bgColor(1),
+        surface: themeColor4.bgColor(1),
+        inputBackground: themeColor4.bgColor(1),
+        text: themeColor10.bgColor(1),
+        textSecondary: themeColor1.bgColor(1),
+        textMuted: themeColor3.bgColor(1),
+        textInverse: themeColor4.bgColor(1),
+        border: themeColor3.bgColor(0.2),
+        overlay: themeColor10.bgColor(0.5),
+        shadow: themeColor3.bgColor(1),
+        danger: themeColor6.bgColor(1),
+        success: themeColor7.bgColor(1),
+        warning: themeColor11.bgColor(1),
+    }),
+    dark: Object.freeze({
+        primary: themeColor0.bgColor(1),
+        primaryText: '#E58AB8',
+        onPrimary: '#FFFFFF',
+        background: '#121212',
+        surface: '#242424',
+        inputBackground: '#292929',
+        text: '#F5F5F5',
+        textSecondary: '#B3B3B3',
+        textMuted: '#969696',
+        textInverse: '#FFFFFF',
+        border: 'rgba(255, 255, 255, 0.14)',
+        overlay: 'rgba(0, 0, 0, 0.65)',
+        shadow: '#000000',
+        danger: '#EF7777',
+        success: '#63C68B',
+        warning: '#FFB74D',
+    }),
+});

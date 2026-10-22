@@ -113,7 +113,7 @@ const buildViewerHtml = (sourceUrl, initialScale) => {
       line-height: 1.6;
     }
   </style>
-  <script src="https://solfabook.com/pdf/js/pdf.min.js" ></script>
+  <script src="https://solfa-book.com/pdf/js/pdf.min.js" ></script>
 </head>
 <body>
   <div id="viewer">
@@ -472,7 +472,7 @@ const buildViewerHtml = (sourceUrl, initialScale) => {
             throw new Error('PDF.js failed to load');
           }
 
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://solfabook.com/pdf/js/pdf.worker.min.js';
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://solfa-book.com/pdf/js/pdf.worker.min.js';
           const loadingTask = window.pdfjsLib.getDocument({
             url: SOURCE_URL,
             cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',

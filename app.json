@@ -2,7 +2,7 @@
   "expo": {
     "name": "solfabook",
     "slug": "solfabook",
-    "version": "1.0.2",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "expo.solfabook.with-webbrowser-redirect",
@@ -41,10 +41,13 @@
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
-        "android.permission.SYSTEM_ALERT_WINDOW"
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_EXTERNAL_STORAGE"
       ],
       "package": "com.zahra27_7.solfabook",
-      "versionCode": 10,
+      "versionCode": 25,
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -118,7 +121,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "66069161-91a6-430e-ad2f-96dbd6554072"
+        "projectId": "38271849-d3fa-491a-bd68-60370f015a1c"
       }
     }
   }

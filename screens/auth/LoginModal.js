@@ -114,6 +114,8 @@ export default function LoginModal() {
                 setError(`${t('The entered password is not correct!')}`)
             }
         } catch (error) {
+            console.log(error);
+            
             handleError(error)
         } finally {
             setLoading(false);

@@ -198,16 +198,9 @@ export default function AudioPlayer({
 
     // Prevent screen recording while audio is playing
     useEffect(() => {
-        if (playing) {
-            CaptureProtection.prevent({ record: true });
-        } else {
-            CaptureProtection.allow({ record: true });
-        }
-
-        return () => {
-            CaptureProtection.allow({ record: true });
-        };
-    }, [playing]);
+        CaptureProtection.prevent();
+        return () => CaptureProtection.allow();
+    }, []);
 
     const pauseSound = useCallback(() => {
         setPlaying(false);
