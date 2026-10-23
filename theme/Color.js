@@ -134,7 +134,7 @@ export const themeColor12 = {
 // Semantic colors for the Light / Dark UI.
 // Keep themeColor0..themeColor12 above unchanged for existing imports and bgColor(opacity).
 // The light palette reuses the actual legacy bgColor() outputs, including their rgba format.
-// "primary" is the brand/button color; "primaryText" is its readable text/link variant.
+// Both "primary" and "primaryText" retain the exact legacy brand purple in each theme.
 // A surface color must never be used as the foreground of a primary button: use onPrimary.
 export const themePalettes = Object.freeze({
     light: Object.freeze({
@@ -157,7 +157,7 @@ export const themePalettes = Object.freeze({
     }),
     dark: Object.freeze({
         primary: themeColor0.bgColor(1),
-        primaryText: '#E58AB8',
+        primaryText: themeColor0.bgColor(1),
         onPrimary: '#FFFFFF',
         background: '#121212',
         surface: '#242424',

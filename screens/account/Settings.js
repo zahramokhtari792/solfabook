@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useNewStyles } from '../../styles/NewStyles'
 import { useAppTheme } from '../../context/ThemeProvider'
 import OptionsComponents from '../../components/OptionsComponents'
+import ThemeModeSwitch from '../../components/ThemeModeSwitch'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import { uri } from '../../services/URL'
@@ -21,7 +22,7 @@ const Settings = ({ navigation }) => {
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
     const NewStyles = useNewStyles(lang);
-    const { themeMode, setThemeMode } = useAppTheme();
+    const { themeMode, setThemeMode, colors } = useAppTheme();
     const [modal, setModal] = useState(false)
     const [loader, setLoader] = useState(false)
     const dispatch = useDispatch()
@@ -49,9 +50,15 @@ const Settings = ({ navigation }) => {
     return (
         <View style={NewStyles.container}>
             <View style={{ paddingHorizontal: '5%' }}>
-                <Text style={[NewStyles.title10, { paddingHorizontal: 15, marginTop: 12 }]}>{t('Appearance')}</Text>
-                <OptionsComponents txt={t('Light')} icon={'sunny-outline'} selected={themeMode === 'light'} onPress={() => setThemeMode('light')} />
-                <OptionsComponents txt={t('Dark')} icon={'moon-outline'} selected={themeMode === 'dark'} onPress={() => setThemeMode('dark')} />
+                {/* The theme control is standalone: OptionsComponents is only for navigation rows. */}
+                <View style={[styles.themeSection, NewStyles.shadow, { backgroundColor: colors.surface, paddingHorizontal: 10 }, NewStyles.rowWrapper]}>
+                    <Text style={[NewStyles.text10, styles.themeLabel]}>{t(themeMode === 'dark' ? 'Dark' : 'Light')}</Text>
+                    <ThemeModeSwitch
+                        value={themeMode === 'dark'}
+                        onValueChange={(enabled) => setThemeMode(enabled ? 'dark' : 'light')}
+                        accessibilityLabel={t('Appearance')}
+                    />
+                </View>
                 <OptionsComponents txt={t('Change Password')} icon={'lock-open'} onPress={() => {
                     navigation.navigate('ChangePassword')
                 }} />
@@ -74,4 +81,22 @@ const Settings = ({ navigation }) => {
 
 export default Settings
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    themeSection: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 18,
+        marginTop: 12,
+        marginBottom: 12,
+        borderRadius: 15,
+
+    },
+    themeHeading: {
+        marginBottom: 14,
+        textAlign: 'center',
+    },
+    themeLabel: {
+        marginTop: 10,
+        textAlign: 'center',
+    },
+})
