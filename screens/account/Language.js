@@ -128,7 +128,7 @@ const Language = () => {
 
         />
       </View>
-      <View style={[styles.itemWrapper, NewStyles.rowWrapper]}>
+      {/* <View style={[styles.itemWrapper, NewStyles.rowWrapper]}>
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
@@ -155,7 +155,7 @@ const Language = () => {
           isChecked={lang == 'ckb' ? true : false}
 
         />
-      </View>
+      </View> */}
       <View style={[styles.itemWrapper, NewStyles.rowWrapper]}>
         <BouncyCheckbox
           size={25}

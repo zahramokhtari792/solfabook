@@ -568,7 +568,7 @@ const FileDetail = ({ route, navigation }) => {
                                 />
                             }
                             {/* لینکش رو نذاشتم هنوز */}
-                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
+                            {data?.is_shop == 1 && data?.is_album != 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
                                 Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeMode === 'dark' ? colors.text : themeColor0.bgColor(1) }} />}
                             <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>

@@ -44,7 +44,9 @@ export default function AudioPlayer({
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useNewStyles(lang);
-    const { colors } = useAppTheme();
+    const { colors, isDark } = useAppTheme();
+    // Preserve the brand purple in Light; keep player labels and icons readable in Dark.
+    const controlColor = isDark ? colors.text : themeColor0.bgColor(1);
 
     const playerRef = useRef(null);
     const isSeekingRef = useRef(false);
@@ -541,10 +543,10 @@ export default function AudioPlayer({
 
                 <View style={[NewStyles.rowWrapper, { paddingHorizontal: 15 }]}>
                     {/* UX: left current, right total */}
-                    <Text style={[NewStyles.text, { fontSize: 11, color: themeColor0.bgColor(1) }]}>
+                    <Text style={[NewStyles.text, { fontSize: 11, color: controlColor }]}>
                         {millisToMinutesAndSeconds(isSeeking ? tempWidth : width)}
                     </Text>
-                    <Text style={[NewStyles.text, { fontSize: 11, color: themeColor0.bgColor(1) }]}>
+                    <Text style={[NewStyles.text, { fontSize: 11, color: controlColor }]}>
                         {millisToMinutesAndSeconds(total)}
                     </Text>
                 </View>
@@ -558,11 +560,11 @@ export default function AudioPlayer({
                         disabled={index === audio.length - 1}
                     >
                         <PlayForwardIcon
-                            color={index === audio.length - 1 ? themeColor1.bgColor(0.7) : themeColor0.bgColor(1)}
+                            color={index === audio.length - 1 ? themeColor1.bgColor(0.7) : controlColor}
                         />
                     </TouchableOpacity>
                 )}
-                {!isLoaded && !loadingErr && <ActivityIndicator size={'large'} color={themeColor0.bgColor(1)} />}
+                {!isLoaded && !loadingErr && <ActivityIndicator size={'large'} color={controlColor} />}
                 {(!playing && !(!isLoaded && !loadingErr)) && (
                     <TouchableOpacity
                         onPress={() => {
@@ -573,12 +575,12 @@ export default function AudioPlayer({
                         disabled={!!loadingErr || !remoteUri || remoteUri.endsWith('/') || isDownloading}
                     >
                         {(isDownloading || isBuffering) ? (
-                            <ActivityIndicator size={"large"} color={themeColor0.bgColor(1)} />
+                            <ActivityIndicator size={"large"} color={controlColor} />
                         ) : (
                             <Ionicons
                                 name="play-circle"
                                 size={40}
-                                color={!!loadingErr ? themeColor1.bgColor(0.7) : themeColor0.bgColor(1)}
+                                color={!!loadingErr ? themeColor1.bgColor(0.7) : controlColor}
                             />
                         )}
                     </TouchableOpacity>
@@ -587,16 +589,16 @@ export default function AudioPlayer({
                 {(playing && !(!isLoaded && !loadingErr)) && (
                     <TouchableOpacity onPress={pauseSound}>
                         {isBuffering ? (
-                            <ActivityIndicator size={"large"} color={themeColor0.bgColor(1)} />
+                            <ActivityIndicator size={"large"} color={controlColor} />
                         ) : (
-                            <Ionicons name="pause-circle" size={40} color={themeColor0.bgColor(1)} />
+                            <Ionicons name="pause-circle" size={40} color={controlColor} />
                         )}
                     </TouchableOpacity>
                 )}
 
                 {audio?.length > 1 && (
                     <TouchableOpacity style={{ padding: 5 }} onPress={prev} disabled={index === 0}>
-                        <PlayBackIcon color={index > 0 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.7)} />
+                        <PlayBackIcon color={index > 0 ? controlColor : themeColor1.bgColor(0.7)} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -620,7 +622,7 @@ export default function AudioPlayer({
                                 color:
                                     rate === item
                                         ? '#fff'
-                                        : themeColor0.bgColor(1),
+                                        : controlColor,
                                 fontSize: 14,
                             }}
                         >

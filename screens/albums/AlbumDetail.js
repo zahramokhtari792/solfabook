@@ -3,7 +3,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, To
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNewStyles, deviceWidthScreen, langIsRTL } from '../../styles/NewStyles';
 import axios from 'axios';
-import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
+import { dlUrl, imageUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
@@ -476,9 +476,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                         </View>
                                     </View>}
                             </Pressable>
-                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
-                                Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
-                            }} textStyle={{ color: themeMode === 'dark' ? colors.text : themeColor0.bgColor(1) }} />}
+
 
                             {(data?.des || data?.description) && <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
                                 <Text style={[styles.sectiontitle, { color: colors.text, textAlign: langIsRTL(lang) ? 'right' : 'left', marginVertical: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
