@@ -1,11 +1,12 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React, { useMemo } from 'react'
+import React from 'react';
 import Button from './Button';
-import { themeColor0, themeColor4 } from '../theme/Color';
+import { themeColor0 } from '../theme/Color';
 import { Ionicons } from '@expo/vector-icons';
-import makeStyles from '../styles/NewStyles';
+import { useNewStyles } from '../styles/NewStyles';
 import { useSelector } from 'react-redux';
 import { formatPrice } from '../helpers/Common';
+import { useAppTheme } from '../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 
 
@@ -15,13 +16,14 @@ const PaymentModal = ({ modal, setModal, payment, wallet }) => {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     return (
         <Modal animationType='slide' visible={modal} transparent={true}>
 
             <TouchableWithoutFeedback onPress={() => { setModal(false); }}>
                 <View style={{ height: '100%', width: '100%', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                    <View style={styles.modal}>
+                    <View style={[styles.modal, { backgroundColor: colors.surface }]}>
                         <Text style={[NewStyles.title, { textAlign: 'center' }]}>
                             {t("Payment")}
                         </Text>
@@ -38,7 +40,7 @@ const PaymentModal = ({ modal, setModal, payment, wallet }) => {
                             </View>
 
                             <View style={{ width: '48%', }}>
-                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: themeColor4.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={t("Payment from gateway")} />
+                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: colors.surface }} textStyle={{ color: colors.primaryText }} title={t("Payment from gateway")} />
                             </View>
 
                         </View>

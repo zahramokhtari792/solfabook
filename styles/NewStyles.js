@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Platform, Dimensions } from 'react-native';
-import { themeColor0, themeColor1, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6, themeColor7, themeColor8, themeColor9, themeColor10, themeColor11, themeColor12 } from '../theme/Color';
+import { themeColor0, themeColor1, themeColor3, themeColor4, themePalettes } from '../theme/Color';
+import { useAppTheme } from '../context/ThemeProvider';
 
 export const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
 export const { width: deviceWidthScreen, height: deviceHeightScreen } = Dimensions.get('screen');
@@ -26,7 +28,8 @@ export const langIsRTL = (lang) => {
     const code = (lang || '').toLowerCase().split('-')[0];
     return RTL_LANGS.has(code);
 };
-export const makeStyles = (lang = 'fa') => {
+// Pure factory: the historical one-argument call continues to use the original Light colors.
+export const makeStyles = (lang = 'fa', colors = themePalettes.light) => {
     const isRTL = langIsRTL(lang);
 
     return StyleSheet.create({
@@ -34,14 +37,14 @@ export const makeStyles = (lang = 'fa') => {
             fontSize: 14,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             textAlign: isRTL ? 'right' : 'left',
-            color: themeColor0.bgColor(1),
+            color: colors.primaryText,
             paddingRight: 10,
         },
         inputSearchStyle: {
             fontSize: 14,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             textAlign: isRTL ? 'right' : 'left',
-            color: themeColor0.bgColor(1),
+            color: colors.primaryText,
             paddingHorizontal: 10,
             height: 50,
             borderWidth: 0,
@@ -61,8 +64,8 @@ export const makeStyles = (lang = 'fa') => {
             padding: 0,
             borderCurve: 'continuous',
             // overflow: 'hidden',
-            borderColor: themeColor5.bgColor(1),
-            backgroundColor: themeColor5.bgColor(1)
+            borderColor: colors.background,
+            backgroundColor: colors.background
         },
         codeFieldRoot: {
             height: 45,
@@ -75,7 +78,7 @@ export const makeStyles = (lang = 'fa') => {
             height: 45,
             width: 45,
             lineHeight: 45 - 5,
-            borderBottomColor: themeColor0.bgColor(1),
+            borderBottomColor: colors.primary,
             borderBottomWidth: StyleSheet.hairlineWidth,
             ...Platform.select({ web: { lineHeight: 65 } }),
             fontSize: 24,
@@ -83,13 +86,14 @@ export const makeStyles = (lang = 'fa') => {
             borderRadius: 8,
             borderCurve: 'continuous',
             overflow: 'hidden',
-            color: themeColor0.bgColor(1),
-            backgroundColor: '#fff',
+            color: colors.primaryText,
+            // Preserve the historical '#fff' output exactly in Light.
+            backgroundColor: colors === themePalettes.light ? '#fff' : colors.inputBackground,
         },
 
         container: {
             flex: 1,
-            backgroundColor: themeColor5.bgColor(1),
+            backgroundColor: colors.background,
         },
 
         center: {
@@ -114,7 +118,7 @@ export const makeStyles = (lang = 'fa') => {
         },
 
         shadow: {
-            shadowColor: themeColor3.bgColor(1),
+            shadowColor: colors.shadow,
             shadowOffset: {
                 width: 0,
                 height: 1,
@@ -146,125 +150,125 @@ export const makeStyles = (lang = 'fa') => {
         text: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor0.bgColor(1),
+            color: colors.primaryText,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text1: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor1.bgColor(1),
+            color: colors.textSecondary,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text3: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor3.bgColor(1),
+            color: colors.textMuted,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text4: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor4.bgColor(1),
+            color: colors.onPrimary,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text6: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor6.bgColor(1),
+            color: colors.danger,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text7: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor7.bgColor(1),
+            color: colors.success,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         text10: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
             fontSize: 14,
-            color: themeColor10.bgColor(1),
+            color: colors.text,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor0.bgColor(1),
+            color: colors.primaryText,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title1: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor1.bgColor(1),
+            color: colors.textSecondary,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title3: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor3.bgColor(1),
+            color: colors.textMuted,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title4: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor4.bgColor(1),
+            color: colors.onPrimary,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title6: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor6.bgColor(1),
+            color: colors.danger,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         title10: {
             fontSize: deviceWidth >= 768 ? 24 : 16,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor10.bgColor(1),
+            color: colors.text,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         heading: {
             fontSize: 20,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor0.bgColor(1),
+            color: colors.primaryText,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         heading4: {
             fontSize: 20,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor4.bgColor(1),
+            color: colors.onPrimary,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         heading10: {
             fontSize: 20,
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor10.bgColor(1),
+            color: colors.text,
             textAlign: isRTL ? 'right' : 'left',
         },
 
         discountText: {
             fontFamily: isRTL ? 'VazirBold' : 'VazirThin',
-            color: themeColor10.bgColor(1),
+            color: colors.text,
             textDecorationLine: 'line-through',
             textAlign: isRTL ? 'right' : 'left',
         },
 
         textInput: {
             minHeight: 50,
-            backgroundColor: themeColor4.bgColor(1),
+            backgroundColor: colors.surface,
             paddingHorizontal: '5%',
         },
 
@@ -273,17 +277,17 @@ export const makeStyles = (lang = 'fa') => {
             paddingHorizontal: '5%',
             gap: 20,
             borderBottomWidth: 5,
-            borderBottomColor: themeColor3.bgColor(0.2),
+            borderBottomColor: colors.border,
         },
 
         nav: {
             gap: 50,
             paddingHorizontal: '5%',
-            backgroundColor: themeColor4.bgColor(1)
+            backgroundColor: colors.surface
         },
 
         whiteButton: {
-            backgroundColor: themeColor4.bgColor(1),
+            backgroundColor: colors.surface,
             borderRadius: 100,
             margin: 5,
             padding: 10,
@@ -291,7 +295,7 @@ export const makeStyles = (lang = 'fa') => {
 
         add: {
             padding: 3,
-            backgroundColor: themeColor0.bgColor(1),
+            backgroundColor: colors.primary,
             borderRadius: 100,
             alignItems: 'center',
             justifyContent: 'center'
@@ -300,7 +304,7 @@ export const makeStyles = (lang = 'fa') => {
         remove: {
             padding: 3,
             borderRadius: 100,
-            borderColor: themeColor0.bgColor(1),
+            borderColor: colors.primary,
             borderWidth: 1,
             alignItems: 'center',
             justifyContent: 'center'
@@ -323,5 +327,13 @@ export const makeStyles = (lang = 'fa') => {
         },
     });
 };
+// Consume the active colors from ThemeProvider and recompute only when lang/theme changes.
+// Call this hook from React components rendered inside ThemeProvider.
+export const useNewStyles = (lang = 'fa') => {
+    const { colors } = useAppTheme();
+    return useMemo(() => makeStyles(lang, colors), [lang, colors]);
+};
+
 export default makeStyles;
+// Backwards-compatible static Light styles for legacy imports. Not theme-reactive.
 export const DefaultStyles = makeStyles('fa');

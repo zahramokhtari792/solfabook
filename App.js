@@ -1,7 +1,7 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer, createStaticNavigation } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import i18n from 'i18next';
 import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
@@ -74,7 +74,36 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { queryClient } from './lib/queryClient';
 import { persister } from './lib/persister';
+import { ThemeProvider, useAppTheme } from './context/ThemeProvider';
 
+
+// Keep the existing NewStyles layout while letting the root background follow the theme.
+function ThemedSafeArea({ style, children }) {
+  const { colors } = useAppTheme();
+  return (
+    <SafeAreaView mode='padding' edges={{ top: 'maximum', bottom: 'off' }} style={[style, { backgroundColor: colors.background }]}>
+      {children}
+    </SafeAreaView>
+  );
+}
+
+// Keep the original React Navigation theme in Light mode; only Dark mode overrides it.
+function ThemedNavigationContainer({ children }) {
+  const { colors, isDark } = useAppTheme();
+  const navigationTheme = useMemo(() => isDark ? {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: colors.primaryText,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+    },
+  } : DefaultTheme, [colors, isDark]);
+
+  return <NavigationContainer theme={navigationTheme}>{children}</NavigationContainer>;
+}
 
 function VersionCheckModal() {
   const { updateInfo, showModal, closeModal } = useVersionCheckContext();
@@ -126,7 +155,8 @@ export default function App() {
 
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <SafeAreaView mode='padding' edges={{ top: 'maximum', bottom: 'off' }} style={NewStyles.container}>
+        <ThemeProvider>
+          <ThemedSafeArea style={NewStyles.container}>
           <PersistQueryClientProvider
             client={queryClient}
             persistOptions={{
@@ -136,7 +166,7 @@ export default function App() {
             }}
           >
             <I18nextProvider i18n={i18n}>
-              <NavigationContainer>
+              <ThemedNavigationContainer>
                 <KeyboardProvider>
                   <Provider store={store}>
                     <VersionCheckProvider>
@@ -212,10 +242,11 @@ export default function App() {
                     </VersionCheckProvider>
                   </Provider>
                 </KeyboardProvider>
-              </NavigationContainer>
+              </ThemedNavigationContainer>
             </I18nextProvider>
           </PersistQueryClientProvider>
-        </SafeAreaView>
+          </ThemedSafeArea>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

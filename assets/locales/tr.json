@@ -398,5 +398,8 @@
   "A verification code has been sent to {{phone}}.":"{{phone}} numarasına bir doğrulama kodu gönderildi.",
   "No internet connection": "İnternet bağlantısı yok",
   "Get": "Al",
-  "Subscribe to receive the file.":"Dosyayı almak için abone olun."
+  "Subscribe to receive the file.":"Dosyayı almak için abone olun.",
+  "Appearance": "Görünüm",
+  "Light": "Açık",
+  "Dark": "Koyu"
 }

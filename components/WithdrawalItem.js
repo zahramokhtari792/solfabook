@@ -1,8 +1,9 @@
 import { View, StyleSheet, Text, Pressable, Linking } from 'react-native';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../context/ThemeProvider';
 
-import makeStyles, { deviceWidth } from '../styles/NewStyles';
+import { useNewStyles, deviceWidth } from '../styles/NewStyles';
 import { themeColor5 } from '../theme/Color';
 import { formatDateTime, formatPrice } from '../helpers/Common';
 import { imageUri, mainUri } from '../services/URL';
@@ -14,7 +15,8 @@ export default function WithdrawalItem({ item }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
 
     const renderRow = (label, value, textStyle = NewStyles.text10, action) =>
         value ? (
@@ -25,7 +27,7 @@ export default function WithdrawalItem({ item }) {
         ) : null;
 
     return (
-        <View style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]}>
+        <View style={[styles.itemWrapper, { backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]}>
             {renderRow(`ID: ${item?.id ?? '---'}`, formatDateTime(item?.created_at))}
             {renderRow('Amount', `${formatPrice(item?.price)} ${t('currency unit')}`)}
             {renderRow('IBAN', `${item?.iban}`)}

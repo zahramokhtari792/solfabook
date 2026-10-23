@@ -1,8 +1,9 @@
 import { View, Modal, StyleSheet, Text, TouchableWithoutFeedback } from 'react-native';
-import React, { useMemo } from 'react';
+import React from 'react';
+import { useAppTheme } from '../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 
-import makeStyles, { deviceHeight } from '../styles/NewStyles';
+import { useNewStyles, deviceHeight } from '../styles/NewStyles';
 import { themeColor3, themeColor4 } from '../theme/Color';
 import TransparentButton from './TransparentButton';
 import PairButton from './PairButton';
@@ -13,12 +14,13 @@ export default function ConfirmationModal({ title, message, action, confirmation
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     return (
         <Modal animationType='fade' transparent={true} visible={confirmationModal} onRequestClose={() => { setConfirmationModal(!confirmationModal) }}>
             {/* <TouchableWithoutFeedback onPress={() => { setConfirmationModal(false) }}> */}
             <View style={[styles.container, NewStyles.center]}>
-                <View style={[styles.modalView, NewStyles.border10]}>
+                <View style={[styles.modalView, { backgroundColor: colors.surface }, NewStyles.border10]}>
                     <Text style={NewStyles.title10}>{title}</Text>
                     <Text style={NewStyles.text10}>{message}</Text>
                     <View style={[NewStyles.row, { justifyContent: 'flex-end', gap: 20 }]}>

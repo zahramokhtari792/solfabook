@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { useMemo, useRef } from 'react';
-import makeStyles from '../styles/NewStyles';
+import { useRef } from 'react';
+import { useNewStyles } from '../styles/NewStyles';
 import LottieView from 'lottie-react-native';
 import { themeColor0 } from '../theme/Color';
 import { useSelector } from 'react-redux';
@@ -13,7 +13,7 @@ export default function BlankScreen() {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     return (
         <View style={[styles.animationContainer, NewStyles.center]}>
             {Platform.OS != 'web' && <LottieView

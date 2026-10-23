@@ -1,12 +1,12 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../context/ThemeProvider';
 
 import { cleanText, formatPrice } from '../helpers/Common';
-import makeStyles, { deviceWidth } from '../styles/NewStyles';
-import { themeColor1, themeColor10, themeColor4 } from '../theme/Color';
+import { useNewStyles, deviceWidth } from '../styles/NewStyles';
+import { themeColor1, themeColor4 } from '../theme/Color';
 import Button from './Button';
-import { useMemo } from 'react';
 
 export default function SubscriptionItem({ item, onPress }) {
 
@@ -15,9 +15,10 @@ export default function SubscriptionItem({ item, onPress }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     return (
-        <Pressable style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]} onPress={() => { }}>
+        <Pressable style={[styles.itemWrapper, { backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]} onPress={() => { }}>
             <View style={[styles.label, NewStyles.center, { backgroundColor: themeColor1.bgColor(0.3) }]}>
                 <Text style={NewStyles.text} numberOfLines={1}>{t('For {{num}} month', { num: item?.month_number })}</Text>
             </View>

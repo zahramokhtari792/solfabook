@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { themeColor0, themeColor3, themeColor10, themeColor4, themeColor5, themeColor1, } from '../theme/Color';
 import Home from './home/Home';
 import MyLibrary from './library/MyLibrary';
 import MusicalInstruments from './solfasaz/MusicalInstruments';
@@ -19,6 +18,7 @@ import AlbumTab from './albums/AlbumTab';
 import { Ionicons } from '@expo/vector-icons';
 import { langIsRTL } from '../styles/NewStyles';
 import { useInternetStatus } from '../hooks/useInternetStatus';
+import { useAppTheme } from '../context/ThemeProvider';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,6 +28,7 @@ export default function MainLayout() {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const isOnline = useInternetStatus();
+    const { colors, isDark } = useAppTheme();
     return (
         <Tab.Navigator
             initialRouteName='Home'
@@ -37,11 +38,11 @@ export default function MainLayout() {
                 headerTitle: '',
                 headerBackTitle: 'Back',
                 headerTitleStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
-                headerTintColor: themeColor10.bgColor(1),
-                tabBarStyle: [{ backgroundColor: themeColor4.bgColor(1) }, Platform.OS === 'web' ? { height: 70 } : {}],
+                headerTintColor: colors.text,
+                tabBarStyle: [{ backgroundColor: colors.surface }, Platform.OS === 'web' ? { height: 70 } : {}],
                 tabBarLabelStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
-                tabBarActiveTintColor: themeColor0.bgColor(1),
-                tabBarInactiveTintColor: themeColor1.bgColor(1),
+                tabBarActiveTintColor: isDark ? colors.primaryText : colors.primary,
+                tabBarInactiveTintColor: colors.textSecondary,
                 headerLeftContainerStyle: langIsRTL(lang) ? { paddingLeft: '5%' } : { paddingRight: '5%' },
                 headerShadowVisible: false,
                 header: () => {

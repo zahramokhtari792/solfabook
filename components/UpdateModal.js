@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
-import { themeColor0, themeColor1, themeColor10, themeColor3, themeColor4 } from '../theme/Color';
-import { langIsRTL, makeStyles } from '../styles/NewStyles';
+import { themeColor0, themeColor1, themeColor10, themeColor3 } from '../theme/Color';
+import { langIsRTL, useNewStyles } from '../styles/NewStyles';
+import { useAppTheme } from '../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 
 const UpdateModal = ({ visible, onClose, updateInfo }) => {
@@ -11,7 +11,8 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors, isDark } = useAppTheme();
 
     if (!updateInfo) {
         return null;
@@ -32,7 +33,7 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
             onRequestClose={updateInfo.force_update ? undefined : onClose}
         >
             <View style={styles.overlay}>
-                <View style={[styles.container, { backgroundColor: themeColor4.bgColor(1) }, NewStyles.shadow]}>
+                <View style={[styles.container, { backgroundColor: colors.surface }, NewStyles.shadow]}>
                     {/* Icon */}
                     <View style={[styles.iconContainer, { backgroundColor: themeColor0.bgColor(0.1) }]}>
                         <Ionicons name="rocket-outline" size={60} color={themeColor0.bgColor(1)} />
@@ -50,13 +51,13 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
                         </Text>
                         <Ionicons name={langIsRTL(lang) ? "arrow-back" : "arrow-forward"} size={20} color={themeColor3.bgColor(1)} />
                         <Text style={[NewStyles.text10, styles.versionText]}>
-                            {t("New version")}: <Text style={[NewStyles.title10, styles.versionNumber, { color: themeColor0.bgColor(1) }]}>{updateInfo.latest_version}</Text>
+                            {t("New version")}: <Text style={[NewStyles.title10, styles.versionNumber, { color: colors.primaryText }]}>{updateInfo.latest_version}</Text>
                         </Text>
                     </View>
 
                     {/* Description */}
                     {updateInfo.description && (
-                        <View style={[styles.descriptionContainer, { backgroundColor: themeColor1.bgColor(0.5) }]}>
+                        <View style={[styles.descriptionContainer, { backgroundColor: isDark ? colors.inputBackground : themeColor1.bgColor(0.5) }]}>
                             <Text style={[NewStyles.text10, styles.description]}>{updateInfo.description}</Text>
                         </View>
                     )}
@@ -76,7 +77,7 @@ const UpdateModal = ({ visible, onClose, updateInfo }) => {
                                 style={[styles.laterButton, { borderColor: themeColor3.bgColor(0.5) }]}
                                 onPress={onClose}
                             >
-                                <Text style={[NewStyles.text10, { color: themeColor3.bgColor(1) }]}>{t("Later")}</Text>
+                                <Text style={[NewStyles.text10, { color: colors.textMuted }]}>{t("Later")}</Text>
                             </TouchableOpacity>
                         )}
                     </View>

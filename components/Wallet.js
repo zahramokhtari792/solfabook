@@ -1,8 +1,9 @@
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Linking from "expo-linking";
 import { themeColor0, themeColor1, themeColor10, themeColor4 } from '../theme/Color';
-import makeStyles, { langIsRTL } from '../styles/NewStyles';
+import { useNewStyles, langIsRTL } from '../styles/NewStyles';
+import { useAppTheme } from '../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import TransparentButton from './TransparentButton';
@@ -17,7 +18,8 @@ const Wallet = ({ modal, setModal }) => {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const dispatch = useDispatch()
@@ -77,7 +79,7 @@ const Wallet = ({ modal, setModal }) => {
 
             <TouchableWithoutFeedback onPress={() => { if (Platform.OS !== 'web') { setModal(false); } }}>
                 <KeyboardAvoidingView behavior={Platform.OS == "ios" ? 'height' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 0} style={{ flex: 1, backgroundColor: themeColor10.bgColor(0.2), }}>
-                    <View style={[styles.modal, NewStyles.shadow]}>
+                    <View style={[styles.modal, { backgroundColor: colors.surface }, NewStyles.shadow]}>
                         <Text style={[NewStyles.title, { textAlign: 'center' }]}>
                             {t('Recharge wallet')}
                         </Text>
@@ -88,11 +90,11 @@ const Wallet = ({ modal, setModal }) => {
                         <Text style={NewStyles.text10}>
                             {t('Enter your desired amount.')}
                         </Text>
-                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='phone-pad' placeholder={`10,000 ${t("currency unit")}`} value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
+                        <TextInput style={[NewStyles.textInput, NewStyles.text, NewStyles.border10, NewStyles.shadow, { width: '90%', fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} keyboardType='phone-pad' placeholder={`10,000 ${t("currency unit")}`} placeholderTextColor={colors.textMuted} value={price?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} onChangeText={(text) => setPrice(text?.replace(/,/g, ""))} />
 
                         <View style={{ flexDirection: 'row', width: '70%', justifyContent: 'space-between' }}>
                             <View style={{ width: '48%' }}>
-                                <Button customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }} textStyle={{ color: themeColor0.bgColor(1) }} title={t("Cancel")} onPress={() => { setModal(false) }} />
+                                <Button customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1) }} textStyle={{ color: colors.primaryText }} title={t("Cancel")} onPress={() => { setModal(false) }} />
                             </View>
                             <View style={{ width: '48%' }}>
                                 <Button title={t("Payment")} onPress={async () => {

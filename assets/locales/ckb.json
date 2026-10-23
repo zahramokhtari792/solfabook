@@ -399,5 +399,8 @@
   "A verification code has been sent to {{phone}}.":"کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا.",
   "No internet connection":"هیچ پەیوەندیەکی ئینتەرنێتی نییە",
   "Get": "بەدەست بهێنە",
-  "Subscribe to receive the file.": "بەشداریکردن بۆ وەرگرتنی فایل."
+  "Subscribe to receive the file.": "بەشداریکردن بۆ وەرگرتنی فایل.",
+  "Appearance": "ڕووکار",
+  "Light": "ڕووناک",
+  "Dark": "تاریک"
 }

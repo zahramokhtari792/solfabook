@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useMemo, useState } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import React, { useState } from 'react'
+import { useNewStyles } from '../../styles/NewStyles'
+import { useAppTheme } from '../../context/ThemeProvider'
 import OptionsComponents from '../../components/OptionsComponents'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
@@ -19,7 +20,8 @@ const Settings = ({ navigation }) => {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { themeMode, setThemeMode } = useAppTheme();
     const [modal, setModal] = useState(false)
     const [loader, setLoader] = useState(false)
     const dispatch = useDispatch()
@@ -47,6 +49,9 @@ const Settings = ({ navigation }) => {
     return (
         <View style={NewStyles.container}>
             <View style={{ paddingHorizontal: '5%' }}>
+                <Text style={[NewStyles.title10, { paddingHorizontal: 15, marginTop: 12 }]}>{t('Appearance')}</Text>
+                <OptionsComponents txt={t('Light')} icon={'sunny-outline'} selected={themeMode === 'light'} onPress={() => setThemeMode('light')} />
+                <OptionsComponents txt={t('Dark')} icon={'moon-outline'} selected={themeMode === 'dark'} onPress={() => setThemeMode('dark')} />
                 <OptionsComponents txt={t('Change Password')} icon={'lock-open'} onPress={() => {
                     navigation.navigate('ChangePassword')
                 }} />

@@ -1,8 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '../context/ThemeProvider';
 
-import makeStyles, { deviceWidth } from '../styles/NewStyles';
+import { useNewStyles, deviceWidth } from '../styles/NewStyles';
 import { themeColor5 } from '../theme/Color';
 import { formatDateTime, formatPrice } from '../helpers/Common';
 
@@ -12,7 +13,8 @@ export default function TransactionItem({ item }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const renderRow = (label, value, textStyle = NewStyles.text10) =>
         value ? (
             <View style={NewStyles.rowWrapper}>
@@ -42,7 +44,7 @@ export default function TransactionItem({ item }) {
     }
 
     return (
-        <View style={[styles.itemWrapper, NewStyles.shadow, NewStyles.border10]}>
+        <View style={[styles.itemWrapper, { backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]}>
             {renderRow(`${t('Transaction ID')}: ${item?.id}`, formatDateTime(item?.created_at))}
             {renderRow(t('Status'), item?.status == 100 ? 'Successful' : 'Unsuccessful', item?.status == 100 ? NewStyles.text7 : NewStyles.text6)}
             {item?.order_id && renderRow(t('Pay for the order with ID'), `${item?.order_id}`)}

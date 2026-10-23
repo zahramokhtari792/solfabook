@@ -463,5 +463,8 @@
     "A verification code has been sent to {{phone}}.": "یک کد تایید به {{phone}} ارسال شده است.",
     "No internet connection": "اتصال به اینترنت در دسترس نیست",
     "Get": "دریافت",
-    "Subscribe to receive the file.":"برای دریافت فایل، اشتراک تهیه کنید"
+    "Subscribe to receive the file.":"برای دریافت فایل، اشتراک تهیه کنید",
+    "Appearance": "ظاهر برنامه",
+    "Light": "روشن",
+    "Dark": "تیره"
 }

@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { useMemo, useRef } from 'react';
-import makeStyles from '../styles/NewStyles'; 
-import { themeColor0 } from '../theme/Color';
+import { useRef } from 'react';
+import { useNewStyles } from '../styles/NewStyles'; 
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +11,7 @@ export default function BlankScreen() {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     return (
         <View style={[styles.animationContainer, NewStyles.center]}>
            

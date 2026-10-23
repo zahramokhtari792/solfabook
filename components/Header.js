@@ -1,8 +1,7 @@
 import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
-import React, { useMemo } from 'react'
-import { themeColor0, themeColor4 } from '../theme/Color'
+import React from 'react';
 import UserIcon from '../assets/svg/UserIcon'
-import makeStyles from '../styles/NewStyles'
+import { useNewStyles } from '../styles/NewStyles'
 import SearchIcon from '../assets/svg/SearchIcon'
 import { useNavigation } from '@react-navigation/native'
 import { useLoginModal } from '../context/LoginProvider'
@@ -12,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons';
 import { useInternetStatus } from '../hooks/useInternetStatus'
 import { showToastOrAlert } from '../helpers/Common'
+import { useAppTheme } from '../context/ThemeProvider';
 
 const Header = () => {
     const navigation = useNavigation()
@@ -24,9 +24,11 @@ const Header = () => {
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors, isDark } = useAppTheme();
+    const accentColor = isDark ? colors.primaryText : colors.primary;
     return (
-        <SafeAreaView style={[{ backgroundColor: themeColor4.bgColor(1), borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: themeColor0.bgColor(1) }, NewStyles.rowWrapper]}>
+        <SafeAreaView style={[{ backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: accentColor }, NewStyles.rowWrapper]}>
             <Image source={require('../assets/images/solfabooklogo.png')} style={{ height: 70, width: 70, marginRight: 15 }} />
             <View style={[NewStyles.row, { flex: 1, justifyContent: 'flex-end' }]}>
                 <Pressable style={{ paddingHorizontal: 10 }} onPress={() => {
@@ -36,7 +38,7 @@ const Header = () => {
                         showToastOrAlert(t("No internet connection"))
                     }
                 }}>
-                    <Ionicons name={"cart-outline"} size={28} color={themeColor0.bgColor(1)} />
+                    <Ionicons name={"cart-outline"} size={28} color={accentColor} />
                 </Pressable>
                 <Pressable style={{ paddingHorizontal: 10 }} onPress={() => {
                     if (isOnline) {
@@ -46,10 +48,10 @@ const Header = () => {
                         showToastOrAlert(t("No internet connection"))
                     }
                 }}>
-                    <SearchIcon color={themeColor0.bgColor(1)} />
+                    <SearchIcon color={accentColor} />
                 </Pressable>
 
-                <View style={{ height: 30, width: StyleSheet.hairlineWidth, backgroundColor: themeColor0.bgColor(1), marginHorizontal: 10 }} />
+                <View style={{ height: 30, width: StyleSheet.hairlineWidth, backgroundColor: accentColor, marginHorizontal: 10 }} />
                 <Pressable style={{ paddingHorizontal: 10 }} onPress={() => {
                     if (user && userToken && isOnline) {
                         navigation.navigate('Account')
@@ -60,7 +62,7 @@ const Header = () => {
                         showModal()
                     }
                 }}>
-                    <UserIcon color={themeColor0.bgColor(1)} />
+                    <UserIcon color={accentColor} />
                 </Pressable>
             </View>
 

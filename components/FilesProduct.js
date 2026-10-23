@@ -2,14 +2,15 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
 import { ImageBackground } from 'expo-image';
 import { dlUrl } from '../services/URL';
-import makeStyles, { deviceWidth, deviceWidthScreen, langIsRTL } from '../styles/NewStyles';
+import { useNewStyles, deviceWidth, deviceWidthScreen, langIsRTL } from '../styles/NewStyles';
 import { Dimensions } from 'react-native';
-import { themeColor0, themeColor11, themeColor12, themeColor4 } from '../theme/Color';
+import { themeColor0, themeColor12, themeColor4 } from '../theme/Color';
 import StarIcon from '../assets/svg/StarIcon';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '../helpers/Common';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
+import { useAppTheme } from '../context/ThemeProvider';
 
 const FilesProduct = ({ item, type, explore }) => {
 
@@ -18,7 +19,8 @@ const FilesProduct = ({ item, type, explore }) => {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
 
 
     const cardConfig = useMemo(() => {
@@ -31,11 +33,11 @@ const FilesProduct = ({ item, type, explore }) => {
             return {
                 width: deviceWidth * 0.45,
 
-                backgroundColor: themeColor4.bgColor(1)
+                backgroundColor: colors.surface
             }
         }
         return null;
-    }, [item]);
+    }, [type, colors]);
     if (type == 'horizontal') {
 
         return (
