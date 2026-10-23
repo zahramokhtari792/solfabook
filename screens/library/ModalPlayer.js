@@ -1,8 +1,9 @@
 import { ActivityIndicator, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor1, themeColor10, themeColor3 } from '../../theme/Color';
+import { useAppTheme } from '../../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
@@ -23,7 +24,8 @@ const ModalPlayer = ({
     const { t } = useTranslation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const navigation = useNavigation();
     const user = useSelector(state=>state.user?.data)
     const [pendingIndex, setPendingIndex] = useState(null);
@@ -45,12 +47,12 @@ const ModalPlayer = ({
         <Modal animationType='slide' visible={visible} onRequestClose={() => {
             setVisible(false)
         }}>
-            <View style={[{ width: '100%', borderBottomColor: themeColor3.bgColor(0.5), borderBottomWidth: StyleSheet.hairlineWidth, padding: 10 }, NewStyles.row]}>
+            <View style={[{ backgroundColor: colors.background, width: '100%', borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, padding: 10 }, NewStyles.row]}>
                 <View style={[{ flex: 1, alignItems: 'flex-end' },]}>
                     <TouchableOpacity style={{ padding: 10, }} onPress={() => {
                         setVisible(false)
                     }}>
-                        <Ionicons name='close' color={themeColor10.bgColor(1)} size={20} />
+                        <Ionicons name='close' color={colors.text} size={20} />
                     </TouchableOpacity>
                 </View>
                 <View style={[{ flex: 1 }, NewStyles.center]}>
@@ -61,6 +63,7 @@ const ModalPlayer = ({
                 </View>
             </View>
             <FlatList
+                style={{ backgroundColor: colors.background }}
                 data={audio}
                 showsVerticalScrollIndicator={false}
                 ItemSeparatorComponent={() => {
@@ -109,19 +112,19 @@ const ModalPlayer = ({
                                         style={{ width: 20, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}
                                     >
                                         {isDownloadingTrack ? (
-                                            <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
+                                            <ActivityIndicator size="small" color={colors.text} />
                                         ) : isDownloaded ? (
-                                            <Ionicons name="checkmark-circle" color={themeColor10.bgColor(1)} size={18} />
+                                            <Ionicons name="checkmark-circle" color={colors.text} size={18} />
                                         ) : (
-                                            <Ionicons name="download-outline" color={themeColor10.bgColor(1)} size={18} />
+                                            <Ionicons name="download-outline" color={colors.text} size={18} />
                                         )}
                                     </TouchableOpacity>
                                 )}
                                 <View style={{ width: 20, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' }}>
                                     {pendingIndex === index ? (
-                                        <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
+                                        <ActivityIndicator size="small" color={colors.text} />
                                     ) : (
-                                        <Ionicons name={(index == musicIndex && playing) ? 'pause' : 'play'} color={themeColor10.bgColor(1)} size={20} />
+                                        <Ionicons name={(index == musicIndex && playing) ? 'pause' : 'play'} color={colors.text} size={20} />
                                     )}
                                 </View>
                                 <Text style={[NewStyles.text10, { minWidth: 30, textAlign: 'left' }]}>{index + 1}</Text>

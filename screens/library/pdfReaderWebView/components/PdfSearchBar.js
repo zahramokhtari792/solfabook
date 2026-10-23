@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Platform } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { themeColor0, themeColor6 } from '../../../../theme/Color';
 import { useTranslation } from 'react-i18next';
-import makeStyles from '../../../../styles/NewStyles';
+import { useNewStyles } from '../../../../styles/NewStyles';
 
 const PdfSearchBar = ({
     styles,
@@ -18,7 +18,7 @@ const PdfSearchBar = ({
 }) => {
     const { t, i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     return (
         <View style={styles.searchContainer}>
             <View style={styles.searchInputWrapper}>

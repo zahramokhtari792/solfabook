@@ -2,7 +2,8 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react'
 import { WebView } from 'react-native-webview'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles'
+import { useAppTheme } from '../../context/ThemeProvider'
 import { themeColor0, themeColor5 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -16,7 +17,7 @@ import PdfReaderHeader from './pdfReaderWebView/components/PdfReaderHeader';
 import PdfSearchBar from './pdfReaderWebView/components/PdfSearchBar';
 import PdfBottomNav from './pdfReaderWebView/components/PdfBottomNav';
 import PdfModals from './pdfReaderWebView/components/PdfModals';
-import { styles } from './pdfReaderWebView/styles';
+import { makePdfReaderStyles } from './pdfReaderWebView/styles';
 
 // Chunk size for base64 transfer (500KB per chunk to avoid memory issues)
 const CHUNK_SIZE = 500 * 1024;
@@ -41,7 +42,9 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
     const [data, setData] = useState()
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makePdfReaderStyles(colors), [colors]);
     const fetchFiles = () => {
         axios.post(`${uri}/fetchFiles`, { id: params?.id }, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
             .then((res) => {
@@ -61,6 +64,16 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
     const fileId = params?.id ?? (params?.pdfUrl ? `url_${encodeURIComponent(params.pdfUrl)}` : undefined);
 
     const webViewRef = useRef(null);
+    // The PDF canvas stays white. Update only its surrounding WebView chrome
+    // without replacing the HTML source (which would restart PDF.js).
+    const readerBackground = colors.background;
+    const applyReaderTheme = () => {
+        webViewRef.current?.injectJavaScript(
+            `document.body.style.backgroundColor = ${JSON.stringify(readerBackground)}; true;`
+        );
+    };
+    useEffect(() => { applyReaderTheme(); }, [readerBackground]);
+
     const webViewReadyRef = useRef(false);
     const didRestorePageRef = useRef(false);
     const navigation = useNavigation();
@@ -1979,7 +1992,7 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                         <Text style={[NewStyles.text6, { color: 'red', textAlign: 'center', marginBottom: 10 }]}>
                            {t("Error on loading")}
                         </Text>
-                        <Text style={[NewStyles.text6, { color: '#666', textAlign: 'center' }]}>
+                        <Text style={[NewStyles.text6, { color: colors.textSecondary, textAlign: 'center' }]}>
                             {error}
                         </Text>
                         <TouchableOpacity
@@ -2006,8 +2019,9 @@ const PDFReaderWebView = ({ route, downloadedPdf, downloadPdf, downloadingPdf })
                     <WebView
                         ref={webViewRef}
                         source={webViewSource}
-                        style={{ flex: 1, backgroundColor: themeColor5.bgColor(1) }}
+                        style={{ flex: 1, backgroundColor: colors.background }}
                         onMessage={onMessage}
+                        onLoadEnd={applyReaderTheme}
                         onError={onWebViewError}
                         onHttpError={(syntheticEvent) => {
                             const { nativeEvent } = syntheticEvent;

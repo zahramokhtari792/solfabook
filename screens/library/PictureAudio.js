@@ -12,7 +12,7 @@ import axios from 'axios'
 import { dlUrl, uri } from './../../services/URL'
 import { useSelector } from 'react-redux'
 import Loader from '../../components/Loader'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles'
 import AudioPlayer from '../../components/AudioPlayer'
 import ModalPlayer from './ModalPlayer'
 import AlbumIcon from '../../assets/svg/AlbumIcon'
@@ -29,7 +29,7 @@ const PictureAudio = ({ route }) => {
   const { i18n, t } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
 
-  const NewStyles = useMemo(() => makeStyles(lang), [lang])
+  const NewStyles = useNewStyles(lang)
 
   const userToken = useSelector(state => state.auth?.token)
 

@@ -175,17 +175,17 @@ export default function Wallet({ navigation }) {
                     </View>
                     <View style={{ width: deviceWidth * 0.9, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', alignSelf: 'center', marginTop: 10 }}>
                         <Pressable onPress={() => { setSection('charging') }} style={{ flex: 1, elevation: 2, borderRadius: 10, }}>
-                            <LinearGradient colors={[section == 'charging' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'charging' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
+                            <LinearGradient colors={[section == 'charging' ? themeColor0.bgColor(1) : colors.surface, section == 'charging' ? themeColor8.bgColor(1) : colors.surface]} style={[{ height: 50, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
                                 <Text style={[NewStyles.text1, section == 'charging' && { color: colors.onPrimary }]}>شارژ کیف پول</Text>
                             </LinearGradient>
                         </Pressable>
                         <Pressable onPress={() => { setSection('transactions'); fetchData() }} style={[{ flex: 1, elevation: 2, borderRadius: 10, marginHorizontal: 5 }]}>
-                            <LinearGradient colors={[section == 'transactions' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'transactions' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
+                            <LinearGradient colors={[section == 'transactions' ? themeColor0.bgColor(1) : colors.surface, section == 'transactions' ? themeColor8.bgColor(1) : colors.surface]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
                                 <Text style={[NewStyles.text1, section == 'transactions' && { color: colors.onPrimary }]}>تراکنش‌ها</Text>
                             </LinearGradient>
                         </Pressable>
                         <Pressable onPress={() => { setSection('withdraw') }} style={[{ flex: 1, elevation: 2, borderRadius: 10 }, section == 'withdraw' && { backgroundColor: themeColor0.bgColor(1) }]}>
-                            <LinearGradient colors={[section == 'withdraw' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'withdraw' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
+                            <LinearGradient colors={[section == 'withdraw' ? themeColor0.bgColor(1) : colors.surface, section == 'withdraw' ? themeColor8.bgColor(1) : colors.surface]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
                                 <Text style={[NewStyles.text1, section == 'withdraw' && { color: colors.onPrimary }]}>برداشت</Text>
                             </LinearGradient>
                         </Pressable>

@@ -9,11 +9,12 @@ import { useTranslation } from 'react-i18next';
 
 import { dlUrl, mainUri, uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
-import makeStyles, { langIsRTL } from '../../styles/NewStyles';
+import { useNewStyles, langIsRTL } from '../../styles/NewStyles';
+import { useAppTheme } from '../../context/ThemeProvider';
 import { themeColor0, themeColor4, themeColor5 } from '../../theme/Color';
 import PdfReaderHeader from './pdfReaderWebView/components/PdfReaderHeader';
 import PdfModals from './pdfReaderWebView/components/PdfModals';
-import { styles as readerStyles } from './pdfReaderWebView/styles';
+import { makePdfReaderStyles } from './pdfReaderWebView/styles';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -511,6 +512,11 @@ const buildViewerHtml = (sourceUrl, initialScale) => {
         if (!message || !message.type) return;
 
         switch (message.type) {
+          case 'SET_THEME':
+            document.body.style.background = message.dark ? '#121212' : '';
+            viewer.style.background = message.dark ? '#121212' : '';
+            status.style.background = message.dark ? 'rgba(18,18,18,0.92)' : '';
+            break;
           case 'SET_PAGE':
             goToPage(Number(message.page || 1));
             break;
@@ -576,7 +582,10 @@ export default function PDFReaderWebView({ route }) {
   const userToken = useSelector((state) => state.auth?.token);
   const { i18n, t } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
+  const { colors, isDark } = useAppTheme();
+  const readerStyles = useMemo(() => makePdfReaderStyles(colors), [colors]);
+  const themedStyles = useMemo(() => getWebReaderStyles(colors), [colors]);
 
   const [data, setData] = useState();
   const [loading, setLoading] = useState(true);
@@ -616,6 +625,11 @@ export default function PDFReaderWebView({ route }) {
 
   const pdfSource = params?.localUri || params?.pdfUrl || data;
   const viewerHtml = useMemo(() => buildViewerHtml(pdfSource, 1), [pdfSource]);
+  // Changing the theme must not recreate the iframe or erase drawings.
+  useEffect(() => {
+    if (!initialLoadComplete) return;
+    iframeRef.current?.contentWindow?.postMessage({ type: 'SET_THEME', dark: isDark }, '*');
+  }, [isDark, initialLoadComplete]);
 
   useEffect(() => {
     setLoading(true);
@@ -864,7 +878,7 @@ export default function PDFReaderWebView({ route }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={themedStyles.container}>
       <PdfReaderHeader
         NewStyles={NewStyles}
         styles={readerStyles}
@@ -890,27 +904,27 @@ export default function PDFReaderWebView({ route }) {
         downloadingPdf={false}
       />
 
-      <View style={styles.toolbar}>
-        <Pressable style={styles.toolbarButton} onPress={handlePageBack} disabled={currentPage <= 1}>
+      <View style={themedStyles.toolbar}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handlePageBack} disabled={currentPage <= 1}>
           <Ionicons name="chevron-back" size={18} color={currentPage <= 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)} />
         </Pressable>
 
-        <View style={styles.pageInputWrap}>
+        <View style={themedStyles.pageInputWrap}>
           <TextInput
             value={pageInput}
             onChangeText={setPageInput}
             keyboardType="number-pad"
             onSubmitEditing={handleGoToPage}
-            style={[styles.pageInput, NewStyles.text10, Platform.OS === 'web' && NewStyles.noZoomInput]}
+            style={[themedStyles.pageInput, NewStyles.text10, Platform.OS === 'web' && NewStyles.noZoomInput]}
           />
-          <Text style={[NewStyles.text10, { color: themeColor4.bgColor(1), marginHorizontal: 6 }]}>/ {totalPages || '-'}</Text>
+          <Text style={[NewStyles.text10, { color: colors.text, marginHorizontal: 6 }]}>/ {totalPages || '-'}</Text>
         </View>
 
-        <Pressable style={styles.toolbarButton} onPress={handlePageForward} disabled={currentPage >= totalPages}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handlePageForward} disabled={currentPage >= totalPages}>
           <Ionicons name="chevron-forward" size={18} color={currentPage >= totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={() => {
+        <Pressable style={themedStyles.toolbarButton} onPress={() => {
           const nextZoom = clamp(Number((zoom + 0.25).toFixed(2)), 0.5, 3);
           setZoom(nextZoom);
           sendCommand({ type: 'SET_ZOOM', scale: nextZoom });
@@ -918,7 +932,7 @@ export default function PDFReaderWebView({ route }) {
           <Ionicons name="add" size={18} color={themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={() => {
+        <Pressable style={themedStyles.toolbarButton} onPress={() => {
           const nextZoom = clamp(Number((zoom - 0.25).toFixed(2)), 0.5, 3);
           setZoom(nextZoom);
           sendCommand({ type: 'SET_ZOOM', scale: nextZoom });
@@ -926,7 +940,7 @@ export default function PDFReaderWebView({ route }) {
           <Ionicons name="remove" size={18} color={themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={() => {
+        <Pressable style={themedStyles.toolbarButton} onPress={() => {
           setZoom(1);
           sendCommand({ type: 'SET_ZOOM', scale: 1 });
         }}>
@@ -934,49 +948,49 @@ export default function PDFReaderWebView({ route }) {
         </Pressable>
       </View>
 
-      <View style={[styles.toolbar, { justifyContent: 'space-between' }]}>
-        <Pressable style={styles.toolbarButton} onPress={handleGoFirst} disabled={currentPage <= 1}>
+      <View style={[themedStyles.toolbar, { justifyContent: 'space-between' }]}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handleGoFirst} disabled={currentPage <= 1}>
           <Ionicons name="play-skip-back" size={18} color={currentPage <= 1 ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={handleFullscreen}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handleFullscreen}>
           <Ionicons name="scan-outline" size={18} color={themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={handleGoLast} disabled={currentPage >= totalPages}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handleGoLast} disabled={currentPage >= totalPages}>
           <Ionicons name="play-skip-forward" size={18} color={currentPage >= totalPages ? themeColor4.bgColor(0.5) : themeColor0.bgColor(1)} />
         </Pressable>
 
-        <Pressable style={styles.toolbarButton} onPress={handleDownload}>
+        <Pressable style={themedStyles.toolbarButton} onPress={handleDownload}>
           <Ionicons name="download-outline" size={18} color={themeColor0.bgColor(1)} />
         </Pressable>
 
         {bookmarks.length > 0 && (
-          <Pressable style={styles.toolbarButton} onPress={() => setShowBookmarksModal(true)}>
+          <Pressable style={themedStyles.toolbarButton} onPress={() => setShowBookmarksModal(true)}>
             <Ionicons name="bookmarks-outline" size={18} color={themeColor0.bgColor(1)} />
           </Pressable>
         )}
       </View>
 
-      <View style={styles.body}>
+      <View style={themedStyles.body}>
         {loading && (
-          <View style={styles.overlay}>
+          <View style={themedStyles.overlay}>
             <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
             <Text style={[NewStyles.text10, { marginTop: 10, color: themeColor0.bgColor(1) }]}>Loading PDF...</Text>
           </View>
         )}
 
         {error ? (
-          <View style={styles.overlay}>
+          <View style={themedStyles.overlay}>
             <Text style={[NewStyles.text6, { color: '#b42318', textAlign: 'center', marginBottom: 14 }]}>{error}</Text>
-            <Pressable style={styles.retryButton} onPress={() => window.location.reload()}>
-              <Text style={styles.retryButtonText}>{t('Retry')}</Text>
+            <Pressable style={themedStyles.retryButton} onPress={() => window.location.reload()}>
+              <Text style={themedStyles.retryButtonText}>{t('Retry')}</Text>
             </Pressable>
           </View>
         ) : null}
 
         {!pdfSource && !error && (
-          <View style={styles.overlay}>
+          <View style={themedStyles.overlay}>
             <ActivityIndicator size="large" color={themeColor0.bgColor(1)} />
             <Text style={[NewStyles.text10, { marginTop: 10, color: themeColor0.bgColor(1) }]}>{t('Loading...')}</Text>
           </View>
@@ -987,7 +1001,10 @@ export default function PDFReaderWebView({ route }) {
             ref={iframeRef}
             title="PDF Reader"
             srcDoc={viewerHtml}
-            style={styles.iframe}
+            onLoad={() => iframeRef.current?.contentWindow?.postMessage(
+              { type: 'SET_THEME', dark: isDark }, '*'
+            )}
+            style={themedStyles.iframe}
             allow="fullscreen"
             tabIndex={0}
           />
@@ -1115,3 +1132,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+// Preserve every legacy Light style value; adjust only the web viewer chrome in Dark.
+const getWebReaderStyles = (colors) => colors.background === themeColor5.bgColor(1)
+  ? styles
+  : StyleSheet.create({
+      ...styles,
+      container: { ...styles.container, backgroundColor: colors.background },
+      header: { ...styles.header, backgroundColor: colors.surface, borderBottomColor: colors.border },
+      toolbar: { ...styles.toolbar, backgroundColor: colors.surface, borderBottomColor: colors.border },
+      pageInputWrap: { ...styles.pageInputWrap, backgroundColor: colors.inputBackground },
+      pageInput: { ...styles.pageInput, color: colors.text },
+      iframe: { ...styles.iframe, backgroundColor: colors.background },
+      overlay: { ...styles.overlay, backgroundColor: colors.background },
+  });

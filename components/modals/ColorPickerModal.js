@@ -1,4 +1,5 @@
 import React from 'react'
+import { useAppTheme } from '../../context/ThemeProvider'
 import {
   Modal,
   View,
@@ -15,11 +16,12 @@ const ColorPickerModal = ({
   onSelect,
   title = 'انتخاب رنگ',
 }) => {
+  const { colors: themeColors } = useAppTheme()
   return (
     <Modal visible={visible} transparent animationType="fade">
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-        <View style={styles.container} onStartShouldSetResponder={() => true}>
-          <Text style={styles.title}>{title}</Text>
+        <View style={[styles.container, { backgroundColor: themeColors.surface }]} onStartShouldSetResponder={() => true}>
+          <Text style={[styles.title, { color: themeColors.text }]}>{title}</Text>
 
           <View style={styles.grid}>
             {colors.map((color) => (
@@ -27,8 +29,10 @@ const ColorPickerModal = ({
                 key={color}
                 style={[
                   styles.circle,
+                  { borderColor: themeColors.border },
                   { backgroundColor: color },
                   selectedColor === color && styles.selected,
+                  selectedColor === color && { borderColor: themeColors.text },
                 ]}
                 onPress={() => onSelect(color)}
               />
@@ -36,7 +40,7 @@ const ColorPickerModal = ({
           </View>
 
           <TouchableOpacity onPress={onClose}>
-            <Text>بستن</Text>
+            <Text style={{ color: themeColors.text }}>بستن</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

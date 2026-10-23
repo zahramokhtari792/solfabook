@@ -1,8 +1,9 @@
 import { Image, Linking, StyleSheet, Text, View } from 'react-native'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
+import { useAppTheme } from '../../context/ThemeProvider';
 import { imageUri, mainUri } from '../../services/URL';
 import Button from '../../components/Button';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,8 @@ const Blog = ({ route }) => {
     const data = params?.data
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors, isDark } = useAppTheme();
     const htmlContent = `
         <html dir="rtl">
             <head>
@@ -22,6 +24,7 @@ const Blog = ({ route }) => {
                         line-height: 1.6;
                         padding: 10px;
                         color: #333;
+                        ${isDark ? `color: ${colors.text}; background-color: ${colors.background};` : ''}
                         margin: 0;
                         overflow-x: hidden; /* جلوگیری از اسکرول افقی */
                         word-wrap: break-word; /* شکستن متن‌های طولانی */
@@ -52,7 +55,7 @@ const Blog = ({ route }) => {
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             {/* <Image source={{uri:`${imageUri}/${data?.image_path}`}} style={{width:'100%', aspectRatio:1.5, resizeMode:'contain'}} /> */}
             <WebView
-                style={[styles.container]}
+                style={[styles.container, isDark && { backgroundColor: colors.background }]}
                 originWhitelist={['*']}
                 scrollEnabled={false}
                 source={{ html: htmlContent }}

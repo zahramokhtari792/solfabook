@@ -9,12 +9,13 @@ import {
   View
 } from 'react-native'
 import React, { useEffect, useMemo, useState, useRef } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles'
 import Loader from '../../components/Loader'
 import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import { themeColor0, themeColor4 } from '../../theme/Color'
+import { useAppTheme } from '../../context/ThemeProvider'
 import Video from 'react-native-video'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CaptureProtection } from '../../helpers/CaptureProtection'
@@ -33,7 +34,8 @@ const VideoPlayer = ({ route, navigation }) => {
   const token = useSelector(s => s.auth?.token)
 
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const NewStyles = useMemo(() => makeStyles(lang), [lang])
+  const NewStyles = useNewStyles(lang)
+  const { colors } = useAppTheme()
 
   const [videoIndex, setVideoIndex] = useState(0)
   const [downloading, setDownloading] = useState(null)
@@ -267,7 +269,7 @@ const VideoPlayer = ({ route, navigation }) => {
         blurRadius={25}
         imageStyle={{
           opacity: 0.5,
-          backgroundColor: themeColor4.bgColor(1)
+          backgroundColor: colors.surface
         }}
       >
 

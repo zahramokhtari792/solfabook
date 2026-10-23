@@ -14,8 +14,9 @@ import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles'
 import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color'
+import { useAppTheme } from '../../context/ThemeProvider'
 import Loader from '../../components/Loader'
 import AudioPlayer from '../../components/AudioPlayer'
 import { Ionicons } from '@expo/vector-icons'
@@ -28,7 +29,8 @@ const MusicPlayer = ({ route, navigation }) => {
 
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const NewStyles = useMemo(() => makeStyles(lang), [lang])
+  const NewStyles = useNewStyles(lang)
+  const { colors } = useAppTheme()
 
   const params = route?.params
   const file = params?.file
@@ -305,7 +307,7 @@ const MusicPlayer = ({ route, navigation }) => {
       <ImageBackground
         style={{ flex: 1, paddingTop: 65 }}
         source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }}
-        imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }}
+        imageStyle={{ opacity: 0.5, backgroundColor: colors.surface }}
         blurRadius={25}
       >
 
@@ -342,7 +344,7 @@ const MusicPlayer = ({ route, navigation }) => {
               />
             )
             : (
-              <ActivityIndicator size="large" color={themeColor10.bgColor(1)} />
+              <ActivityIndicator size="large" color={colors.text} />
             )
         }
 
@@ -445,17 +447,17 @@ const MusicPlayer = ({ route, navigation }) => {
 
                     {
                       isDownloadingTrack
-                        ? <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
+                        ? <ActivityIndicator size="small" color={colors.text} />
                         : isDownloaded
-                          ? <Ionicons name="checkmark-circle" color={themeColor10.bgColor(1)} size={20} />
-                          : <Ionicons name="download-outline" color={themeColor10.bgColor(1)} size={20} />
+                          ? <Ionicons name="checkmark-circle" color={colors.text} size={20} />
+                          : <Ionicons name="download-outline" color={colors.text} size={20} />
                     }
 
                   </TouchableOpacity>
 
                   <Ionicons
                     name={(index == musicIndex && playing) ? 'pause' : 'play'}
-                    color={themeColor10.bgColor(1)}
+                    color={colors.text}
                     size={20}
                   />
 

@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Video from 'react-native-video';
 import * as FileSystem from 'expo-file-system';
 
-import makeStyles from '../styles/NewStyles';
+import { useNewStyles } from '../styles/NewStyles';
 import { themeColor0, themeColor1 } from '../theme/Color';
+import { useAppTheme } from '../context/ThemeProvider';
 import PlayBackIcon from '../assets/svg/PlayBackIcon';
 import PlayForwardIcon from '../assets/svg/PlayForwardIcon';
 import { dlUrl } from '../services/URL';
@@ -42,7 +43,8 @@ export default function AudioPlayer({
 }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
 
     const playerRef = useRef(null);
     const isSeekingRef = useRef(false);
@@ -499,7 +501,7 @@ export default function AudioPlayer({
                     minimumValue={0}
                     maximumValue={maxSeekMs > 0 ? maxSeekMs : 1}
                     minimumTrackTintColor={themeColor0.bgColor(1)}
-                    maximumTrackTintColor={themeColor1.bgColor(1)}
+                    maximumTrackTintColor={colors.textSecondary}
                     thumbTintColor={themeColor0.bgColor(1)}
                     value={isSeeking ? tempWidth : width}
                     disabled={!isLoaded || total <= 0}

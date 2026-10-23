@@ -19,7 +19,8 @@ import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import { useTranslation } from 'react-i18next';
 
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
+import { useAppTheme } from '../../context/ThemeProvider';
 import { dlUrl } from '../../services/URL';
 import { CaptureProtection } from '../../helpers/CaptureProtection';
 
@@ -275,24 +276,34 @@ const PDF_VIEWER_HTML = `
             message,
             source,
             line,
-            column
+            column,
+            error
         ) {
-            sendToNative('ERROR', {
-                message:
-                    String(
-                        message ||
-                        'خطای نامشخص در WebView'
-                    ),
+            var details = {
+                message: String(
+                    message || 'خطای نامشخص در WebView'
+                ),
+                source: source || '',
+                line: line || 0,
+                column: column || 0,
+                stack: error && error.stack
+                    ? String(error.stack)
+                    : ''
+            };
 
-                source:
-                    source || '',
+            // A cross-origin "Script error." has no useful details.
+            // It does not, by itself, prove that PDF rendering failed.
+            // Real PDF.js load/render failures are reported separately.
+            if (
+                details.message === 'Script error.' &&
+                !details.source &&
+                details.line === 0
+            ) {
+                sendToNative('SCRIPT_WARNING', details);
+                return;
+            }
 
-                line:
-                    line || 0,
-
-                column:
-                    column || 0
-            });
+            sendToNative('ERROR', details);
         };
 
         window.onunhandledrejection = function (event) {
@@ -313,6 +324,7 @@ const PDF_VIEWER_HTML = `
 
     <script
         src="${PDF_JS_URL}"
+        crossorigin="anonymous"
         onerror="sendToNative('ERROR', { message: 'کتابخانه PDF.js بارگذاری نشد.' })"
     ></script>
 </head>
@@ -1098,11 +1110,24 @@ const SamplePDFReader = ({ route }) => {
         i18n.language ||
         'en';
 
-    const NewStyles =
-        useMemo(
-            () => makeStyles(lang),
-            [lang]
-        );
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const themedStyles = useMemo(() => getSampleReaderStyles(colors), [colors]);
+    // Update only the blank workspace around PDF pages, never page canvases.
+    // injectJavaScript avoids recreating the WebView and losing its state.
+    const syncReaderChromeTheme = useCallback(() => {
+        webViewRef.current?.injectJavaScript(`
+            document.documentElement.style.backgroundColor = ${JSON.stringify(colors.background === '#121212' ? '#121212' : '#e9e9e9')};
+            if (document.body) document.body.style.backgroundColor = ${JSON.stringify(colors.background === '#121212' ? '#121212' : '#e9e9e9')};
+            var status = document.getElementById('status-container');
+            if (status) {
+                status.style.backgroundColor = ${JSON.stringify(colors.background === '#121212' ? '#121212' : '#e9e9e9')};
+                status.style.color = ${JSON.stringify(colors.background === '#121212' ? '#F5F5F5' : '#444444')};
+            }
+            true;
+        `);
+    }, [colors]);
+    useEffect(() => { syncReaderChromeTheme(); }, [syncReaderChromeTheme]);
 
     const pdfUrl =
         useMemo(
@@ -1694,6 +1719,13 @@ const SamplePDFReader = ({ route }) => {
                         removeCachedFile();
                         break;
 
+                    case 'SCRIPT_WARNING':
+                        console.warn(
+                            'PDF.js cross-origin script warning:',
+                            message?.payload
+                        );
+                        break;
+
                     case 'ERROR':
                         console.error(
                             'PDF.js viewer error:',
@@ -1768,7 +1800,7 @@ const SamplePDFReader = ({ route }) => {
             style={NewStyles.container}
             edges={['bottom']}
         >
-            <View style={styles.container}>
+            <View style={themedStyles.container}>
                 <WebView
                     key={`${pdfUrl || 'empty'}-${reloadToken}`}
                     ref={webViewRef}
@@ -1776,7 +1808,7 @@ const SamplePDFReader = ({ route }) => {
                         html: PDF_VIEWER_HTML,
                     }}
                     originWhitelist={['*']}
-                    style={styles.webView}
+                    style={themedStyles.webView}
                     javaScriptEnabled
                     domStorageEnabled
                     cacheEnabled
@@ -1788,6 +1820,7 @@ const SamplePDFReader = ({ route }) => {
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
                     onMessage={handleWebViewMessage}
+                    onLoadEnd={syncReaderChromeTheme}
                     onError={handleWebViewError}
                     onContentProcessDidTerminate={
                         handleRetry
@@ -1797,7 +1830,7 @@ const SamplePDFReader = ({ route }) => {
                 {loading && !error ? (
                     <View
                         style={
-                            styles.loadingOverlay
+                            themedStyles.loadingOverlay
                         }
                     >
                         <ActivityIndicator
@@ -1807,7 +1840,7 @@ const SamplePDFReader = ({ route }) => {
 
                         <Text
                             style={
-                                styles.loadingText
+                                themedStyles.loadingText
                             }
                         >
                             در حال آماده‌سازی فایل PDF...
@@ -1818,12 +1851,12 @@ const SamplePDFReader = ({ route }) => {
                 {error ? (
                     <View
                         style={
-                            styles.errorOverlay
+                            themedStyles.errorOverlay
                         }
                     >
                         <Text
                             style={
-                                styles.errorTitle
+                                themedStyles.errorTitle
                             }
                         >
                             نمایش فایل ناموفق بود
@@ -1831,7 +1864,7 @@ const SamplePDFReader = ({ route }) => {
 
                         <Text
                             style={
-                                styles.errorText
+                                themedStyles.errorText
                             }
                         >
                             {error}
@@ -1839,7 +1872,7 @@ const SamplePDFReader = ({ route }) => {
 
                         <Pressable
                             style={
-                                styles.retryButton
+                                themedStyles.retryButton
                             }
                             onPress={
                                 handleRetry
@@ -1847,7 +1880,7 @@ const SamplePDFReader = ({ route }) => {
                         >
                             <Text
                                 style={
-                                    styles.retryButtonText
+                                    themedStyles.retryButtonText
                                 }
                             >
                                 تلاش مجدد
@@ -1945,3 +1978,16 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
 });
+// Original PDF pages and annotation canvas keep their authored colors.
+// The host screen, loading and error overlays alone respond to Dark mode.
+const getSampleReaderStyles = (colors) => colors.background === '#121212'
+    ? StyleSheet.create({
+        ...styles,
+        container: { ...styles.container, backgroundColor: colors.background },
+        webView: { ...styles.webView, backgroundColor: colors.background },
+        loadingOverlay: { ...styles.loadingOverlay, backgroundColor: colors.background },
+        errorOverlay: { ...styles.errorOverlay, backgroundColor: colors.background },
+        loadingText: { ...styles.loadingText, color: colors.textSecondary },
+        errorText: { ...styles.errorText, color: colors.textSecondary },
+    })
+    : styles;

@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { themeColor0, themeColor4, themeColor5, themeColor6 } from  './../../../theme/Color';
+import { themeColor0, themeColor4, themeColor5, themeColor6, themePalettes } from  './../../../theme/Color';
 
 const { width: deviceWidth } = Dimensions.get('window');
 
@@ -401,3 +401,38 @@ export const styles = StyleSheet.create({
         textAlign: 'right',
     },
 });
+
+// Dark-mode overlays for the reader UI; all original Light styles above are untouched.
+// Canvas, ink and saved highlight colors are intentionally never transformed.
+export const makePdfReaderStyles = (colors = themePalettes.light) => {
+    if (colors === themePalettes.light) return styles;
+    const darkOverrides = {
+        header: { borderBottomColor: colors.border },
+        searchContainer: { backgroundColor: colors.surface, borderBottomColor: colors.border },
+        searchInputWrapper: { backgroundColor: colors.inputBackground },
+        loadingOverlay: { backgroundColor: colors.background },
+        errorOverlay: { backgroundColor: colors.background },
+        bottomNavBar: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        navBtnDisabled: { backgroundColor: colors.inputBackground },
+        navBtnTextDisabled: { color: colors.textMuted },
+        scrollTrack: { backgroundColor: colors.border },
+        modalOverlay: { backgroundColor: colors.overlay },
+        modalContent: { backgroundColor: colors.surface },
+        bookmarksModalContent: { backgroundColor: colors.surface },
+        colorPickerModalContent: { backgroundColor: colors.surface },
+        highlightsModalContent: { backgroundColor: colors.surface },
+        bookmarkItem: { backgroundColor: colors.inputBackground },
+        highlightItem: { backgroundColor: colors.inputBackground },
+        modalCancelBtn: { backgroundColor: colors.inputBackground },
+        modalCancelText: { color: colors.textSecondary },
+        noBookmarksText: { color: colors.textSecondary },
+        removeBookmarkText: { color: colors.textSecondary },
+        pageInput: { backgroundColor: colors.inputBackground },
+        colorOption: { borderColor: colors.border },
+    };
+    return StyleSheet.create(Object.fromEntries(
+        Object.entries(styles).map(([name, original]) => [
+            name, { ...original, ...(darkOverrides[name] || {}) },
+        ])
+    ));
+};
