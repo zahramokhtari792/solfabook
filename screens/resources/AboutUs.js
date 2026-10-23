@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { imageUri, mainUri, uri } from '../../services/URL';
 import { appVersion, cleanText, handleError } from '../../helpers/Common';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
@@ -23,7 +23,7 @@ export default function AboutUs() {
     const [refreshing, setRefreshing] = useState(false);
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const [data, setData] = useState([]);
     const [socials, setSocials] = useState([]);
     const fetchData = async () => {

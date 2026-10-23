@@ -1,6 +1,6 @@
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar'
 import Loader from '../../components/Loader'
 import BlankScreen from '../../components/BlankScreen'
@@ -27,7 +27,7 @@ const MyLibrary = () => {
   const { i18n } = useTranslation();
   const [loader, setLoader] = useState(false)
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
   const dispatch = useDispatch()
   useEffect(() => {
     if (userToken && isOnline && !user) { 

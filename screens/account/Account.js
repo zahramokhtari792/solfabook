@@ -1,7 +1,8 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor4 } from '../../theme/Color'
 import EditIcon from '../../assets/svg/EditIcon'
 import { Image } from 'expo-image'
@@ -22,7 +23,8 @@ const Account = ({ navigation }) => {
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
   const [modal, setModal] = useState(false)
   const dispatch = useDispatch()
   return (
@@ -30,7 +32,7 @@ const Account = ({ navigation }) => {
       <ScrollView contentContainerStyle={{ padding: '5%' }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={userLoading} onRefresh={() => {
         dispatch(fetchUser(userToken))
       }} />}>
-        <View style={[{ backgroundColor: themeColor4.bgColor(1), width: '100%', padding: 15 }, NewStyles.rowWrapper, NewStyles.shadow, NewStyles.border10]}>
+        <View style={[{ backgroundColor: colors.surface, width: '100%', padding: 15 }, NewStyles.rowWrapper, NewStyles.shadow, NewStyles.border10]}>
           <Pressable style={[styles.box, NewStyles.border10, { alignSelf: 'flex-start' }]} onPress={() => {
             navigation.navigate('Profile')
           }}>

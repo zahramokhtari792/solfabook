@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { uri } from '../../services/URL';
 import { showToastOrAlert } from '../../helpers/Common';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor1 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
@@ -23,7 +23,7 @@ export default function Transactions() {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const [data, setData] = useState([]);
     const fetchData = async () => {
         try {

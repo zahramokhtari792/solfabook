@@ -1,6 +1,6 @@
 import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor1, themeColor10, themeColor3, themeColor4, themeColor5 } from '../../theme/Color'
 import Button from '../../components/Button'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,7 +16,7 @@ const BankInfo = ({ navigation }) => {
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const userToken = useSelector(state => state?.auth?.token);
     const user = useSelector(state => state?.user?.data);
     const [cardNumber, setCardNumber] = useState(user?.card_no)

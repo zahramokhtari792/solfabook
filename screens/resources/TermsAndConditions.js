@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { uri } from '../../services/URL';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import { themeColor1 } from '../../theme/Color';
 import Loader from '../../components/Loader';
 import BlankScreen from '../../components/BlankScreen';
@@ -20,7 +20,7 @@ export default function TermsAndConditions() {
     const [refreshing, setRefreshing] = useState(false);
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const [data, setData] = useState([]);
     const fetchData = async () => {
         try {

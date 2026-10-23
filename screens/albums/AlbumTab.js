@@ -1,6 +1,6 @@
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useMemo, useState } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar'
 import axios from 'axios'
 import { uri } from '../../services/URL'
@@ -19,7 +19,7 @@ const AlbumTab = ({ route }) => {
   const [refreshing, setRefreshing] = useState(false)
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
   const fetchAlbumCategories = () => {
     axios.post(`${uri}/fetchAlbumCategories`, { parent_id: parentId })
       .then((res) => {

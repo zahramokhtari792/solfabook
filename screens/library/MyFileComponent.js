@@ -1,6 +1,6 @@
 import { Image, ImageBackground, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo } from 'react'
-import makeStyles, { deviceWidth } from '../../styles/NewStyles'
+import { useNewStyles, deviceWidth } from '../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native'
 import { dlUrl } from '../../services/URL'
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ const MyFileComponent = ({ item, onLongPress, showTrash = true }) => {
     const navigation = useNavigation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     
     return (
         <Pressable style={[item?.is_album == 0 ? { width: deviceWidth * 0.45, aspectRatio: 0.73 } : { width: deviceWidth * 0.45, aspectRatio: 1 }, NewStyles.border8, NewStyles.shadow]} onLongPress={() => {

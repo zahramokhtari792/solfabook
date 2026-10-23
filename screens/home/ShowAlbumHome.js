@@ -1,9 +1,10 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, Image, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { chunkArray, formatPrice } from '../../helpers/Common';
 import { dlUrl } from './../../services/URL';
-import makeStyles, { deviceWidthScreen, langIsRTL } from '../../styles/NewStyles';
+import { useNewStyles, deviceWidthScreen, langIsRTL } from '../../styles/NewStyles';
 import { themeColor1, themeColor3 } from '../../theme/Color';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,8 @@ const ShowAlbumHome = ({ data, title, phone }) => {
     const navigation = useNavigation();
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const renderColumn = ({ item }) => {
 
         return (
@@ -46,7 +48,7 @@ const ShowAlbumHome = ({ data, title, phone }) => {
                                             {t('Free')}
                                         </Text>
                                     }
-                                    {subItem.discounted_price && <Text style={[NewStyles.discountText, { color: themeColor3.bgColor(1), fontSize: 12 }]}>
+                                    {subItem.discounted_price && <Text style={[NewStyles.discountText, { color: colors.textMuted, fontSize: 12 }]}>
                                         {subItem.price && formatPrice(subItem.price)} {t("currency unit")}
                                     </Text>
                                     }
@@ -81,7 +83,7 @@ const ShowAlbumHome = ({ data, title, phone }) => {
                             marginVertical: 10, justifyContent: 'center', paddingHorizontal: 10, paddingVertical: '100%',
                         }}>
                             <View style={NewStyles.row}>
-                                <Ionicons name={langIsRTL(lang) ? "chevron-back-outline" : "chevron-forward-outline"} size={20} color={themeColor1.bgColor(1)} />
+                                <Ionicons name={langIsRTL(lang) ? "chevron-back-outline" : "chevron-forward-outline"} size={20} color={colors.textSecondary} />
                             </View>
                         </Pressable>
                     )

@@ -1,3 +1,4 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { useSearchModal } from '../../context/SearchProvider';
@@ -8,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
-import makeStyles, { langIsRTL } from '../../styles/NewStyles';
+import { useNewStyles, langIsRTL } from '../../styles/NewStyles';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -22,7 +23,9 @@ const SearchModal = () => {
     const user = useSelector(state => state?.user?.data)
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
     const search = () => {
         setLoader(true)
         axios.post(`${uri}/searchInAll`, { search: value, user_id: user?.id }, { headers: { 'Accept-Language': lang } })
@@ -47,7 +50,7 @@ const SearchModal = () => {
             <SafeAreaView edges={{ top: 'off', bottom: 'maximum' }} style={{ backgroundColor: themeColor10.bgColor(0.5), flex: 1, alignItems: 'center', }}>
                 <View style={[{ alignItems: 'center', marginTop: '5%' }, Platform.OS === 'web' && { width: '100%' }]}>
                     <TouchableOpacity style={{ alignSelf: 'flex-end', marginBottom: '5%', padding: 15 }} onPress={() => { hideSearchModal() }}>
-                        <Ionicons name='close' color={themeColor4.bgColor(1)} size={24} />
+                        <Ionicons name='close' color={colors.onPrimary} size={24} />
                     </TouchableOpacity>
                     <View style={styles.searchBar} >
                         <TouchableOpacity onPress={() => {
@@ -57,7 +60,7 @@ const SearchModal = () => {
                         }}>
                             <Ionicons name='search' color={themeColor0.bgColor(1)} size={24} />
                         </TouchableOpacity>
-                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={`${t('Search')}...`} placeholderTextColor={themeColor1.bgColor(1)}
+                        <TextInput value={value} cursorColor={themeColor0.bgColor(1)} style={[styles.searchText, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }, Platform.OS === 'web' && NewStyles.noZoomInput]} placeholder={`${t('Search')}...`} placeholderTextColor={colors.textSecondary}
                             onEndEditing={() => {
                                 if (value && value?.trim()) {
                                     search()
@@ -72,7 +75,7 @@ const SearchModal = () => {
 
                 </View>
                 {loader && <View style={[NewStyles.center, { flex: 1 }]}>
-                    <ActivityIndicator color={themeColor4.bgColor(1)} size={'large'} />
+                    <ActivityIndicator color={colors.onPrimary} size={'large'} />
                 </View>}
             </SafeAreaView>
         </Modal>
@@ -81,12 +84,12 @@ const SearchModal = () => {
 
 export default SearchModal
 
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
     searchBar: {
         width: '85%',
         height: 50,
         borderRadius: 20,
-        backgroundColor: themeColor4.bgColor(1),
+        backgroundColor: colors.surface,
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 10,

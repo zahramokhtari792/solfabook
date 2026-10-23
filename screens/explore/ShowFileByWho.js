@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useMemo, useState } from 'react'
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { handleError } from '../../helpers/Common';
@@ -18,7 +18,7 @@ const ShowFileByWho = ({ route }) => {
     const [data, setData] = useState()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const fetchFilesByWho = () => {
         axios.post(`${uri}/fetchFilesByWho`, { role_id: params?.role_id, role: params?.role, orderBy: params?.orderBy })
             .then((res) => {

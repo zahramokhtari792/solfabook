@@ -1,7 +1,7 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import axios from 'axios'
 import { uri } from '../../services/URL'
 import { handleError } from '../../helpers/Common'
@@ -16,7 +16,7 @@ const MusicalInstrumentIntro = ({ navigation }) => {
     const [loader, setLoader] = useState(true)
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const allIntro = () => {
         axios.get(`${uri}/allIntro?lang=${lang}`)
             .then((res) => {

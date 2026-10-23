@@ -1,3 +1,4 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
@@ -6,7 +7,7 @@ import { handleError } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import StarIcon from '../../assets/svg/StarIcon';
 import { themeColor0, themeColor11, themeColor12, themeColor4 } from '../../theme/Color';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +30,8 @@ const PublisherProfile = ({ route, navigation }) => {
   const { showModal } = useLoginModal();
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
   const handleTextLayout = (e) => {
     if (e.nativeEvent.lines.length > 2 && !textShown) {
       setTextShown(true);
@@ -90,7 +92,7 @@ const PublisherProfile = ({ route, navigation }) => {
         contentContainerStyle={{}}
         ListHeaderComponent={() => {
           return (
-            <View style={[{ marginTop: 30, gap: 10, backgroundColor: themeColor4.bgColor(1), paddingHorizontal: '5%', paddingVertical: 10, marginHorizontal: '5%' }, NewStyles.shadow, NewStyles.border10]}>
+            <View style={[{ marginTop: 30, gap: 10, backgroundColor: colors.surface, paddingHorizontal: '5%', paddingVertical: 10, marginHorizontal: '5%' }, NewStyles.shadow, NewStyles.border10]}>
               <Image source={{ uri: `${imageUri}/${publisher?.profile_photo_path}` }} style={{ width: 100, height: 100, resizeMode: 'cover', borderRadius: 20, alignSelf: 'center' }} />
               <View>
                 <Text style={[NewStyles.title, { textAlign: 'center' }]}>{publisher?.name}</Text>

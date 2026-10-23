@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { Image } from 'react-native'
 import { imageUri } from '../../services/URL'
 import AudioPlayer from '../../components/AudioPlayer'
@@ -14,7 +14,7 @@ const InstrumentDetail = ({ route }) => {
     const [playing, setPlaying] = useState(false)
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>

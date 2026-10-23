@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, ImageBackground, RefreshControl, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import makeStyles, { deviceWidthScreen, langIsRTL } from '../../styles/NewStyles'
+import { useNewStyles, deviceWidthScreen, langIsRTL } from '../../styles/NewStyles';
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
@@ -51,7 +52,8 @@ const AlbumDetail = ({ route, navigation }) => {
     const { t } = useTranslation();
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
 
     const [useful, setUseful] = useState(0);
     const [attractive, setAttractive] = useState(0);
@@ -131,7 +133,7 @@ const AlbumDetail = ({ route, navigation }) => {
 
     const renderUserComments = useCallback(({ item }) => {
         return (
-            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: themeColor4.bgColor(1), marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
 
                 <View style={[NewStyles.row, { marginTop: 10, alignItems: 'flex-start' }]}>
                     <Avatar image={item?.user?.profile_photo_path} />
@@ -174,7 +176,7 @@ const AlbumDetail = ({ route, navigation }) => {
             </View>
         )
 
-    }, [comments]);
+    }, [comments, colors, NewStyles]);
 
 
     const fetchFileComment = () => {
@@ -394,7 +396,7 @@ const AlbumDetail = ({ route, navigation }) => {
                     <View style={[{ width: '100%', backgroundColor: themeColor1.bgColor(0.2), paddingTop: 10, paddingBottom: 25 }, NewStyles.row]}>
                         <View style={{ flex: 1 }}></View>
                         <View style={[{ flex: 2 }, NewStyles.center]}>
-                            <View style={[NewStyles.shadow, { backgroundColor: themeColor4.bgColor(1), elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
+                            <View style={[NewStyles.shadow, { backgroundColor: colors.surface, elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
                                 <Image
                                     source={{ uri: `${dlUrl}/${data?.image_gallery?.image_path}` }} style={[{ width: '100%', aspectRatio: 1, }]}
                                 />
@@ -464,7 +466,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                 {finalPrice > 0 &&
                                     <View style={[NewStyles.row, { height: 45, gap: 5 }]}>
                                         <Text style={[NewStyles.title4]}>{t('Buy')}</Text>
-                                        <View style={{ height: '50%', width: 2, backgroundColor: themeColor4.bgColor(1), marginHorizontal: 5 }} />
+                                        <View style={{ height: '50%', width: 2, backgroundColor: colors.surface, marginHorizontal: 5 }} />
                                         <View style={[NewStyles.row, { gap: 5 }]}>
                                             <View>
                                                 {data?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text4, { fontSize: 12 }]}>{formatPrice(data?.price)}</Text>}
@@ -474,7 +476,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                         </View>
                                     </View>}
                             </Pressable>
-                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
+                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
                                 Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeColor0.bgColor(1) }} />}
 
@@ -579,7 +581,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
-                                        <Text style={{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
+                                        <Text style={{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }}><Text style={{ fontSize: 11, color: colors.textSecondary }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
                                         {data?.file_comment_avg_rate >= 1 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 2 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 3 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
@@ -611,7 +613,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={[{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: themeColor10.bgColor(1) }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this album...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={[{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: colors.text }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this album...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -629,7 +631,7 @@ const AlbumDetail = ({ route, navigation }) => {
                             </>}
 
                             {myComment &&
-                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: themeColor4.bgColor(1), marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
                                     <View style={[NewStyles.rowWrapper]}>
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>

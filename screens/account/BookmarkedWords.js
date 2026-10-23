@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
@@ -31,7 +31,7 @@ const BookmarkedWords = ({ navigation }) => {
     const { i18n, t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     useEffect(() => {
         if (!status) return;
 

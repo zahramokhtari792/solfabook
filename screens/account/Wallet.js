@@ -1,3 +1,4 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomStatusBar from '../../components/CustomStatusBar';
@@ -16,7 +17,7 @@ import * as Linking from "expo-linking";
 import { uri } from '../../services/URL';
 import moment from 'moment-timezone';
 import { useFocusEffect } from '@react-navigation/native';
-import makeStyles, { deviceWidth } from '../../styles/NewStyles';
+import { useNewStyles, deviceWidth } from '../../styles/NewStyles';
 import Button from '../../components/Button';
 import { formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import TransactionItem from '../../components/TransactionItem';
@@ -36,7 +37,9 @@ export default function Wallet({ navigation }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
     const dispatch = useDispatch()
 
     const [data, setData] = useState([]);
@@ -138,27 +141,27 @@ export default function Wallet({ navigation }) {
                 style={{ flex: 1 }}
             >
                 <ScrollView refreshControl={<RefreshControl refreshing={transactionsLoading} onRefresh={() => { settransactionsLoading(true); fetchData(); dispatch(fetchUser(userToken)) }} />}>
-                    <View style={{ width: deviceWidth * 0.9, height: 230, backgroundColor: themeColor4.bgColor(1), elevation: 10, alignSelf: 'center', marginTop: 10, borderRadius: 10, shadowOpacity: 0.5, shadowColor: themeColor10.bgColor(0.5) }}>
+                    <View style={{ width: deviceWidth * 0.9, height: 230, backgroundColor: colors.surface, elevation: 10, alignSelf: 'center', marginTop: 10, borderRadius: 10, shadowOpacity: 0.5, shadowColor: themeColor10.bgColor(0.5) }}>
                         <View style={{ flex: 1.5, backgroundColor: themeColor10.bgColor(1), borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
                             <LinearGradient colors={[themeColor0.bgColor(1), themeColor8.bgColor(1)]} style={{ height: '100%', width: '100%', borderTopRightRadius: 10, borderTopLeftRadius: 10, justifyContent: 'center', alignItems: 'center', }} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
                                 <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'space-between', width: '90%', alignSelf: 'center', flexDirection: 'row-reverse' }}>
-                                    <Text style={{ color: themeColor4.bgColor(1), textAlign: 'right', fontSize: 12, fontFamily: 'VazirLight' }}>{user?.bank_name}</Text>
+                                    <Text style={{ color: colors.onPrimary, textAlign: 'right', fontSize: 12, fontFamily: 'VazirLight' }}>{user?.bank_name}</Text>
                                     <Pressable onPress={() => {
                                         navigation.navigate('BankInfo')
                                     }}>
-                                        <AntDesign name="edit" size={20} color={themeColor4.bgColor(1)} />
+                                        <AntDesign name="edit" size={20} color={colors.onPrimary} />
                                     </Pressable>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 2, width: '90%', alignSelf: 'center', alignItems: 'center' }}>
-                                    <Text style={{ fontFamily: 'VazirLight', color: themeColor4.bgColor(1), fontSize: 16, textAlign: 'center' }}>موجودی کیف پول</Text>
-                                    <Text style={{ fontFamily: 'VazirLight', color: themeColor4.bgColor(1), fontSize: 16, textAlign: 'center' }}>{formatPrice(user?.wallet)} تومان</Text>
+                                    <Text style={{ fontFamily: 'VazirLight', color: colors.onPrimary, fontSize: 16, textAlign: 'center' }}>موجودی کیف پول</Text>
+                                    <Text style={{ fontFamily: 'VazirLight', color: colors.onPrimary, fontSize: 16, textAlign: 'center' }}>{formatPrice(user?.wallet)} تومان</Text>
                                 </View>
                                 <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center', paddingBottom: 10, width: '90%', alignSelf: 'center' }}>
-                                    <Text style={{ color: themeColor4.bgColor(1), textAlign: 'right', fontSize: 11, fontFamily: 'VazirLight' }}>{user?.iban}</Text>
+                                    <Text style={{ color: colors.onPrimary, textAlign: 'right', fontSize: 11, fontFamily: 'VazirLight' }}>{user?.iban}</Text>
                                 </View>
                             </LinearGradient>
                         </View>
-                        <View style={{ flex: 1, backgroundColor: themeColor4.bgColor(1), borderBottomRightRadius: 10, borderBottomLeftRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', }}>
+                        <View style={{ flex: 1, backgroundColor: colors.surface, borderBottomRightRadius: 10, borderBottomLeftRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', }}>
                             {user?.card_no ? <>
                                 <Text style={{ flex: 1, textAlign: 'center', fontFamily: 'VazirBold', fontSize: 16 }}>{user?.card_no?.slice(0, 4)}</Text>
                                 <Text style={{ flex: 1, textAlign: 'center', fontFamily: 'VazirBold', fontSize: 16 }}>{user?.card_no?.slice(4, 8)}</Text>
@@ -173,21 +176,21 @@ export default function Wallet({ navigation }) {
                     <View style={{ width: deviceWidth * 0.9, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', alignSelf: 'center', marginTop: 10 }}>
                         <Pressable onPress={() => { setSection('charging') }} style={{ flex: 1, elevation: 2, borderRadius: 10, }}>
                             <LinearGradient colors={[section == 'charging' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'charging' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
-                                <Text style={[NewStyles.text1, section == 'charging' && { color: themeColor4.bgColor(1) }]}>شارژ کیف پول</Text>
+                                <Text style={[NewStyles.text1, section == 'charging' && { color: colors.onPrimary }]}>شارژ کیف پول</Text>
                             </LinearGradient>
                         </Pressable>
                         <Pressable onPress={() => { setSection('transactions'); fetchData() }} style={[{ flex: 1, elevation: 2, borderRadius: 10, marginHorizontal: 5 }]}>
                             <LinearGradient colors={[section == 'transactions' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'transactions' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
-                                <Text style={[NewStyles.text1, section == 'transactions' && { color: themeColor4.bgColor(1) }]}>تراکنش‌ها</Text>
+                                <Text style={[NewStyles.text1, section == 'transactions' && { color: colors.onPrimary }]}>تراکنش‌ها</Text>
                             </LinearGradient>
                         </Pressable>
                         <Pressable onPress={() => { setSection('withdraw') }} style={[{ flex: 1, elevation: 2, borderRadius: 10 }, section == 'withdraw' && { backgroundColor: themeColor0.bgColor(1) }]}>
                             <LinearGradient colors={[section == 'withdraw' ? themeColor0.bgColor(1) : themeColor4.bgColor(1), section == 'withdraw' ? themeColor8.bgColor(1) : themeColor4.bgColor(1)]} style={[{ height: 50, elevation: 2, borderRadius: 10, alignItems: 'center', justifyContent: 'center' }]} start={{ x: 0.3, y: 0.2, }} end={{ x: 0.5, y: 1 }}>
-                                <Text style={[NewStyles.text1, section == 'withdraw' && { color: themeColor4.bgColor(1) }]}>برداشت</Text>
+                                <Text style={[NewStyles.text1, section == 'withdraw' && { color: colors.onPrimary }]}>برداشت</Text>
                             </LinearGradient>
                         </Pressable>
                     </View>
-                    {section == 'charging' && <View style={{ backgroundColor: themeColor4.bgColor(1), elevation: 2, marginTop: 10, width: deviceWidth * 0.9, alignSelf: 'center', borderRadius: 10 }}>
+                    {section == 'charging' && <View style={{ backgroundColor: colors.surface, elevation: 2, marginTop: 10, width: deviceWidth * 0.9, alignSelf: 'center', borderRadius: 10 }}>
                         <View style={styles.groupFeild}>
                             <Text style={NewStyles.text1}>مبلغ مورد نظر برای شارژ کیف پول به تومان</Text>
                             <TextInput style={[NewStyles.textInput, NewStyles.text1, { marginVertical: 10, borderRadius: 5, backgroundColor: themeColor1.bgColor(0.1) }]} keyboardType='number-pad' value={price} onChangeText={(text) => {
@@ -221,7 +224,7 @@ export default function Wallet({ navigation }) {
                             }}
                         />
                     </View>}
-                    {section == 'withdraw' && <View style={{ backgroundColor: themeColor4.bgColor(1), elevation: 2, marginTop: 10, width: deviceWidth * 0.9, alignSelf: 'center', borderRadius: 10 }}>
+                    {section == 'withdraw' && <View style={{ backgroundColor: colors.surface, elevation: 2, marginTop: 10, width: deviceWidth * 0.9, alignSelf: 'center', borderRadius: 10 }}>
                         <View style={styles.groupFeild}>
                             <Text style={NewStyles.text1}>مبلغ درخواستی به تومان</Text>
                             <TextInput value={amountWithdraw} style={[NewStyles.textInput, NewStyles.text1, { marginTop: 5, borderRadius: 5, marginBottom: 10, backgroundColor: themeColor1.bgColor(0.1) }]} keyboardType='number-pad' placeholder={'مبلغ درخواستی را وارد کنید.'} onChangeText={(p) => {
@@ -250,7 +253,7 @@ export default function Wallet({ navigation }) {
         </SafeAreaView>
     )
 }
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
     groupFeild: {
         width: '90%',
         alignSelf: 'center',
@@ -275,7 +278,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         // borderWidth: 1,
         elevation: 2,
-        backgroundColor: themeColor4.bgColor(1)
+        backgroundColor: colors.surface
 
     },
 })

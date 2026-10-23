@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import axios from 'axios'
 import { uri } from '../../services/URL'
 import { handleError, showToastOrAlert } from '../../helpers/Common'
@@ -31,7 +31,7 @@ const Subscription = ({ navigation }) => {
     const { t } = useTranslation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const dispatch = useDispatch()
 
     const fetchData = async () => {

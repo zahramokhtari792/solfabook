@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import { useFocusEffect } from '@react-navigation/native';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import MyFileComponent from './MyFileComponent';
 import Loader from '../../components/Loader';
 import FilesProduct from '../../components/FilesProduct';
@@ -25,7 +25,7 @@ const MyFavorite = () => {
   const user = useSelector(state => state.user?.data);
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
   const fetchMyFavorite = () => {
     axios.get(`${uri}/fetchMyFavorite`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${userToken}` } })
       .then((res) => {

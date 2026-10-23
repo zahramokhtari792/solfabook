@@ -1,7 +1,7 @@
 import { ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { use, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -21,7 +21,7 @@ const AlbumCart = () => {
     const { i18n } = useTranslation();
     const { t } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const [data, setData] = useState([])
     const [loader, setLoader] = useState(true)
     const [paymentLoader, setPaymentLoader] = useState(false)

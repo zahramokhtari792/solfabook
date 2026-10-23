@@ -1,7 +1,8 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Animated, Easing, Image, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles, { deviceHeight } from '../../styles/NewStyles'
+import { useNewStyles, deviceHeight } from '../../styles/NewStyles';
 import axios from 'axios'
 import { dlUrl, imageUri, uri } from '../../services/URL'
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
@@ -27,7 +28,8 @@ const WordDetail = ({ route }) => {
     const { showModal } = useLoginModal();
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     useEffect(() => {
         CaptureProtection.prevent();
         return () => {
@@ -143,7 +145,7 @@ const WordDetail = ({ route }) => {
                                     showModal()
                                 }
                             }}>
-                                {saved ? <BookmarkFillIcon color={themeColor0.bgColor(1)} size='22' /> : <BookmarkIcon color={themeColor10.bgColor(1)} size='22' />}
+                                {saved ? <BookmarkFillIcon color={themeColor0.bgColor(1)} size='22' /> : <BookmarkIcon color={colors.text} size='22' />}
 
                             </TouchableOpacity>
                             {word?.audio_path && <TouchableOpacity onPress={() => {
@@ -176,7 +178,7 @@ const WordDetail = ({ route }) => {
                                             width: 40,
                                             height: 40,
                                         }, NewStyles.center]}>
-                                            <SpeackerIcon size='25' color={themeColor10.bgColor(1)} />
+                                            <SpeackerIcon size='25' color={colors.text} />
                                         </View>
 
                                     }

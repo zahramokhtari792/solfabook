@@ -1,7 +1,8 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Linking, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { themeColor0, themeColor5 } from '../../theme/Color'
 import Button from '../../components/Button'
@@ -25,7 +26,8 @@ const Contact = () => {
 
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
 
 
     const fetchData = async () => {
@@ -101,7 +103,7 @@ const Contact = () => {
                             }
                         }} />
                     </View>
-                    <Pressable style={[{ backgroundColor: themeColor5.bgColor(1), height: 50, width: '90%', marginBottom: 20, borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.shadow, NewStyles.center, NewStyles.border10]} onPress={() => { Linking.openURL(`${data?.link}`) }}>
+                    <Pressable style={[{ backgroundColor: colors.background, height: 50, width: '90%', marginBottom: 20, borderColor: themeColor0.bgColor(1), borderWidth: 1 }, NewStyles.shadow, NewStyles.center, NewStyles.border10]} onPress={() => { Linking.openURL(`${data?.link}`) }}>
 
                         <View style={[{ borderColor: themeColor0.bgColor(1), gap: 5 }, NewStyles.row]}>
 

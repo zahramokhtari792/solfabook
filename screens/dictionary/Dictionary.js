@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, Platform, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
 import { dlUrl, uri } from '../../services/URL';
@@ -40,7 +41,8 @@ const Dictionary = ({ navigation }) => {
   const status = useAudioPlayerStatus(player);
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
   useEffect(() => {
     CaptureProtection.prevent();
     return () => {
@@ -133,7 +135,7 @@ const Dictionary = ({ navigation }) => {
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
       <CustomStatusBar />
       <View style={[{ width: '90%', alignSelf: 'center', borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor1.bgColor(1), marginVertical: 10, paddingHorizontal: 10 }, NewStyles.border100, NewStyles.row]}>
-        <TextInput value={search} placeholderTextColor={themeColor1.bgColor(1)} onChangeText={(value) => { setSearch(value); }} placeholder={t('Search...')} style={[NewStyles.text10, { flex: 1, textAlign: 'auto', height: 50 }, NewStyles.border100, Platform.OS === 'web' && NewStyles.noZoomInput]} onEndEditing={() => {
+        <TextInput value={search} placeholderTextColor={colors.textSecondary} onChangeText={(value) => { setSearch(value); }} placeholder={t('Search...')} style={[NewStyles.text10, { flex: 1, textAlign: 'auto', height: 50 }, NewStyles.border100, Platform.OS === 'web' && NewStyles.noZoomInput]} onEndEditing={() => {
           if (user?.active_subscription == 1) {
             fetchWords(true);
           } else {
@@ -147,7 +149,7 @@ const Dictionary = ({ navigation }) => {
             showToastOrAlert(t('Subscribe to search for more words.'))
           }
         }}>
-          <Ionicons name='search-outline' color={themeColor1.bgColor(1)} size={20} />
+          <Ionicons name='search-outline' color={colors.textSecondary} size={20} />
         </TouchableOpacity>
       </View>
       <View style={{ flexWrap: 'wrap', flexDirection: 'row', paddingHorizontal: '5%', alignContent: 'center', alignItems: 'center', justifyContent: 'center', gap: 5 }}>

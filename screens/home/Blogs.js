@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, Linking, StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
-import makeStyles, { deviceHeight, deviceWidth } from '../../styles/NewStyles'
+import { useNewStyles, deviceHeight, deviceWidth } from '../../styles/NewStyles';
 import { TouchableOpacity } from 'react-native'
 import { imageUri, mainUri } from '../../services/URL'
 import { Image } from 'expo-image'
@@ -13,7 +14,8 @@ const Blogs = ({ title, data }) => {
     const navigation = useNavigation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     return (
         <View>
             <Text style={[NewStyles.title10, { paddingHorizontal: 10, marginTop: 20, marginBottom: 30 }]}>{title}</Text>
@@ -28,7 +30,7 @@ const Blogs = ({ title, data }) => {
                 }}
                 renderItem={({ item }) => {
                     return (
-                        <TouchableOpacity style={{ width: '95%', backgroundColor: themeColor4.bgColor(1), alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
+                        <TouchableOpacity style={{ width: '95%', backgroundColor: colors.surface, alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
                             // Linking.openURL(`${mainUri}/blog/${item?.id}`)
                             navigation.navigate('Blog', { data: item })
                         }}>

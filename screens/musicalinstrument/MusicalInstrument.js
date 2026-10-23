@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, ImageBackground, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
-import makeStyles, { deviceWidth } from '../../styles/NewStyles'
+import { useNewStyles, deviceWidth } from '../../styles/NewStyles';
 import axios from 'axios'
 import { imageUri, uri } from '../../services/URL'
 import { handleError } from '../../helpers/Common'
@@ -17,7 +18,8 @@ const MusicalInstrument = ({ navigation }) => {
     const [data, setData] = useState([])
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const allMusicalInstruments = () => {
         axios.get(`${uri}/allMusicalInstruments?lang=${lang}`)
             .then((res) => {
@@ -58,11 +60,11 @@ const MusicalInstrument = ({ navigation }) => {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); allMusicalInstruments() }} />}
                 renderItem={({ item }) => {
                     return (
-                        <Pressable style={[{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1) }, NewStyles.border10]} onPress={() => {
+                        <Pressable style={[{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: colors.surface }, NewStyles.border10]} onPress={() => {
                             navigation.navigate('InstrumentDetail', { data: item })
                         }}>
 
-                            <ImageBackground source={{ uri: `${imageUri}/${item?.image_path}` }} style={{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: themeColor4.bgColor(1) }} imageStyle={[NewStyles.border10]} resizeMode='contain'>
+                            <ImageBackground source={{ uri: `${imageUri}/${item?.image_path}` }} style={{ width: deviceWidth * 0.42, aspectRatio: 1, backgroundColor: colors.surface }} imageStyle={[NewStyles.border10]} resizeMode='contain'>
                                 <LinearGradient colors={['transparent', themeColor10.bgColor(0.5)]} style={[{ height: '100%', width: '100%', justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 10 }, NewStyles.border10]}>
                                     <Text style={NewStyles.title4}>{item?.title}</Text>
                                 </LinearGradient>

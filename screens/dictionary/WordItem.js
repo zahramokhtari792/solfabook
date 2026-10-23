@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Animated, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useRef } from 'react'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import { TouchableOpacity } from 'react-native'
 import SpeackerIcon from '../../assets/svg/SpeackerIcon'
 import { themeColor0, themeColor1, themeColor10 } from '../../theme/Color'
@@ -13,7 +14,8 @@ const WordItem = ({ item, playing, onPress, onPress1, audioPath }) => {
     const opacityAnim = useRef(new Animated.Value(0.6)).current
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     useEffect(() => {
         if (playing) {
             Animated.loop(
@@ -79,7 +81,7 @@ const WordItem = ({ item, playing, onPress, onPress1, audioPath }) => {
                                 width: 40,
                                 height: 40,
                             }, NewStyles.center]}>
-                                <SpeackerIcon color={themeColor10.bgColor(1)} />
+                                <SpeackerIcon color={colors.text} />
                             </View>
 
                         }

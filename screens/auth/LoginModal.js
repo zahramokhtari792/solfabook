@@ -1,3 +1,4 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, TextInput, Platform, ToastAndroid, Pressable, Linking, KeyboardAvoidingView } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell, } from 'react-native-confirmation-code-field';
@@ -13,7 +14,7 @@ import Button from '../../components/Button';
 import TransparentButton from '../../components/TransparentButton';
 import { setToken } from '../../slices/authSlice';
 import { useTranslation } from 'react-i18next';
-import makeStyles, { langIsRTL } from '../../styles/NewStyles';
+import { useNewStyles, langIsRTL } from '../../styles/NewStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { handleError, showToastOrAlert } from '../../helpers/Common';
 import { useLoginModal } from '../../context/LoginProvider';
@@ -24,7 +25,9 @@ export default function LoginModal() {
     const dispatch = useDispatch();
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
     const [loading, setLoading] = useState(false);
     const [loginWithPassword, setLoginWithPassword] = useState(false);
     const [phone, setPhone] = useState('');
@@ -131,7 +134,7 @@ export default function LoginModal() {
                         <View style={[NewStyles.rowWrapper]}>
                             <View style={{ flex: 1, alignItems: 'flex-end' }}>
                                 <Pressable style={{ padding: 5, }} onPress={() => { hideModal() }}>
-                                    <Ionicons name='close-outline' size={20} color={themeColor10.bgColor(1)} />
+                                    <Ionicons name='close-outline' size={20} color={colors.text} />
                                 </Pressable>
                             </View>
                             <Text style={NewStyles.title10}>{t('Login | Register')}</Text>
@@ -140,7 +143,7 @@ export default function LoginModal() {
                         {!code ?
                             <View style={styles.wrapper}>
                                 <Text style={NewStyles.text10}>{t('Please enter your phone number. A verification code will be sent to your phone number.')}</Text>
-                                <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='number-pad' placeholderTextColor={themeColor3.bgColor(1)} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
+                                <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='number-pad' placeholderTextColor={colors.textMuted} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
                                 <Text style={NewStyles.text10}>{t('Your submission indicates your agreement to our terms of service and privacy policy.')}</Text>
                                 <View style={[NewStyles.row, { alignSelf: 'center' }]}>
                                     <TouchableOpacity onPress={() => {
@@ -161,7 +164,7 @@ export default function LoginModal() {
                             loginWithPassword ?
                                 <View style={[styles.wrapper, { width: '95%' }]}>
                                     <Text style={[NewStyles.text10, { marginBottom: 10 }]}>{t('Please enter your password.')}</Text>
-                                    <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={themeColor3.bgColor(1)} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
+                                    <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={colors.textMuted} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
                                     <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (password) { setLoading(true); passwordVerification(); } else { showToastOrAlert('رمز عبور خود را وارد کنید.') } }} />
                                     <View style={NewStyles.center}>
@@ -212,7 +215,7 @@ export default function LoginModal() {
     )
 }
 
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: themeColor1.bgColor(0.8),
@@ -224,7 +227,7 @@ const styles = StyleSheet.create({
         padding: 15,
         alignItems: 'center',
         justifyContent: 'space-around',
-        backgroundColor: themeColor4.bgColor(1),
+        backgroundColor: colors.surface,
     },
     wrapper: {
         // flex: 1,
@@ -235,7 +238,7 @@ const styles = StyleSheet.create({
         height: 40,
         backgroundColor: themeColor3.bgColor(0.2),
         fontSize: 20,
-        color: themeColor3.bgColor(1),
+        color: colors.textMuted,
         textAlign: 'center',
         lineHeight: 40,
     },

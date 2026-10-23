@@ -1,3 +1,4 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useMemo, useState } from 'react';
 import axios from 'axios';
@@ -9,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Image } from 'expo-image';
 import { imageUri, uri } from '../../services/URL';
 import { fetchUser } from '../../slices/userSlice';
-import makeStyles, { deviceHeight } from '../../styles/NewStyles';
+import { useNewStyles, deviceHeight } from '../../styles/NewStyles';
 import { themeColor0, themeColor1, themeColor10, themeColor12, themeColor2, themeColor3, themeColor4, themeColor5, themeColor6 } from '../../theme/Color';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Button from '../../components/Button';
@@ -26,7 +27,9 @@ export default function Profile() {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
     const dispatch = useDispatch();
     const userToken = useSelector(state => state?.auth?.token);
     const user = useSelector(state => state.user?.data);
@@ -142,8 +145,8 @@ export default function Profile() {
     return (
         <SafeAreaView edges={{ top: 'off', bottom: 'maximum' }} style={NewStyles.container}>
             <CustomStatusBar />
-            {/* <ScrollView  refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}> */}
-            <KeyboardAwareScrollView keyboardShouldPersistTaps="always" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor5.bgColor(1)} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}>
+            {/* <ScrollView  refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={colors.background} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}> */}
+            <KeyboardAwareScrollView keyboardShouldPersistTaps="always" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={colors.background} refreshing={refreshing} onRefresh={() => { dispatch(fetchUser(userToken)) }} />}>
 
                 <ImageBackground style={[styles.imageBackground, NewStyles.center]} blurRadius={5} source={{ uri: `${imageUri}/${user?.profile_photo_path}` }} contentFit="cover" transition={1000}>
                     <Pressable onPress={() => { upload() }}>
@@ -188,7 +191,7 @@ export default function Profile() {
     )
 }
 
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
     imageBackground: {
         width: '100%',
         height: deviceHeight * 0.25,
@@ -229,8 +232,8 @@ const styles = StyleSheet.create({
         padding: 0,
         borderCurve: 'continuous',
         // overflow: 'hidden',
-        borderColor: themeColor5.bgColor(1),
-        backgroundColor: themeColor5.bgColor(1)
+        borderColor: colors.background,
+        backgroundColor: colors.background
     },
     profileImageThumbnail: {
         fontFamily: 'VazirBold',
@@ -239,7 +242,7 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center',
         fontWeight: 'bold',
         textTransform: 'uppercase',
-        color: themeColor4.bgColor(1),
+        color: colors.onPrimary,
     },
     wrapper: {
         paddingHorizontal: '5%',

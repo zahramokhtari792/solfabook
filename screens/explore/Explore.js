@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import React, { use, useCallback, useEffect, useMemo, useState } from 'react';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import axios from 'axios';
 import { uri } from '../../services/URL';
@@ -22,7 +22,7 @@ const Explore = () => {
   const [hasMore, setHasMore] = useState(true);
   const { i18n } = useTranslation(); 
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
   // تابع fetchAllFiles را برای pagination بهینه کردیم
   const fetchAllFiles = async (reset = false) => {
     if (isLoading && !reset) return; // اگر در حال لود هستیم و reset نیست، از ادامه کار جلوگیری کن

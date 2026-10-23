@@ -1,10 +1,11 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { FlatList, Linking, Pressable, RefreshControl, SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import axios from 'axios';
 import { uri } from '../../services/URL';
 import CustomStatusBar from '../../components/CustomStatusBar';
 import Loader from '../../components/Loader';
-import makeStyles, { deviceWidth } from '../../styles/NewStyles';
+import { useNewStyles, deviceWidth } from '../../styles/NewStyles';
 import { Ionicons } from '@expo/vector-icons';
 import BlankScreen from '../../components/BlankScreen';
 import { useDispatch, useSelector } from 'react-redux'
@@ -31,7 +32,9 @@ export default function Withdraws({ navigation }) {
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
 
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
     const [loading, setLoading] = useState(true);
 
     const [data, setData] = useState([]);
@@ -124,10 +127,10 @@ export default function Withdraws({ navigation }) {
     )
 }
 
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
     providerWrapper: {
         width: deviceWidth * 0.95,
-        backgroundColor: themeColor4.bgColor(1),
+        backgroundColor: colors.surface,
         alignItems: 'flex-end',
         justifyContent: 'space-between',
         borderRadius: 8,

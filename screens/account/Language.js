@@ -1,10 +1,11 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from 'i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
-import makeStyles, { deviceWidth } from '../../styles/NewStyles';
+import { useNewStyles, deviceWidth } from '../../styles/NewStyles';
 import { setLanguage } from '../../slices/languageSlice';
 import Loader from '../../components/Loader';
 import { themeColor0, themeColor5 } from '../../theme/Color';
@@ -19,7 +20,9 @@ const Language = () => {
 
   const lang = useSelector(state => state?.lang?.lang)
   const token = useSelector(state => state?.token?.token)
-  const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+  const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
+    const styles = useMemo(() => makeLocalStyles(colors), [colors]);
   const [loader, setLoader] = useState(false)
   const saveLanguage = async (lang) => {
     setLoader(true)
@@ -44,7 +47,7 @@ const Language = () => {
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
-          unFillColor={themeColor5.bgColor(1)}
+          unFillColor={colors.surface}
           iconStyle={{ borderColor: themeColor0.bgColor(1) }}
           text={'English'}
           innerIconStyle={{ borderWidth: 1 }}
@@ -73,7 +76,7 @@ const Language = () => {
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
-          unFillColor={themeColor5.bgColor(1)}
+          unFillColor={colors.surface}
           iconStyle={{ borderColor: themeColor0.bgColor(1) }}
           text={'Persian'}
           innerIconStyle={{ borderWidth: 1 }}
@@ -101,7 +104,7 @@ const Language = () => {
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
-          unFillColor={themeColor5.bgColor(1)}
+          unFillColor={colors.surface}
           iconStyle={{ borderColor: themeColor0.bgColor(1) }}
           text={'Arabic'}
           innerIconStyle={{ borderWidth: 1 }}
@@ -129,7 +132,7 @@ const Language = () => {
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
-          unFillColor={themeColor5.bgColor(1)}
+          unFillColor={colors.surface}
           iconStyle={{ borderColor: themeColor0.bgColor(1) }}
           text={'Kurdish'}
           innerIconStyle={{ borderWidth: 1 }}
@@ -157,7 +160,7 @@ const Language = () => {
         <BouncyCheckbox
           size={25}
           fillColor={themeColor0.bgColor(1)}
-          unFillColor={themeColor5.bgColor(1)}
+          unFillColor={colors.surface}
           iconStyle={{ borderColor: themeColor0.bgColor(1) }}
           text={'Turkish'}
           innerIconStyle={{ borderWidth: 1 }}
@@ -187,10 +190,10 @@ const Language = () => {
 
 export default Language
 
-const styles = StyleSheet.create({
+const makeLocalStyles = (colors) => StyleSheet.create({
   itemWrapper: {
     width: deviceWidth * 0.95,
-    // backgroundColor: themeColor5.bgColor(1),
+    // backgroundColor: colors.background,
     padding: 10,
   },
 
@@ -207,7 +210,7 @@ const styles = StyleSheet.create({
 
   footerWrapper: {
     width: deviceWidth,
-    backgroundColor: themeColor5.bgColor(1),
+    backgroundColor: colors.background,
     paddingVertical: 20,
     paddingHorizontal: '5%'
   },

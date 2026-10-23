@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import { setDeviceInfo, setToken } from '../slices/authSlice';
 import { setLanguage } from '../slices/languageSlice';
-import makeStyles from '../styles/NewStyles';
+import { useNewStyles } from '../styles/NewStyles';
 import CustomStatusBar from '../components/CustomStatusBar';
 import { useInternetStatus } from '../hooks/useInternetStatus';
 import { fetchUser } from './../slices/userSlice';
@@ -21,7 +21,7 @@ export default function Landing() {
 
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
 
     const [bootReady, setBootReady] = useState(false);
     const [storedToken, setStoredToken] = useState(undefined);

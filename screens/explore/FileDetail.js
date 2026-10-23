@@ -1,6 +1,7 @@
+import { useAppTheme } from '../../context/ThemeProvider';
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import makeStyles, { langIsRTL } from '../../styles/NewStyles'
+import { useNewStyles, langIsRTL } from '../../styles/NewStyles';
 import axios from 'axios';
 import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
@@ -41,7 +42,8 @@ const FileDetail = ({ route, navigation }) => {
     const fileId = params?.id;
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
+    const { colors } = useAppTheme();
     const userToken = useSelector(state => state.auth?.token)
     const user = useSelector(state => state.user?.data)
     const [loader, setLoader] = useState(true)
@@ -180,14 +182,14 @@ const FileDetail = ({ route, navigation }) => {
                         break;
                 }
             }}>
-                <Text style={[NewStyles.text10, {}, (item.id == 1 && useful == 1) && { color: themeColor4.bgColor(1) }, (item.id == 2 && weighty == 1) && { color: themeColor4.bgColor(1) }, (item.id == 3 && attractive == 1) && { color: themeColor4.bgColor(1) }, (item.id == 4 && informative == 1) && { color: themeColor4.bgColor(1) }]}>{item.name}</Text>
+                <Text style={[NewStyles.text10, {}, (item.id == 1 && useful == 1) && { color: colors.onPrimary }, (item.id == 2 && weighty == 1) && { color: colors.onPrimary }, (item.id == 3 && attractive == 1) && { color: colors.onPrimary }, (item.id == 4 && informative == 1) && { color: colors.onPrimary }]}>{item.name}</Text>
             </TouchableOpacity>
         )
 
-    }, [useful, weighty, attractive, informative]);
+    }, [useful, weighty, attractive, informative, NewStyles, colors]);
     const renderUserComments = useCallback(({ item }) => {
         return (
-            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: themeColor4.bgColor(1), marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
 
                 <View style={[NewStyles.row, { marginTop: 10, alignItems: langIsRTL(lang) ? 'flex-start' : 'flex-end' }]}>
                     <Avatar image={item?.user?.profile_photo_path} />
@@ -230,7 +232,7 @@ const FileDetail = ({ route, navigation }) => {
             </View>
         )
 
-    }, [comments]);
+    }, [comments, colors, NewStyles]);
 
 
     const fetchFileComment = () => {
@@ -409,7 +411,7 @@ const FileDetail = ({ route, navigation }) => {
                     <View style={[{ width: '100%', backgroundColor: themeColor1.bgColor(0.2), paddingTop: 10, paddingBottom: 25 }, NewStyles.row]}>
                         <View style={{ flex: 1 }}></View>
                         <View style={[{ flex: 2 }, NewStyles.center]}>
-                            <View style={[NewStyles.shadow, { backgroundColor: themeColor4.bgColor(1), elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
+                            <View style={[NewStyles.shadow, { backgroundColor: colors.surface, elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
                                 <Image
                                     source={{ uri: `${dlUrl}/${data?.image_gallery?.image_path}` }} style={[{ width: 155, height: 211.5, }]}
                                 />
@@ -497,7 +499,7 @@ const FileDetail = ({ route, navigation }) => {
                         <View style={{ paddingHorizontal: '5%' }}>
 
                             {data?.sample_files?.length > 0 &&
-                                <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8, { backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1) }]} onPress={() => {
+                                <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8, { backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1) }]} onPress={() => {
                                     navigation.navigate('SamplePDFReader', { sample_files: data?.sample_files })
                                 }}>
                                     <View style={[NewStyles.row, { gap: 5 }]}>
@@ -534,7 +536,7 @@ const FileDetail = ({ route, navigation }) => {
                                 {(finalPrice > 0 && data?.need_subscription == 0) &&
                                     <View style={[NewStyles.row, { height: 45, gap: 5 }]}>
                                         <Text style={[NewStyles.title4]}>{t('Buy')}</Text>
-                                        <View style={{ height: '50%', width: 2, backgroundColor: themeColor4.bgColor(1), marginHorizontal: 5 }} />
+                                        <View style={{ height: '50%', width: 2, backgroundColor: colors.surface, marginHorizontal: 5 }} />
                                         <View style={[NewStyles.row, { gap: 5 }]}>
                                             <View>
                                                 {data?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text4, { fontSize: 12 }]}>{formatPrice(data?.price)}</Text>}
@@ -566,7 +568,7 @@ const FileDetail = ({ route, navigation }) => {
                                 />
                             }
                             {/* لینکش رو نذاشتم هنوز */}
-                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: themeColor4.bgColor(1), borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
+                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
                                 Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeColor0.bgColor(1) }} />}
                             <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
@@ -589,33 +591,33 @@ const FileDetail = ({ route, navigation }) => {
                         <View style={[NewStyles.row, { marginBottom: 20, height: 90, paddingVertical: 20, backgroundColor: themeColor1.bgColor(0.2) }]} >
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
-                                    <LinearBookIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{(data?.file_type == 2 || data?.file_type == 5) ? t("{{num}} pages", { num: data?.page_num }) : '-'}</Text>
+                                    <LinearBookIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : colors.textMuted} />
+                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : colors.textMuted, fontSize: 10 }]}>{(data?.file_type == 2 || data?.file_type == 5) ? t("{{num}} pages", { num: data?.page_num }) : '-'}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
-                                    <AdobIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>PDF</Text>
+                                    <AdobIcon color={(data?.file_type == 2 || data?.file_type == 5) ? themeColor0.bgColor(1) : colors.textMuted} />
+                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 2 || data?.file_type == 5) ? themeColor10.color : colors.textMuted, fontSize: 10 }]}>PDF</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
-                                    <HappyFaceIcon color={(data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Audio file")}</Text>
+                                    <HappyFaceIcon color={(data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor0.bgColor(1) : colors.textMuted} />
+                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 1 || data?.file_type == 4 || data?.file_type == 5) ? themeColor10.color : colors.textMuted, fontSize: 10 }]}>{t("Audio file")}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
-                                    <VideoPictureIcon color={(data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor0.bgColor(1) : themeColor3.bgColor(1)} />
-                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{t("Video")}</Text>
+                                    <VideoPictureIcon color={(data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor0.bgColor(1) : colors.textMuted} />
+                                    <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: (data?.file_type == 3 || data?.file_type == 6 || data?.file_type == 4) ? themeColor10.color : colors.textMuted, fontSize: 10 }]}>{t("Video")}</Text>
                                 </View>
                             </View>
                             <View style={styles.seprator}>
                                 <View style={{ alignItems: 'center' }}>
                                     <View style={{ alignItems: 'center' }}>
-                                        <FolderCloudIcon color={data?.file_galleries_sum_file_size ? themeColor0.color : themeColor3.bgColor(1)} />
-                                        <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: data?.file_galleries_sum_file_size ? themeColor10.color : themeColor3.bgColor(1), fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size * 1024)}` : '-'}</Text>
+                                        <FolderCloudIcon color={data?.file_galleries_sum_file_size ? themeColor0.color : colors.textMuted} />
+                                        <Text style={[styles.tinyText, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', color: data?.file_galleries_sum_file_size ? themeColor10.color : colors.textMuted, fontSize: 10 }]}>{data?.file_galleries_sum_file_size ? `${formatBytes(data?.file_galleries_sum_file_size * 1024)}` : '-'}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -633,7 +635,7 @@ const FileDetail = ({ route, navigation }) => {
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
-                                        <Text style={{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }}><Text style={{ fontSize: 11, color: themeColor1.bgColor(1) }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
+                                        <Text style={{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', }}><Text style={{ fontSize: 11, color: colors.textSecondary }}>{t("From {{num}} rates", { num: data?.file_comment_count })}</Text></Text>
                                         {data?.file_comment_avg_rate >= 1 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 2 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
                                         {data?.file_comment_avg_rate >= 3 ? <StarIcon color={themeColor12.bgColor(1)} height='15' width='15' /> : <EmptyStarIcon height='15' width='15' color={themeColor12.bgColor(1)} />}
@@ -667,7 +669,7 @@ const FileDetail = ({ route, navigation }) => {
                                 <View style={{ paddingVertical: 20 }}>
                                     <FlatList style={{ paddingVertical: 10 }} contentContainerStyle={{ gap: 5 }} showsHorizontalScrollIndicator={false} inverted={langIsRTL(lang)} horizontal={true} data={mood} renderItem={renderMoodItem} />
                                 </View>
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={[{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: themeColor10.bgColor(1) }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this book...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={[{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: colors.text }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this book...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -685,7 +687,7 @@ const FileDetail = ({ route, navigation }) => {
                             </>}
 
                             {myComment &&
-                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: themeColor4.bgColor(1), marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
                                     <View style={[NewStyles.rowWrapper]}>
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React, { useMemo } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import makeStyles from '../../styles/NewStyles';
+import { useNewStyles } from '../../styles/NewStyles';
 import FileInfoItem from '../../components/FileInfoItem';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,7 @@ const MoreAboutFile = ({ route }) => {
     const { t } = useTranslation();
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
+    const NewStyles = useNewStyles(lang);
     const fileType = (type) => {
         if (type == '1') {
             return (

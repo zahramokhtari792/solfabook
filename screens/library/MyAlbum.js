@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { uri } from '../../services/URL'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles';
 import MyFileComponent from './MyFileComponent'
 import Loader from '../../components/Loader'
 import BlankScreen from '../../components/BlankScreen'
@@ -28,9 +28,7 @@ const MyAlbum = () => {
   const { t, i18n } = useTranslation()
 
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const NewStyles = useMemo(() => makeStyles(lang), [lang])
-
-  const fetchMyAlbums = useCallback(async () => {
+  const NewStyles = useNewStyles(lang);const fetchMyAlbums = useCallback(async () => {
 
     if (!userToken) return []
 
