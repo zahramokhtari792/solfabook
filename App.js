@@ -58,7 +58,8 @@ import AboutUs from './screens/resources/AboutUs';
 import Contact from './screens/resources/Contact';
 import Blog from './screens/resources/Blog';
 import PDFReaderWebView from './screens/library/PDFReaderWebView';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import makeStyles from './styles/NewStyles';
 import Language from './screens/account/Language';
 import UpdateModal from './components/UpdateModal';
@@ -137,6 +138,14 @@ i18n
 
 const Stack = createNativeStackNavigator();
 export default function App() {
+  // Allow landscape only when a player explicitly requests it.
+  // Keep the rest of the application portrait, as before.
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
+        .catch((error) => console.warn('Initial portrait lock failed', error));
+    }
+  }, []);
 
   const [loaded, error] = useFonts({
     'DimaShekasteh': require('./assets/fonts/DimaShekasteh.ttf'),

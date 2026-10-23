@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Image, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Video from 'react-native-video';
 import { Ionicons } from '@expo/vector-icons';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { imageUri } from '../services/URL';
 import { useAppTheme } from '../context/ThemeProvider';
 import InstrumentImageZoom from './InstrumentImageZoom';
@@ -23,7 +24,6 @@ export const instrumentSlides = (instrument) => {
         result.push({ type, uri: url });
     };
 
-    // Supports data from old API responses as well as records with a new gallery.
     add('image', instrument?.image_path);
     if (Array.isArray(instrument?.gallery)) {
         instrument.gallery.forEach(item => add(item?.type, item?.path));
@@ -38,9 +38,42 @@ export default function InstrumentMediaGallery({ instrument, onVideoPlay }) {
     const [layoutWidth, setLayoutWidth] = useState(screenWidth);
     const [activeIndex, setActiveIndex] = useState(0);
     const [playingIndex, setPlayingIndex] = useState(null);
+    const [nativeFullscreen, setNativeFullscreen] = useState(false);
     const [zoomUri, setZoomUri] = useState(null);
     const { colors } = useAppTheme();
     const slides = useMemo(() => instrumentSlides(instrument), [instrument]);
+    const listRef = useRef(null);
+    const orientationQueueRef = useRef(Promise.resolve());
+
+    // Serialise orientation requests: a quick open/close must end in portrait.
+    const queueOrientation = (orientation) => {
+        if (Platform.OS === 'web') return;
+        orientationQueueRef.current = orientationQueueRef.current
+            .catch(() => {})
+            .then(() => ScreenOrientation.lockAsync(orientation))
+            .catch((error) => console.warn('SolfaSaz orientation change failed', error));
+    };
+
+    // Fullscreen only unlocks screen rotation. It does NOT force landscape.
+    // The user decides whether to rotate the phone; other screens stay portrait.
+    useEffect(() => {
+        if (!nativeFullscreen || Platform.OS === 'web') return;
+        queueOrientation(ScreenOrientation.OrientationLock.DEFAULT);
+        return () => queueOrientation(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    }, [nativeFullscreen]);
+
+    useEffect(() => () => {
+        // Also restore portrait if the user navigates away while fullscreen.
+        if (Platform.OS !== 'web') queueOrientation(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    }, []);
+
+    // Do not remount FlatList on resize: that would destroy the native Video
+    // instance, automatically closing fullscreen when the device rotates.
+    useEffect(() => {
+        if (layoutWidth > 0) {
+            listRef.current?.scrollToOffset({ offset: activeIndex * layoutWidth, animated: false });
+        }
+    }, [layoutWidth]);
 
     if (!slides.length) return null;
 
@@ -51,13 +84,13 @@ export default function InstrumentMediaGallery({ instrument, onVideoPlay }) {
         }}>
             <View style={[styles.mediaViewport, { backgroundColor: colors.surface }]}>
                 <FlatList
+                    ref={listRef}
                     data={slides}
                     keyExtractor={(item, i) => `${item.type}:${item.uri}:${i}`}
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    key={layoutWidth}
-                    initialScrollIndex={0}
+                    initialScrollIndex={Math.min(activeIndex, slides.length - 1)}
                     getItemLayout={(_items, index) => ({ length: layoutWidth, offset: layoutWidth * index, index })}
                     onScrollBeginDrag={() => setPlayingIndex(null)}
                     onMomentumScrollEnd={(event) => {
@@ -76,6 +109,12 @@ export default function InstrumentMediaGallery({ instrument, onVideoPlay }) {
                                             resizeMode="contain"
                                             paused={playingIndex !== index}
                                             controls
+                                            fullscreenOrientation="all"
+                                            onFullscreenPlayerWillPresent={() => {
+                                                onVideoPlay?.();
+                                                setNativeFullscreen(true);
+                                            }}
+                                            onFullscreenPlayerDidDismiss={() => setNativeFullscreen(false)}
                                             onEnd={() => setPlayingIndex(null)}
                                             onError={(error) => console.warn('SolfaSaz video playback error', error)}
                                         />
@@ -121,7 +160,7 @@ export default function InstrumentMediaGallery({ instrument, onVideoPlay }) {
                         <View key={index} style={[
                             styles.dot,
                             { backgroundColor: activeIndex === index ? colors.primary : colors.textSecondary,
-                              opacity: activeIndex === index ? 1 : 0.45 },
+                                opacity: activeIndex === index ? 1 : 0.45 },
                         ]} />
                     ))}
                     <Text style={[styles.count, { color: colors.textSecondary }]}>{activeIndex + 1} / {slides.length}</Text>

@@ -3,7 +3,7 @@
     "name": "solfabook",
     "slug": "solfabook",
     "version": "1.0.8",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "expo.solfabook.with-webbrowser-redirect",
     "userInterfaceStyle": "light",
@@ -109,7 +109,10 @@
         }
       ],
       [
-        "expo-screen-orientation"
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT"
+        }
       ],
       "expo-build-properties",
       [
