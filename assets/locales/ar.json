@@ -1,4 +1,5 @@
 {
+  "Skip video": "تخطي الفيديو",
   "My Library": "مكتبتي",
   "unknown": "مجهول",
   "Wallet payment": "الدفع بالمحفظة",
@@ -396,20 +397,11 @@
   "ID": "هوية شخصية",
   "Your message has been sent successfully.": "تم إرسال رسالتك بنجاح.",
   "The phone number you entered is not valid.": "رقم الهاتف الذي أدخلته غير صالح.",
-  "A verification code has been sent to {{phone}}.":"تم إرسال رمز التحقق إلى {{phone}}.",
-  "No internet connection":"لا يوجد اتصال بالإنترنت",
+  "A verification code has been sent to {{phone}}.": "تم إرسال رمز التحقق إلى {{phone}}.",
+  "No internet connection": "لا يوجد اتصال بالإنترنت",
   "Get": "احصل على",
-  "Subscribe to receive the file.":"اشترك لتلقي الملف.",
+  "Subscribe to receive the file.": "اشترك لتلقي الملف.",
   "Appearance": "المظهر",
   "Light": "فاتح",
-  "Dark": "داكن",
-  "Amount in Toman": "المبلغ بالتومان",
-  "Crypto payment pending": "سيضاف الرصيد بعد تأكيد الشبكة.",
-  "Top up": "شحن",
-  "File purchase": "شراء ملف",
-  "Connecting": "جار الاتصال...",
-  "Pay directly with crypto": "ادفع مباشرة بالعملات الرقمية",
-  "Crypto payment confirmed": "تم تأكيد الدفع بالعملات الرقمية.",
-  "Crypto payment review": "تحتاج الدفعة إلى مراجعة الدعم.",
-  "Crypto payment failed": "لم يكتمل الدفع الرقمي."
+  "Dark": "داكن"
 }

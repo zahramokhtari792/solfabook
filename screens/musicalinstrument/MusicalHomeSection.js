@@ -23,7 +23,7 @@ const MusicalHomeSection = ({ data, title }) => {
                 <Text style={[NewStyles.title10,]}>{title}</Text>
             </View>
             <Pressable style={[{ width: '100%', }, NewStyles.center, NewStyles.shadow]} onPress={() => {
-                navigation.navigate('MusicalInstrumentIntro')
+                navigation.navigate('MusicalInstrumentIntro', { introVideoPath: banner?.intro_video_path || null })
             }}>
                 <Image source={{ uri: `${imageUri}/${bannerPath}` }} style={[{ width: '95%', aspectRatio: 1.9, backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]} />
             </Pressable>

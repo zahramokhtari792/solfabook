@@ -1,4 +1,5 @@
 {
+    "Skip video": "رد کردن ویدئو",
     "My Library": "کتابخانه‌من",
     "SolfaSaz": "سل‌فاساز",
     "Explore": "اکسپلور",
@@ -466,14 +467,5 @@
     "Subscribe to receive the file.": "برای دریافت فایل، اشتراک تهیه کنید",
     "Appearance": "ظاهر برنامه",
     "Light": "روشن",
-    "Dark": "تیره",
-    "Amount in Toman": "مبلغ شارژ به تومان",
-    "Crypto payment pending": "در انتظار تأیید پرداخت با ارز دیجیتال هستیم.",
-    "Top up": "شارژ کریپتو",
-    "File purchase": "خرید فایل",
-    "Connecting": "در حال اتصال...",
-    "Pay directly with crypto": "پرداخت با ارز دیجیتال",
-    "Crypto payment confirmed": "پرداخت کریپتویی تأیید شد.",
-    "Crypto payment review": "این پرداخت به بررسی پشتیبانی نیاز دارد.",
-    "Crypto payment failed": "پرداخت کریپتویی تکمیل نشد."
+    "Dark": "تیره"
 }

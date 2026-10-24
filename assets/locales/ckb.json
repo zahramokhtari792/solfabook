@@ -1,4 +1,5 @@
 {
+  "Skip video": "ڤیدیۆکە تێپەڕێنە",
   "My Library": "کتێبخانەکەم",
   "unknown": "نەزانراو",
   "Wallet payment": "پارەدانی جزدان",
@@ -393,23 +394,14 @@
   "Your withdrawal requests": "داواکاری کشانەوەکانت",
   "Approved": "تایبەت",
   "End Date": "بەرواری کۆتایی",
-  "ID":"ناسنامە",
+  "ID": "ناسنامە",
   "Your message has been sent successfully.": "پەیامەکەت بە سەرکەوتوویی ناردرا.",
   "The phone number you entered is not valid.": "ئەو ژمارەی تەلەفۆنەی کە داخڵت کردووە کارا نییە.",
-  "A verification code has been sent to {{phone}}.":"کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا.",
-  "No internet connection":"هیچ پەیوەندیەکی ئینتەرنێتی نییە",
+  "A verification code has been sent to {{phone}}.": "کۆدێکی ڕەسەنایەتی بۆ {{phone}} ناردرا.",
+  "No internet connection": "هیچ پەیوەندیەکی ئینتەرنێتی نییە",
   "Get": "بەدەست بهێنە",
   "Subscribe to receive the file.": "بەشداریکردن بۆ وەرگرتنی فایل.",
   "Appearance": "ڕووکار",
   "Light": "ڕووناک",
-  "Dark": "تاریک",
-  "Amount in Toman": "بڕ بە تۆمان",
-  "Crypto payment pending": "دوای پشتڕاستکردنەوەی تۆڕ باڵانس زیاد دەبێت.",
-  "Top up": "شارژکردن",
-  "File purchase": "کڕینی فایل",
-  "Connecting": "پەیوەندی دەکرێت...",
-  "Pay directly with crypto": "پارەدان بە کریپتۆ",
-  "Crypto payment confirmed": "پارەدانی کریپتۆ پشتڕاستکرایەوە.",
-  "Crypto payment review": "ئەم پارەدانە پێویستی بە پشکنینی پشتگیری هەیە.",
-  "Crypto payment failed": "پارەدانی کریپتۆ تەواو نەبوو."
+  "Dark": "تاریک"
 }
