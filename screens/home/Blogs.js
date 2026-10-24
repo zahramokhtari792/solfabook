@@ -30,7 +30,7 @@ const Blogs = ({ title, data }) => {
                 }}
                 renderItem={({ item }) => {
                     return (
-                        <TouchableOpacity style={{ width: '95%', backgroundColor: colors.surface, alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
+                        <TouchableOpacity style={{ width: '95%', backgroundColor: colors.background, alignSelf: 'center', paddingVertical: 5, justifyContent: 'center', paddingTop: 20 }} onPress={() => {
                             // Linking.openURL(`${mainUri}/blog/${item?.id}`)
                             navigation.navigate('Blog', { data: item })
                         }}>

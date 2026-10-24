@@ -28,7 +28,7 @@ const Header = () => {
     const { colors, isDark } = useAppTheme();
     const accentColor = isDark ? colors.primaryText : colors.primary;
     return (
-        <SafeAreaView style={[{ backgroundColor: colors.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: accentColor }, NewStyles.rowWrapper]}>
+        <SafeAreaView style={[{ backgroundColor: colors.background, borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: accentColor }, NewStyles.rowWrapper]}>
             <Image source={require('../assets/images/solfabooklogo.png')} style={{ height: 70, width: 70, marginRight: 15 }} />
             <View style={[NewStyles.row, { flex: 1, justifyContent: 'flex-end' }]}>
                 <Pressable style={{ paddingHorizontal: 10 }} onPress={() => {

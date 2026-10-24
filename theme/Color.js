@@ -141,7 +141,8 @@ export const themePalettes = Object.freeze({
         primary: themeColor0.bgColor(1),
         primaryText: themeColor0.bgColor(1),
         onPrimary: themeColor4.bgColor(1),
-        background: themeColor5.bgColor(1),
+        background: '#F6F0E6', // Light kraft-paper cream; cards remain white.
+        optionSurface: '#FBF7F0', // Slightly brighter cream for OptionsComponents.
         surface: themeColor4.bgColor(1),
         inputBackground: themeColor4.bgColor(1),
         text: themeColor10.bgColor(1),
@@ -160,6 +161,7 @@ export const themePalettes = Object.freeze({
         primaryText: themeColor0.bgColor(1),
         onPrimary: '#FFFFFF',
         background: '#121212',
+        optionSurface: '#1C1C1C', // Subtle elevation over the dark background.
         surface: '#242424',
         inputBackground: '#292929',
         text: '#F5F5F5',

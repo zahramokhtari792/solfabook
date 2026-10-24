@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNewStyles } from '../../styles/NewStyles';
@@ -6,10 +6,8 @@ import axios from 'axios'
 import { uri } from '../../services/URL'
 import { handleError } from '../../helpers/Common'
 import Loader from '../../components/Loader'
-import { themeColor4 } from '../../theme/Color'
 import { useAppTheme } from '../../context/ThemeProvider'
 import Button from '../../components/Button'
-import { BlurView } from 'expo-blur'
 import { useTranslation } from 'react-i18next'
 import Video from 'react-native-video'
 import { imageUri } from '../../services/URL'
@@ -41,7 +39,7 @@ const MusicalInstrumentIntro = ({ navigation, route }) => {
     useEffect(() => {
         allIntro()
     }, [])
-    // Play the optional video first. The intro is available even if video fails.
+    // Autoplay without user controls; on completion or playback error, show the introduction.
     if (showIntroVideo && introVideoUrl) {
         return (
             <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={[NewStyles.container, styles.videoContainer]}>
@@ -49,7 +47,7 @@ const MusicalInstrumentIntro = ({ navigation, route }) => {
                     source={{ uri: introVideoUrl }}
                     style={styles.video}
                     resizeMode="contain"
-                    controls
+                    controls={false}
                     paused={false}
                     repeat={false}
                     onEnd={() => setShowIntroVideo(false)}
@@ -58,14 +56,6 @@ const MusicalInstrumentIntro = ({ navigation, route }) => {
                         setShowIntroVideo(false);
                     }}
                 />
-                <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t('Skip video')}
-                    style={styles.skipButton}
-                    onPress={() => setShowIntroVideo(false)}
-                >
-                    <Text style={styles.skipText}>{t('Skip video')}</Text>
-                </Pressable>
             </SafeAreaView>
         );
     }
@@ -76,28 +66,28 @@ const MusicalInstrumentIntro = ({ navigation, route }) => {
         <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={NewStyles.container}>
             <FlatList
                 data={data}
-                contentContainerStyle={{ paddingHorizontal: 30, paddingTop: 12 }}
-                renderItem={({ item }) => {
-                    return (
-                        <BlurView intensity={10} tint={isDark ? 'dark' : 'light'} style={{ backgroundColor: isDark ? 'rgba(36, 36, 36, 0.88)' : themeColor4.bgColor(0.8), borderRadius: 10, paddingHorizontal: 10 }}>
-
-                            {typeof item?.title === 'string' && item.title.trim().length > 0 && (
-                                <Text style={[NewStyles.heading, { fontSize: 20, color: isDark ? colors.text : colors.primary, textAlign: 'center' }]}>{item.title}</Text>
-                            )}
-                            <Text style={[NewStyles.text10, { fontSize: 15 }]}>{item?.description}</Text>
-                        </BlurView>
-                    )
-                }}
-                ListFooterComponent={() => {
-                    return (
-                        <View style={{ marginVertical: 20 }}>
-
-                            <Button title={t("Enter SolfaSaz")} onPress={() => {
-                                navigation.navigate('MusicalInstrument')
-                            }} />
-                        </View>
-                    )
-                }}
+                contentContainerStyle={styles.listContent}
+                ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+                renderItem={({ item }) => (
+                    <View style={styles.introItem}>
+                        {typeof item?.title === 'string' && item.title.trim().length > 0 && (
+                            <Text style={[NewStyles.heading, styles.introTitle, { color: isDark ? colors.text : colors.primary }]}>
+                                {item.title}
+                            </Text>
+                        )}
+                        <Text style={[NewStyles.text10, styles.introDescription]}>
+                            {item?.description}
+                        </Text>
+                    </View>
+                )}
+                ListFooterComponent={
+                    <View style={styles.footer}>
+                        <Button
+                            title={t("Enter SolfaSaz")}
+                            onPress={() => navigation.navigate('MusicalInstrument')}
+                        />
+                    </View>
+                }
             />
         </SafeAreaView>
     )
@@ -108,16 +98,30 @@ export default MusicalInstrumentIntro
 const styles = StyleSheet.create({
     videoContainer: { backgroundColor: '#000000', justifyContent: 'center' },
     video: { width: '100%', flex: 1 },
-    skipButton: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.72)',
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: 'rgba(255, 255, 255, 0.55)',
+    listContent: {
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 24,
     },
-    skipText: { color: '#FFFFFF', fontSize: 14 },
+    introItem: {
+        width: '100%',
+        paddingHorizontal: 8,
+        paddingVertical: 8,
+        // Transparent background: exactly the same surface as the parent page.
+    },
+    itemSeparator: { height: 20 },
+    introTitle: {
+        fontSize: 18,
+        lineHeight: 30,
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    introDescription: {
+        fontSize: 15,
+        lineHeight: 27,
+    },
+    footer: {
+        marginTop: 26,
+        marginBottom: 14,
+    },
 });

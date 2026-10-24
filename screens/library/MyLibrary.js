@@ -11,6 +11,7 @@ import Bookmarks from './Bookmarks';
 import MyFavorite from './MyFavorite';
 import { useTranslation } from 'react-i18next'
 import { themeColor0 } from '../../theme/Color'
+import { useAppTheme } from '../../context/ThemeProvider'
 import { useDispatch, useSelector } from 'react-redux'
 import SignInLanding from '../auth/SignInLanding'
 import { useInternetStatus } from '../../hooks/useInternetStatus'
@@ -28,6 +29,7 @@ const MyLibrary = () => {
   const [loader, setLoader] = useState(false)
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const NewStyles = useNewStyles(lang);
+  const { colors } = useAppTheme();
   const dispatch = useDispatch()
   useEffect(() => {
     if (userToken && isOnline && !user) { 
@@ -51,6 +53,7 @@ const MyLibrary = () => {
     <SafeAreaView style={NewStyles.container} >
       <Tab.Navigator screenOptions={{
         tabBarLabelStyle: NewStyles.text10,
+        tabBarStyle: { backgroundColor: colors.background },
         tabBarIndicatorStyle: { backgroundColor: themeColor0.bgColor(1) }
       }}>
         <Tab.Screen name="MyFiles" component={MyFiles} options={{ title: t('File') }} />

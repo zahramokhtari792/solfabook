@@ -51,7 +51,7 @@ const Settings = ({ navigation }) => {
         <View style={NewStyles.container}>
             <View style={{ paddingHorizontal: '5%' }}>
                 {/* The theme control is standalone: OptionsComponents is only for navigation rows. */}
-                <View style={[styles.themeSection, NewStyles.shadow, { backgroundColor: colors.surface, paddingHorizontal: 10 }, NewStyles.rowWrapper]}>
+                <View style={[styles.themeSection, NewStyles.shadow, { backgroundColor: colors.optionSurface, paddingHorizontal: 10 }, NewStyles.rowWrapper]}>
                     <Text style={[NewStyles.text10, styles.themeLabel]}>{t(themeMode === 'dark' ? 'Dark' : 'Light')}</Text>
                     <ThemeModeSwitch
                         value={themeMode === 'dark'}

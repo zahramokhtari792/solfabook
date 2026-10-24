@@ -32,7 +32,7 @@ const Account = ({ navigation }) => {
       <ScrollView contentContainerStyle={{ padding: '5%' }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={userLoading} onRefresh={() => {
         dispatch(fetchUser(userToken))
       }} />}>
-        <View style={[{ backgroundColor: colors.surface, width: '100%', padding: 15 }, NewStyles.rowWrapper, NewStyles.shadow, NewStyles.border10]}>
+        <View style={[{ backgroundColor: colors.optionSurface, width: '100%', padding: 15 }, NewStyles.rowWrapper, NewStyles.shadow, NewStyles.border10]}>
           <Pressable style={[styles.box, NewStyles.border10, { alignSelf: 'flex-start' }]} onPress={() => {
             navigation.navigate('Profile')
           }}>

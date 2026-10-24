@@ -39,7 +39,7 @@ export default function MainLayout() {
                 headerBackTitle: 'Back',
                 headerTitleStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
                 headerTintColor: colors.text,
-                tabBarStyle: [{ backgroundColor: colors.surface }, Platform.OS === 'web' ? { height: 70 } : {}],
+                tabBarStyle: [{ backgroundColor: colors.background }, Platform.OS === 'web' ? { height: 70 } : {}],
                 tabBarLabelStyle: { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' },
                 tabBarActiveTintColor: isDark ? colors.primaryText : colors.primary,
                 tabBarInactiveTintColor: colors.textSecondary,

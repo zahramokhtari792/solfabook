@@ -3,7 +3,7 @@ import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, To
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNewStyles, deviceWidthScreen, langIsRTL } from '../../styles/NewStyles';
 import axios from 'axios';
-import { dlUrl, imageUri, uri } from '../../services/URL';
+import { dlUrl, imageUri, mainUri, uri } from '../../services/URL';
 import { formatBytes, formatPrice, handleError, showToastOrAlert } from '../../helpers/Common';
 import Loader from '../../components/Loader';
 import { useFocusEffect } from '@react-navigation/native';
@@ -25,7 +25,6 @@ import * as Linking from "expo-linking";
 import ConfirmationModal from './../../components/ConfirmationModal';
 import Avatar from '../../components/Avatar';
 import PaymentModal from '../../components/PaymentModal';
-import { useCryptoCheckout } from '../../hooks/useCryptoCheckout';
 import AlertModal from '../../components/AlertModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import AudioPlayer from '../../components/AudioPlayer';
@@ -85,12 +84,6 @@ const AlbumDetail = ({ route, navigation }) => {
     }, []);
     const redirectUrl = Linking.createURL("/?");
     const dispatch = useDispatch()
-    const { payWithCrypto } = useCryptoCheckout(userToken, () => {
-        dispatch(fetchUser(userToken));
-        queryClient.invalidateQueries({ queryKey: ['my-files'] });
-        queryClient.invalidateQueries({ queryKey: ['my-albums'] });
-    });
-
     const addLinkingListenerWallet = (event) => {
         const { queryParams } = Linking.parse(event?.url);
         if (queryParams?.status == 'OK') {
@@ -140,7 +133,7 @@ const AlbumDetail = ({ route, navigation }) => {
 
     const renderUserComments = useCallback(({ item }) => {
         return (
-            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+            <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.background, marginVertical: 3, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
 
                 <View style={[NewStyles.row, { marginTop: 10, alignItems: 'flex-start' }]}>
                     <Avatar image={item?.user?.profile_photo_path} />
@@ -155,23 +148,23 @@ const AlbumDetail = ({ route, navigation }) => {
                         <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                             {item.useful == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>مفیدبود🙂</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>مفیدبود🙂</Text>
                                 </View>
                             }
 
                             {item.weighty == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>پرباربود🤔</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>پرباربود🤔</Text>
                                 </View>
                             }
                             {item.attractive == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>جذاب بود🧐</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>جذاب بود🧐</Text>
                                 </View>
                             }
                             {item.informative == 1 &&
                                 <View style={styles.moodContainer}>
-                                    <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>آموزنده بود🤓</Text>
+                                    <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>آموزنده بود🤓</Text>
                                 </View>
                             }
                         </View>
@@ -403,7 +396,7 @@ const AlbumDetail = ({ route, navigation }) => {
                     <View style={[{ width: '100%', backgroundColor: themeColor1.bgColor(0.2), paddingTop: 10, paddingBottom: 25 }, NewStyles.row]}>
                         <View style={{ flex: 1 }}></View>
                         <View style={[{ flex: 2 }, NewStyles.center]}>
-                            <View style={[NewStyles.shadow, { backgroundColor: colors.surface, elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
+                            <View style={[NewStyles.shadow, { backgroundColor: colors.background, elevation: 15, shadowColor: themeColor10.bgColor(1) }]}>
                                 <Image
                                     source={{ uri: `${dlUrl}/${data?.image_gallery?.image_path}` }} style={[{ width: '100%', aspectRatio: 1, }]}
                                 />
@@ -483,27 +476,29 @@ const AlbumDetail = ({ route, navigation }) => {
                                         </View>
                                     </View>}
                             </Pressable>
-
+                            {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.background, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
+                                Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
+                            }} textStyle={{ color: themeMode === 'dark' ? colors.text : colors.primaryText }} />}
 
                             {(data?.des || data?.description) && <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
-                                <Text style={[styles.sectiontitle, { color: colors.text, textAlign: langIsRTL(lang) ? 'right' : 'left', marginVertical: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
-                                <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), backgroundColor: colors.surface, width: '100%', padding: 10, borderRadius: 8 }}>
+                                <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginVertical: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("About the album")}</Text>
+                                <View style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: themeColor0.bgColor(1), width: '100%', padding: 10, borderRadius: 8 }}>
                                     <Text style={NewStyles.text10} numberOfLines={3}>{data?.des ? data?.des : data?.description}</Text>
                                     <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }} onPress={() => {
                                         navigation.navigate('FullDescription', { des: data?.des, description: data?.description, categoryName: data?.album_category?.title })
                                     }}>
                                         <Ionicons size={16} name='chevron-back' color={themeColor0.bgColor(1)} />
-                                        <Text style={[NewStyles.text, { color: themeMode === 'dark' ? colors.text : colors.primaryText }]}>{t("Full description")}</Text>
+                                        <Text style={NewStyles.text}>{t("Full description")}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>}
                             {tracks?.length > 0 &&
                                 <View style={{gap: 10}}>
                                     <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
-                                        <Text style={[styles.sectiontitle, { color: colors.text, textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album tracks")}</Text>
+                                        <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album tracks")}</Text>
                                     </View>
                                     {
-                                        tracks?.map((item, index) => {
+                                        tracks?.map((item) => {
                                             return (
                                                 <View key={item?.id} style={{}}>
                                                     <View style={NewStyles.rowWrapper}>
@@ -559,7 +554,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                                             {
                                                                 ((addLoader && fileGalleryId == item?.id)) ? <ActivityIndicator size="small" color={themeColor0.bgColor(1)} /> :
                                                                     item?.in_cart == 0 ? <View>
-                                                                        <Text style={[NewStyles.text, { color: themeMode === 'dark' ? colors.text : colors.primaryText }]}>{formatPrice(item?.discounted_price || item?.price)} {t("currency unit")}</Text>
+                                                                        <Text style={NewStyles.text}>{formatPrice(item?.discounted_price || item?.price)} {t("currency unit")}</Text>
                                                                         {item?.discounted_price && <Text style={[NewStyles.text3, { textDecorationStyle: 'solid', textDecorationLine: 'line-through', fontSize: 12, textAlign: 'center' }]}>{formatPrice(item?.price)} {t("currency unit")}</Text>}
                                                                     </View> :
                                                                         <Ionicons
@@ -582,7 +577,7 @@ const AlbumDetail = ({ route, navigation }) => {
                         <View style={{ paddingHorizontal: '5%' }}>
                             <View style={NewStyles.rowWrapper}>
                                 <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
-                                    <Text style={[styles.sectiontitle, { color: colors.text, textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album rating")}</Text>
+                                    <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("Album rating")}</Text>
                                 </View>
                                 <View style={[NewStyles.rowWrapper]}>
                                     <View style={[NewStyles.row]}>
@@ -618,7 +613,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                     </TouchableOpacity>
                                 </View>
 
-                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} placeholderTextColor={colors.textSecondary} style={[{ backgroundColor: colors.inputBackground, borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: colors.text }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this album...')} />
+                                <TextInput onChangeText={(text) => { setemessage(text) }} multiline cursorColor={themeColor0.bgColor(1)} style={[{ borderColor: themeColor1.bgColor(1), borderRadius: 8, height: 150, width: '100%', borderWidth: StyleSheet.hairlineWidth, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', textAlignVertical: 'top', padding: 10, marginBottom: 10, textAlign: langIsRTL(lang) ? 'right' : 'left', color: colors.text }, Platform.OS === 'web' && NewStyles.noZoomInput]} verticalAlign='top' placeholder={t('My opinion about this album...')} />
                                 <Button title={t("Post a comment")} loading={loading} customStyle={{ marginTop: 0 }} onPress={() => {
                                     if (user && userToken) {
                                         if (score && message) {
@@ -636,12 +631,12 @@ const AlbumDetail = ({ route, navigation }) => {
                             </>}
 
                             {myComment &&
-                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.surface, marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
+                                <View style={[{ paddingBottom: 20, marginBottom: 20, backgroundColor: colors.background, marginVertical: 2, borderRadius: 10, padding: 10 }, NewStyles.shadow]}>
                                     <View style={[NewStyles.rowWrapper]}>
                                         <View style={[NewStyles.row, NewStyles.center]}>
                                             <Text style={[NewStyles.text10]}>{t("My opinion and rating")}</Text>
                                             <View style={[{ marginHorizontal: 5, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 100 }, myComment.is_show == 0 ? { backgroundColor: themeColor11.bgColor(0.2) } : { backgroundColor: themeColor7.bgColor(0.2) }]}>
-                                                <Text style={[{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: colors.warning } : { color: colors.success }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
+                                                <Text style={[{ fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin', fontSize: 11 }, myComment.is_show == 0 ? { color: themeColor11.bgColor(1) } : { color: themeColor7.bgColor(1) }]}>{myComment.is_show == 0 ? t('Pending') : t('Published')}</Text>
                                             </View>
                                         </View>
                                         <TouchableOpacity onPress={() => {
@@ -655,41 +650,41 @@ const AlbumDetail = ({ route, navigation }) => {
                                         <View style={{ marginLeft: 40, }}>
                                             <View style={[NewStyles.row, { marginHorizontal: 10 }]}>
                                                 <View style={{ marginHorizontal: 1 }}>
-                                                    <StarIcon color={myComment.rate >= 1 ? themeColor0.bgColor(1) : (themeMode === 'dark' ? colors.textMuted : themeColor1.bgColor(0.5))} />
+                                                    <StarIcon color={myComment.rate >= 1 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.5)} />
                                                 </View>
                                                 <View style={{ marginHorizontal: 1 }}>
-                                                    <StarIcon color={myComment.rate >= 2 ? themeColor0.bgColor(1) : (themeMode === 'dark' ? colors.textMuted : themeColor1.bgColor(0.5))} />
+                                                    <StarIcon color={myComment.rate >= 2 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.5)} />
                                                 </View>
                                                 <View style={{ marginHorizontal: 1 }}>
-                                                    <StarIcon color={myComment.rate >= 3 ? themeColor0.bgColor(1) : (themeMode === 'dark' ? colors.textMuted : themeColor1.bgColor(0.5))} />
+                                                    <StarIcon color={myComment.rate >= 3 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.5)} />
                                                 </View>
                                                 <View style={{ marginHorizontal: 1 }}>
-                                                    <StarIcon color={myComment.rate >= 4 ? themeColor0.bgColor(1) : (themeMode === 'dark' ? colors.textMuted : themeColor1.bgColor(0.5))} />
+                                                    <StarIcon color={myComment.rate >= 4 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.5)} />
                                                 </View>
                                                 <View style={{ marginHorizontal: 1 }}>
-                                                    <StarIcon color={myComment.rate >= 5 ? themeColor0.bgColor(1) : (themeMode === 'dark' ? colors.textMuted : themeColor1.bgColor(0.5))} />
+                                                    <StarIcon color={myComment.rate >= 5 ? themeColor0.bgColor(1) : themeColor1.bgColor(0.5)} />
                                                 </View>
                                             </View>
                                             <View style={[NewStyles.row, { flexWrap: 'wrap', marginTop: 10 }]}>
                                                 {myComment.useful == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Usefull')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Usefull')}</Text>
                                                     </View>
                                                 }
 
                                                 {myComment.weighty == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fruitful')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fruitful')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.attractive == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fascinating')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Fascinating')}</Text>
                                                     </View>
                                                 }
                                                 {myComment.informative == 1 &&
                                                     <View style={styles.moodContainer}>
-                                                        <Text style={[styles.txtMood, { color: colors.text, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Informative')}</Text>
+                                                        <Text style={[styles.txtMood, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t('Informative')}</Text>
                                                     </View>
                                                 }
                                             </View>
@@ -701,7 +696,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                 </View>
                             }
                             <View style={{ alignItems: langIsRTL(lang) ? 'flex-end' : 'flex-start' }}>
-                                <Text style={[styles.sectiontitle, { color: colors.text, textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
+                                <Text style={[styles.sectiontitle, { textAlign: langIsRTL(lang) ? 'right' : 'left', marginTop: 20, marginBottom: 10, fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}>{t("User comments")}</Text>
                             </View>
 
                         </View>
@@ -720,7 +715,7 @@ const AlbumDetail = ({ route, navigation }) => {
                 <ConfirmationModal confirmationModal={deleteModal} setConfirmationModal={setDeleteModal} title={t('Delete comment')} action={deleteComment} message={t('Are you sure you want to delete your comment?')} />
             </View>
             <View>
-                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} crypto={() => { setPayModal(false); payWithCrypto(fileId); }} />
+                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} />
             </View>
             <View>
                 <AlertModal visible={visible}

@@ -88,7 +88,7 @@ function ThemedSafeArea({ style, children }) {
   );
 }
 
-// Keep the original React Navigation theme in Light mode; only Dark mode overrides it.
+// Match the navigator background to the current theme; preserve its other default colors.
 function ThemedNavigationContainer({ children }) {
   const { colors, isDark } = useAppTheme();
   const navigationTheme = useMemo(() => isDark ? {
@@ -101,7 +101,13 @@ function ThemedNavigationContainer({ children }) {
       text: colors.text,
       border: colors.border,
     },
-  } : DefaultTheme, [colors, isDark]);
+  } : {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+    },
+  }, [colors, isDark]);
 
   return <NavigationContainer theme={navigationTheme}>{children}</NavigationContainer>;
 }
