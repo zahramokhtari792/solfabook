@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import OptionsComponents from '../../components/OptionsComponents'
 import { fetchUser } from './../../slices/userSlice';
 import Wallet from '../../components/Wallet'
+import RewardedAdEntry from '../../components/RewardedAdEntry';
 
 const Account = ({ navigation }) => {
   const user = useSelector(state => state.user?.data);
@@ -64,6 +65,7 @@ const Account = ({ navigation }) => {
           </View>
 
         </View>
+        <RewardedAdEntry compact />
         {user?.apple_check != 1 && <View style={[NewStyles.row, { gap: 10 }]}>
           <View style={{ flex: 1 }}>
             <OptionsComponents txt={t('Wallet')} icon={'wallet'} onPress={() => {

@@ -37,6 +37,7 @@ const AlbumDetail = ({ route, navigation }) => {
     const params = route?.params;
     const fileId = params?.id;
     const userToken = useSelector(state => state.auth?.token)
+    const [adOnlineExpiresAt, setAdOnlineExpiresAt] = useState(null);
     const user = useSelector(state => state.user?.data)
     const [loader, setLoader] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -373,6 +374,14 @@ const AlbumDetail = ({ route, navigation }) => {
         fetchTrackList()
     }, []))
 
+    useFocusEffect(useCallback(() => {
+        let alive = true;
+        if (!userToken) { setAdOnlineExpiresAt(null); return () => { alive = false; }; }
+        axios.get(`${uri}/me/entitlements`, { headers: { Authorization: `Bearer ${userToken}` } })
+            .then(({ data: ent }) => { if (alive) setAdOnlineExpiresAt((ent?.ad_online_access && ent?.online_streaming_ready) ? ent?.ad_access_expires_at : null); })
+            .catch(() => { if (alive) setAdOnlineExpiresAt(null); });
+        return () => { alive = false; };
+    }, [userToken]));
     if (loader) {
         return (
             <Loader />
@@ -451,6 +460,10 @@ const AlbumDetail = ({ route, navigation }) => {
                         }
 
                         <View style={{ paddingHorizontal: '5%' }}>
+                            {data?.need_subscription == 1 && adOnlineExpiresAt &&
+                                <Button title="مشاهده آنلاین با دسترسی تبلیغاتی"
+                                    onPress={() => navigation.navigate('OnlineSubscriptionContent', { id: data.id })} />
+                            }
                             <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
                                 if (user && userToken) {
                                     if (finalPrice == 0) {

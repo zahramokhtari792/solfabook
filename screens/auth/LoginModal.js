@@ -37,7 +37,7 @@ export default function LoginModal() {
     const [error, setError] = useState('');
     const [deviceInfo, setDeviceInfo] = useState('');
     const device = useSelector(state => state.auth?.deviceInfo)
-    console.log("device:", device);
+    // console.log("device:", device);
     
     const ref = useBlurOnFulfill({ value, cellCount: 6 });
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({

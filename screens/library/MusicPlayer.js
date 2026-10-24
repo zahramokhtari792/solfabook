@@ -14,9 +14,8 @@ import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNewStyles } from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import { themeColor0, themeColor10, themeColor4 } from '../../theme/Color'
-import { useAppTheme } from '../../context/ThemeProvider'
 import Loader from '../../components/Loader'
 import AudioPlayer from '../../components/AudioPlayer'
 import { Ionicons } from '@expo/vector-icons'
@@ -24,13 +23,13 @@ import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system'
 import { useQuery } from '@tanstack/react-query'
+import LibraryFileLoadError from '../../components/LibraryFileLoadError'
 
 const MusicPlayer = ({ route, navigation }) => {
 
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const NewStyles = useNewStyles(lang)
-  const { colors } = useAppTheme()
+  const NewStyles = useMemo(() => makeStyles(lang), [lang])
 
   const params = route?.params
   const file = params?.file
@@ -73,13 +72,17 @@ const MusicPlayer = ({ route, navigation }) => {
       }
     )
 
+    if (!Array.isArray(res?.data?.file_audio) || !res.data.file_audio.some(item => item?.file_path)) {
+      throw new Error('فایل صوتی این مورد روی سرور در دسترس نیست.');
+    }
+
     return {
       audio: res?.data?.file_audio || [],
       galleries: res?.data?.galleries || []
     }
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['music-player-files', file?.id, userToken],
     queryFn: fetchFiles,
     enabled: !!userToken && !!file?.id,
@@ -88,6 +91,7 @@ const MusicPlayer = ({ route, navigation }) => {
     cacheTime: 1000 * 60 * 60 * 24 * 30,
 
     networkMode: 'offlineFirst',
+    retry: false,
 
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -295,6 +299,9 @@ const MusicPlayer = ({ route, navigation }) => {
   if (isLoading && !data) {
     return <Loader />
   }
+  if (isError) {
+    return <LibraryFileLoadError error={error} onRetry={refetch} />
+  }
 
   const coverUri =
     cachedCovers[galleries[currentIndex]?.image_path] ??
@@ -307,7 +314,7 @@ const MusicPlayer = ({ route, navigation }) => {
       <ImageBackground
         style={{ flex: 1, paddingTop: 65 }}
         source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }}
-        imageStyle={{ opacity: 0.5, backgroundColor: colors.surface }}
+        imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }}
         blurRadius={25}
       >
 
@@ -344,7 +351,7 @@ const MusicPlayer = ({ route, navigation }) => {
               />
             )
             : (
-              <ActivityIndicator size="large" color={colors.text} />
+              <ActivityIndicator size="large" color={themeColor10.bgColor(1)} />
             )
         }
 
@@ -447,17 +454,17 @@ const MusicPlayer = ({ route, navigation }) => {
 
                     {
                       isDownloadingTrack
-                        ? <ActivityIndicator size="small" color={colors.text} />
+                        ? <ActivityIndicator size="small" color={themeColor10.bgColor(1)} />
                         : isDownloaded
-                          ? <Ionicons name="checkmark-circle" color={colors.text} size={20} />
-                          : <Ionicons name="download-outline" color={colors.text} size={20} />
+                          ? <Ionicons name="checkmark-circle" color={themeColor10.bgColor(1)} size={20} />
+                          : <Ionicons name="download-outline" color={themeColor10.bgColor(1)} size={20} />
                     }
 
                   </TouchableOpacity>
 
                   <Ionicons
                     name={(index == musicIndex && playing) ? 'pause' : 'play'}
-                    color={colors.text}
+                    color={themeColor10.bgColor(1)}
                     size={20}
                   />
 

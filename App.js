@@ -1,7 +1,7 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer, DefaultTheme, DarkTheme, createStaticNavigation } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, createNavigationContainerRef, createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import i18n from 'i18next';
 import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
@@ -76,7 +76,10 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { queryClient } from './lib/queryClient';
 import { persister } from './lib/persister';
 import { ThemeProvider, useAppTheme } from './context/ThemeProvider';
+import RewardedSubscriptionSync from './components/RewardedSubscriptionSync';
 
+
+const rewardedSubscriptionNavigationRef = createNavigationContainerRef();
 
 // Keep the existing NewStyles layout while letting the root background follow the theme.
 function ThemedSafeArea({ style, children }) {
@@ -109,7 +112,7 @@ function ThemedNavigationContainer({ children }) {
     },
   }, [colors, isDark]);
 
-  return <NavigationContainer theme={navigationTheme}>{children}</NavigationContainer>;
+  return <NavigationContainer ref={rewardedSubscriptionNavigationRef} theme={navigationTheme}>{children}</NavigationContainer>;
 }
 
 function VersionCheckModal() {
@@ -184,6 +187,7 @@ export default function App() {
               <ThemedNavigationContainer>
                 <KeyboardProvider>
                   <Provider store={store}>
+                    <RewardedSubscriptionSync navigationRef={rewardedSubscriptionNavigationRef} />
                     <VersionCheckProvider>
                       <LoginProvider>
                         <SearchProvider>

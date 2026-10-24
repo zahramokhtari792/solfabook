@@ -13,6 +13,7 @@ import Blogs from './Blogs'
 import DictionaryHome from './DictionaryHome'
 import MusicalHomeSection from '../musicalinstrument/MusicalHomeSection'
 import { useTranslation } from 'react-i18next'
+import RewardedAdEntry from '../../components/RewardedAdEntry';
 
 
 const Home = () => {
@@ -68,7 +69,7 @@ const Home = () => {
       <CustomStatusBar />
       <FlatList
         data={data}
-        showsVerticalScrollIndicator={false}
+         showsVerticalScrollIndicator={false}
         keyExtractor={item => item?.id?.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {
           setRefreshing(true);

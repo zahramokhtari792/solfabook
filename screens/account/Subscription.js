@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchUser } from '../../slices/userSlice';
 import SubscriptionPaymentModal from '../../components/SubscriptionPaymentModal';
 import * as Linking from "expo-linking";
+import RewardedAdPanel from '../../components/RewardedAdPanel';
 
 export default function Subscription() {
 
@@ -114,6 +115,7 @@ export default function Subscription() {
                 contentContainerStyle={[styles.contentContainerStyle, NewStyles.center]}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl colors={[themeColor1.bgColor(1)]} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}
+                ListHeaderComponent={<RewardedAdPanel onRewardGranted={() => dispatch(fetchUser(userToken))} />}
                 ListEmptyComponent={<BlankScreen />}
                 data={data}
                 keyExtractor={(item) => item?.id?.toString()}

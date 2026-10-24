@@ -12,7 +12,7 @@ import axios from 'axios'
 import { dlUrl, uri } from './../../services/URL'
 import { useSelector } from 'react-redux'
 import Loader from '../../components/Loader'
-import { useNewStyles } from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import AudioPlayer from '../../components/AudioPlayer'
 import ModalPlayer from './ModalPlayer'
 import AlbumIcon from '../../assets/svg/AlbumIcon'
@@ -21,6 +21,7 @@ import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system'
 import { useQuery } from '@tanstack/react-query'
+import LibraryFileLoadError from '../../components/LibraryFileLoadError'
 
 const PictureAudio = ({ route }) => {
 
@@ -29,7 +30,7 @@ const PictureAudio = ({ route }) => {
   const { i18n, t } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
 
-  const NewStyles = useNewStyles(lang)
+  const NewStyles = useMemo(() => makeStyles(lang), [lang])
 
   const userToken = useSelector(state => state.auth?.token)
 
@@ -65,6 +66,10 @@ const PictureAudio = ({ route }) => {
       { headers: { Authorization: `Bearer ${userToken}` } }
     )
 
+    if (!res?.data?.file_image?.some(item => item?.file_path) && !res?.data?.file_audio?.some(item => item?.file_path)) {
+      throw new Error('فایل تصویری یا صوتی این مورد روی سرور در دسترس نیست.');
+    }
+
     return {
       image: res?.data?.file_image ?? [],
       audio: res?.data?.file_audio ?? []
@@ -72,7 +77,7 @@ const PictureAudio = ({ route }) => {
 
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
 
     queryKey: ['picture-audio', id, userToken],
     queryFn: fetchFiles,
@@ -83,6 +88,7 @@ const PictureAudio = ({ route }) => {
     cacheTime: 1000 * 60 * 60 * 24 * 30,
 
     networkMode: 'offlineFirst',
+    retry: false,
 
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -232,6 +238,9 @@ const PictureAudio = ({ route }) => {
 
   if (isLoading && !data) {
     return <Loader />
+  }
+  if (isError) {
+    return <LibraryFileLoadError error={error} onRetry={refetch} />
   }
 
   /* ---------------- UI ---------------- */

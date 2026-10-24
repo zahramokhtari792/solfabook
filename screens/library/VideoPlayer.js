@@ -9,13 +9,12 @@ import {
   View
 } from 'react-native'
 import React, { useEffect, useMemo, useState, useRef } from 'react'
-import { useNewStyles } from '../../styles/NewStyles'
+import makeStyles from '../../styles/NewStyles'
 import Loader from '../../components/Loader'
 import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import { themeColor0, themeColor4 } from '../../theme/Color'
-import { useAppTheme } from '../../context/ThemeProvider'
 import Video from 'react-native-video'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CaptureProtection } from '../../helpers/CaptureProtection'
@@ -23,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
+import LibraryFileLoadError from '../../components/LibraryFileLoadError'
 import * as FileSystem from 'expo-file-system'
 
 const VideoPlayer = ({ route, navigation }) => {
@@ -34,8 +34,7 @@ const VideoPlayer = ({ route, navigation }) => {
   const token = useSelector(s => s.auth?.token)
 
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
-  const NewStyles = useNewStyles(lang)
-  const { colors } = useAppTheme()
+  const NewStyles = useMemo(() => makeStyles(lang), [lang])
 
   const [videoIndex, setVideoIndex] = useState(0)
   const [downloading, setDownloading] = useState(null)
@@ -91,11 +90,15 @@ const VideoPlayer = ({ route, navigation }) => {
       { headers: { Authorization: `Bearer ${token}` } }
     )
 
+    if (!Array.isArray(res?.data?.file_video) || !res.data.file_video.some(item => item?.file_path)) {
+      throw new Error('فایل ویدئویی این مورد روی سرور در دسترس نیست.');
+    }
+
     return res?.data?.file_video || []
 
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
 
     queryKey: ['video-player', file?.id, token],
     queryFn: fetchFiles,
@@ -106,6 +109,7 @@ const VideoPlayer = ({ route, navigation }) => {
     cacheTime: 1000 * 60 * 60 * 24 * 30,
 
     networkMode: 'offlineFirst',
+    retry: false,
 
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -256,6 +260,9 @@ const VideoPlayer = ({ route, navigation }) => {
   if (isLoading && !data) {
     return <Loader />
   }
+  if (isError) {
+    return <LibraryFileLoadError error={error} onRetry={refetch} />
+  }
 
   /* ---------------- UI ---------------- */
 
@@ -269,7 +276,7 @@ const VideoPlayer = ({ route, navigation }) => {
         blurRadius={25}
         imageStyle={{
           opacity: 0.5,
-          backgroundColor: colors.surface
+          backgroundColor: themeColor4.bgColor(1)
         }}
       >
 

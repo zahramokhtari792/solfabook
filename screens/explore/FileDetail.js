@@ -387,7 +387,9 @@ const FileDetail = ({ route, navigation }) => {
     useFocusEffect(useCallback(() => {
         fetchFileDetail()
         fetchFileComment()
-    }, []))
+        if (userToken) checkLikedSaved()
+        else setIsMine(false)
+    }, [userToken, user?.active_subscription]))
     if (loader) {
         return (
             <Loader />

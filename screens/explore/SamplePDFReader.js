@@ -1098,6 +1098,10 @@ const SamplePDFReader = ({ route }) => {
     const [reloadToken, setReloadToken] =
         useState(0);
 
+    // Online ad grants use authenticated, short-lived stream access.
+    const secureHeaders = route?.params?.secureHeaders || {};
+    const onlineExpiresAt = route?.params?.onlineExpiresAt;
+
     const sampleFile =
         route?.params
             ?.sample_files?.[0];
@@ -1137,6 +1141,17 @@ const SamplePDFReader = ({ route }) => {
                 ),
             [sampleFile?.file_path]
         );
+
+    useEffect(() => {
+        if (!onlineExpiresAt) return;
+        const checkExpiry = () => {
+            const deadline = new Date(onlineExpiresAt).getTime();
+            if (!Number.isFinite(deadline) || Date.now() >= deadline) navigation.goBack();
+        };
+        const timer = setInterval(checkExpiry, 5000);
+        checkExpiry();
+        return () => clearInterval(timer);
+    }, [onlineExpiresAt, navigation]);
 
     const clearAckTimer =
         useCallback(() => {

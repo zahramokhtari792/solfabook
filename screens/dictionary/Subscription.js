@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNewStyles } from '../../styles/NewStyles';
+import makeStyles from '../../styles/NewStyles'
 import axios from 'axios'
 import { uri } from '../../services/URL'
 import { handleError, showToastOrAlert } from '../../helpers/Common'
@@ -15,6 +15,7 @@ import { useLoginModal } from '../../context/LoginProvider'
 import PaymentModal from '../../components/PaymentModal'
 import Loader from '../../components/Loader'
 import * as Linking from "expo-linking";
+import RewardedAdPanel from '../../components/RewardedAdPanel';
 import { useFocusEffect } from '@react-navigation/native'
 
 
@@ -31,7 +32,7 @@ const Subscription = ({ navigation }) => {
     const { t } = useTranslation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
-    const NewStyles = useNewStyles(lang);
+    const NewStyles = useMemo(() => makeStyles(lang), [lang]);
     const dispatch = useDispatch()
 
     const fetchData = async () => {
@@ -127,6 +128,7 @@ const Subscription = ({ navigation }) => {
                 contentContainerStyle={[styles.contentContainerStyle, NewStyles.center, { gap: 10, paddingVertical: 10 }]}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl colors={[themeColor0.bgColor(1)]} progressBackgroundColor={themeColor1.bgColor(1)} refreshing={refreshing} onRefresh={() => { setRefreshing(true) }} />}
+                ListHeaderComponent={<RewardedAdPanel onRewardGranted={() => token && dispatch(fetchUser(token))} />}
                 ListEmptyComponent={<BlankScreen />}
                 data={data}
 
