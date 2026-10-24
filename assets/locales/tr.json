@@ -395,11 +395,20 @@
   "ID": "İD",
   "Your message has been sent successfully.": "Mesajınız başarıyla gönderildi.",
   "The phone number you entered is not valid.": "Girdiğiniz telefon numarası geçerli değil.",
-  "A verification code has been sent to {{phone}}.":"{{phone}} numarasına bir doğrulama kodu gönderildi.",
+  "A verification code has been sent to {{phone}}.": "{{phone}} numarasına bir doğrulama kodu gönderildi.",
   "No internet connection": "İnternet bağlantısı yok",
   "Get": "Al",
-  "Subscribe to receive the file.":"Dosyayı almak için abone olun.",
+  "Subscribe to receive the file.": "Dosyayı almak için abone olun.",
   "Appearance": "Görünüm",
   "Light": "Açık",
-  "Dark": "Koyu"
+  "Dark": "Koyu",
+  "Amount in Toman": "Toman tutarı",
+  "Crypto payment pending": "Ağ onayından sonra bakiye eklenir.",
+  "Top up": "Yükleme",
+  "File purchase": "Dosya satın alma",
+  "Connecting": "Bağlanıyor...",
+  "Pay directly with crypto": "Doğrudan kriptoyla öde",
+  "Crypto payment confirmed": "Kripto ödemesi onaylandı.",
+  "Crypto payment review": "Bu ödeme için destek incelemesi gerekiyor.",
+  "Crypto payment failed": "Kripto ödemesi tamamlanmadı."
 }

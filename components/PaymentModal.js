@@ -1,5 +1,5 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from './Button';
 import { themeColor0 } from '../theme/Color';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,9 +8,10 @@ import { useSelector } from 'react-redux';
 import { formatPrice } from '../helpers/Common';
 import { useAppTheme } from '../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
+import { getCryptoSettings } from '../services/cryptoPayments';
 
 
-const PaymentModal = ({ modal, setModal, payment, wallet }) => {
+const PaymentModal = ({ modal, setModal, payment, wallet, crypto }) => {
     const user = useSelector(state => state.user?.data);
     const { t } = useTranslation()
     const { i18n } = useTranslation();
@@ -18,6 +19,15 @@ const PaymentModal = ({ modal, setModal, payment, wallet }) => {
 
     const NewStyles = useNewStyles(lang);
     const { colors } = useAppTheme();
+    const [cryptoEnabled, setCryptoEnabled] = useState(false);
+    const hasCryptoActions = Boolean(crypto);
+    useEffect(() => {
+        if (!modal || !hasCryptoActions) return;
+        let mounted = true;
+        getCryptoSettings().then(data => { if (mounted) {setCryptoEnabled(Boolean(data?.enabled)); console.log(data)} })
+            .catch(() => { if (mounted) setCryptoEnabled(false); });
+        return () => { mounted = false; };
+    }, [modal, hasCryptoActions]);
     return (
         <Modal animationType='slide' visible={modal} transparent={true}>
 
@@ -40,11 +50,15 @@ const PaymentModal = ({ modal, setModal, payment, wallet }) => {
                             </View>
 
                             <View style={{ width: '48%', }}>
-                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: colors.surface }} textStyle={{ color: colors.primaryText }} title={t("Payment from gateway")} />
+                                <Button onPress={payment} customStyle={{ borderWidth: 1, borderColor: themeColor0.bgColor(1), backgroundColor: colors.surface, marginVertical: 0 }} textStyle={{ color: colors.primaryText }} title={t("Payment from gateway")} />
                             </View>
 
                         </View>
-
+                        {cryptoEnabled && crypto && (
+                            <View style={{ width: '90%', gap: 8 }}>
+                                <Button onPress={crypto} title={t("Pay directly with crypto")} customStyle={{ backgroundColor: themeColor0.bgColor(1), marginVertical: 0 }} textStyle={{ color: '#FFFFFF' }} />
+                            </View>
+                        )}
                     </View>
                 </View>
             </TouchableWithoutFeedback>
@@ -121,7 +135,9 @@ const styles = StyleSheet.create({
     },
 
     modal: {
-        height: '28%',
+        minHeight: 250,
+        paddingVertical: 24,
+        gap: 14,
         width: '100%',
         backgroundColor: '#fff',
         alignItems: "center",

@@ -7,12 +7,13 @@ import { themeColor4 } from '../../theme/Color'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 
-const DictionaryHome = ({ data, title }) => {
+const DictionaryHome = ({ data, dataDark, title }) => {
     const navigation = useNavigation()
     const { i18n } = useTranslation();
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const NewStyles = useNewStyles(lang);
-    const { colors } = useAppTheme();
+    const { colors, resolvedTheme } = useAppTheme();
+    const bannerPath = resolvedTheme === 'dark' && dataDark ? dataDark : data;
     return (
         <View style={{ width: '100%' }}>
             <View style={[NewStyles.rowWrapper, { marginBottom: 20, marginTop: 20 }, langIsRTL(lang) ? { paddingRight: 10 } : { paddingLeft: 10 }]}>
@@ -21,7 +22,7 @@ const DictionaryHome = ({ data, title }) => {
             <Pressable style={[{ width: '100%', }, NewStyles.center, NewStyles.shadow]} onPress={() => {
                 navigation.navigate('Dictionary')
             }}>
-                <Image source={{ uri: `${mainUri}/${data}` }} style={[{ width: '95%', aspectRatio: 1.9, backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]} />
+                <Image source={{ uri: `${mainUri}/${bannerPath}` }} style={[{ width: '95%', aspectRatio: 1.9, backgroundColor: colors.surface }, NewStyles.shadow, NewStyles.border10]} />
             </Pressable>
         </View>
     )

@@ -32,6 +32,7 @@ import * as Linking from "expo-linking";
 import ConfirmationModal from './../../components/ConfirmationModal';
 import Avatar from '../../components/Avatar';
 import PaymentModal from '../../components/PaymentModal';
+import { useCryptoCheckout } from '../../hooks/useCryptoCheckout';
 import AlertModal from '../../components/AlertModal';
 import { fetchUser } from '../../slices/userSlice';
 import { shareContent } from '../../helpers/ShareHelper';
@@ -72,6 +73,12 @@ const FileDetail = ({ route, navigation }) => {
     const [comments, setComments] = useState([])
     const [myComment, setMyComments] = useState()
     const dispatch = useDispatch()
+    const { payWithCrypto } = useCryptoCheckout(userToken, () => {
+        dispatch(fetchUser(userToken));
+        queryClient.invalidateQueries({ queryKey: ['my-files'] });
+        queryClient.invalidateQueries({ queryKey: ['my-albums'] });
+    });
+
 
     const redirectUrl = Linking.createURL("/?");
     const shareFile = async () => {
@@ -771,7 +778,7 @@ const FileDetail = ({ route, navigation }) => {
                 <ConfirmationModal confirmationModal={deleteModal} setConfirmationModal={setDeleteModal} title={t('Delete comment')} action={deleteComment} message={t('Are you sure you want to delete your comment?')} />
             </View>
             <View>
-                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} />
+                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} crypto={() => { setPayModal(false); payWithCrypto(fileId); }} />
             </View>
             <View>
                 <AlertModal visible={visible}

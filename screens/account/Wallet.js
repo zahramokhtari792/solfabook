@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { fetchUser } from '../../slices/userSlice';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import BankAccountModal from '../../components/BankAccountModal';
 import BlankScreen from '../../components/BlankScreen';
 import * as Linking from "expo-linking";
 import { uri } from '../../services/URL';

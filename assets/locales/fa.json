@@ -463,8 +463,17 @@
     "A verification code has been sent to {{phone}}.": "یک کد تایید به {{phone}} ارسال شده است.",
     "No internet connection": "اتصال به اینترنت در دسترس نیست",
     "Get": "دریافت",
-    "Subscribe to receive the file.":"برای دریافت فایل، اشتراک تهیه کنید",
+    "Subscribe to receive the file.": "برای دریافت فایل، اشتراک تهیه کنید",
     "Appearance": "ظاهر برنامه",
     "Light": "روشن",
-    "Dark": "تیره"
+    "Dark": "تیره",
+    "Amount in Toman": "مبلغ شارژ به تومان",
+    "Crypto payment pending": "در انتظار تأیید پرداخت با ارز دیجیتال هستیم.",
+    "Top up": "شارژ کریپتو",
+    "File purchase": "خرید فایل",
+    "Connecting": "در حال اتصال...",
+    "Pay directly with crypto": "پرداخت با ارز دیجیتال",
+    "Crypto payment confirmed": "پرداخت کریپتویی تأیید شد.",
+    "Crypto payment review": "این پرداخت به بررسی پشتیبانی نیاز دارد.",
+    "Crypto payment failed": "پرداخت کریپتویی تکمیل نشد."
 }

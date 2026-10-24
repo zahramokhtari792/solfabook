@@ -85,7 +85,7 @@ const Home = () => {
                 </View>}
               {item?.type == 'File' && <HomeProductList data={item?.data} title={t(item?.title)} />}
               {item?.type == 'Album' && <ShowAlbumHome data={item?.data} title={t(item?.title)} />}
-              {item?.type == 'Dictionary' && <DictionaryHome data={item?.data} title={t(item?.title)} />}
+              {item?.type == 'Dictionary' && <DictionaryHome data={item?.data} dataDark={item?.data_dark} title={t(item?.title)} />}
               {item?.type == 'Blog' && <Blogs data={item?.data} title={t(item?.title)} />}
               {item?.type == 'MusicalInstrument' && item?.data?.length > 0 && <MusicalHomeSection data={item} title={t(item?.title)} />}
             </View>

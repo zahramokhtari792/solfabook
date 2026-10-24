@@ -25,6 +25,7 @@ import * as Linking from "expo-linking";
 import ConfirmationModal from './../../components/ConfirmationModal';
 import Avatar from '../../components/Avatar';
 import PaymentModal from '../../components/PaymentModal';
+import { useCryptoCheckout } from '../../hooks/useCryptoCheckout';
 import AlertModal from '../../components/AlertModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import AudioPlayer from '../../components/AudioPlayer';
@@ -84,6 +85,12 @@ const AlbumDetail = ({ route, navigation }) => {
     }, []);
     const redirectUrl = Linking.createURL("/?");
     const dispatch = useDispatch()
+    const { payWithCrypto } = useCryptoCheckout(userToken, () => {
+        dispatch(fetchUser(userToken));
+        queryClient.invalidateQueries({ queryKey: ['my-files'] });
+        queryClient.invalidateQueries({ queryKey: ['my-albums'] });
+    });
+
     const addLinkingListenerWallet = (event) => {
         const { queryParams } = Linking.parse(event?.url);
         if (queryParams?.status == 'OK') {
@@ -713,7 +720,7 @@ const AlbumDetail = ({ route, navigation }) => {
                 <ConfirmationModal confirmationModal={deleteModal} setConfirmationModal={setDeleteModal} title={t('Delete comment')} action={deleteComment} message={t('Are you sure you want to delete your comment?')} />
             </View>
             <View>
-                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} />
+                <PaymentModal modal={paymodal} setModal={setPayModal} wallet={walletPayment} payment={gateWayPayment} crypto={() => { setPayModal(false); payWithCrypto(fileId); }} />
             </View>
             <View>
                 <AlertModal visible={visible}

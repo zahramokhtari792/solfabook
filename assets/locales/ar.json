@@ -402,5 +402,14 @@
   "Subscribe to receive the file.":"اشترك لتلقي الملف.",
   "Appearance": "المظهر",
   "Light": "فاتح",
-  "Dark": "داكن"
+  "Dark": "داكن",
+  "Amount in Toman": "المبلغ بالتومان",
+  "Crypto payment pending": "سيضاف الرصيد بعد تأكيد الشبكة.",
+  "Top up": "شحن",
+  "File purchase": "شراء ملف",
+  "Connecting": "جار الاتصال...",
+  "Pay directly with crypto": "ادفع مباشرة بالعملات الرقمية",
+  "Crypto payment confirmed": "تم تأكيد الدفع بالعملات الرقمية.",
+  "Crypto payment review": "تحتاج الدفعة إلى مراجعة الدعم.",
+  "Crypto payment failed": "لم يكتمل الدفع الرقمي."
 }

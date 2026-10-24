@@ -402,5 +402,14 @@
   "Subscribe to receive the file.": "بەشداریکردن بۆ وەرگرتنی فایل.",
   "Appearance": "ڕووکار",
   "Light": "ڕووناک",
-  "Dark": "تاریک"
+  "Dark": "تاریک",
+  "Amount in Toman": "بڕ بە تۆمان",
+  "Crypto payment pending": "دوای پشتڕاستکردنەوەی تۆڕ باڵانس زیاد دەبێت.",
+  "Top up": "شارژکردن",
+  "File purchase": "کڕینی فایل",
+  "Connecting": "پەیوەندی دەکرێت...",
+  "Pay directly with crypto": "پارەدان بە کریپتۆ",
+  "Crypto payment confirmed": "پارەدانی کریپتۆ پشتڕاستکرایەوە.",
+  "Crypto payment review": "ئەم پارەدانە پێویستی بە پشکنینی پشتگیری هەیە.",
+  "Crypto payment failed": "پارەدانی کریپتۆ تەواو نەبوو."
 }
