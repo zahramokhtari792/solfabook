@@ -137,23 +137,23 @@ export default function LoginModal() {
                                     <Ionicons name='close-outline' size={20} color={colors.text} />
                                 </Pressable>
                             </View>
-                            <Text style={NewStyles.title10}>{t('Login | Register')}</Text>
+                            <Text style={NewStyles.title10}> {t('Login | Register')} </Text>
                             <View style={{ flex: 1 }} />
                         </View>
                         {!code ?
                             <View style={styles.wrapper}>
-                                <Text style={NewStyles.text10}>{t('Please enter your phone number. A verification code will be sent to your phone number.')}</Text>
+                                <Text style={NewStyles.text10}> {t('Please enter your phone number. A verification code will be sent to your phone number.')} </Text>
                                 <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='number-pad' placeholderTextColor={colors.textMuted} maxLength={11} placeholder={`${t('Phone Number')}`} value={phone} onChangeText={(text) => setPhone(text)} onTouchStart={() => { setError('') }} />
-                                <Text style={NewStyles.text10}>{t('Your submission indicates your agreement to our terms of service and privacy policy.')}</Text>
+                                <Text style={NewStyles.text10}> {t('Your submission indicates your agreement to our terms of service and privacy policy.')} </Text>
                                 <View style={[NewStyles.row, { alignSelf: 'center' }]}>
                                     <TouchableOpacity onPress={() => {
                                         Linking.openURL(`${mainUri}/terms`)
-                                    }}><Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>{t('Terms & Conditions')}</Text></TouchableOpacity>
+                                    }}><Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}> {t('Terms & Conditions')} </Text></TouchableOpacity>
                                     <Text style={NewStyles.text10}> {t('&')} </Text>
                                     <TouchableOpacity onPress={() => {
                                         Linking.openURL(`${mainUri}/privacies`)
                                     }}>
-                                        <Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}>{t('privacy policy')}</Text>
+                                        <Text style={[NewStyles.text10, { color: themeColor0.bgColor(1) }]}> {t('privacy policy')} </Text>
                                     </TouchableOpacity>
                                 </View>
                                 {error && <Text style={NewStyles.text6}>{error}</Text>}
@@ -163,12 +163,12 @@ export default function LoginModal() {
                             :
                             loginWithPassword ?
                                 <View style={[styles.wrapper, { width: '95%' }]}>
-                                    <Text style={[NewStyles.text10, { marginBottom: 10 }]}>{t('Please enter your password.')}</Text>
+                                    <Text style={[NewStyles.text10, { marginBottom: 10 }]}> {t('Please enter your password.')} </Text>
                                     <TextInput style={[NewStyles.textInput, { backgroundColor: themeColor3.bgColor(0.2) }, NewStyles.text1, NewStyles.border10, Platform.OS==='web' && NewStyles.noZoomInput]} keyboardType='default' key={loginModal ? 'password-open' : 'password-closed'} placeholderTextColor={colors.textMuted} secureTextEntry maxLength={18} placeholder={`${t('Password')}`} value={password} onChangeText={(text) => setPassword(text)} />
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
                                     <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (password) { setLoading(true); passwordVerification(); } else { showToastOrAlert('رمز عبور خود را وارد کنید.') } }} />
                                     <View style={NewStyles.center}>
-                                        <Text style={NewStyles.text3}>{t("Forgot your password?")}</Text>
+                                        <Text style={NewStyles.text3}> {t("Forgot your password?")} </Text>
                                         <View style={NewStyles.rowWrapper}>
                                             <TransparentButton title={`${t('Change Phone Number')}`} onPress={() => { setError(''); setValue(''); setPhone(''); setCode(false); setLoginWithPassword(false); setPassword('') }} />
                                             <Text style={NewStyles.text3}>  {t('or')}  </Text>
@@ -200,7 +200,7 @@ export default function LoginModal() {
                                     {error && <Text style={NewStyles.text6}>{error}</Text>}
                                     <Button title={`${t('Submit')}`} loading={loading} onPress={() => { if (value?.length === 6) { setLoading(true); codeVerification(); } else { setError(`${t('Please enter the code correctly.')}`) } }} />
                                     <View style={NewStyles.center}>
-                                        <Text style={NewStyles.text3}>{t("Didn't you receive a verification code?")}</Text>
+                                        <Text style={NewStyles.text3}> {t("Didn't you receive a verification code?")} </Text>
                                         <View style={NewStyles.rowWrapper}>
                                             <TransparentButton title={`${t('Change Phone Number')}`} onPress={() => { setError(''); setValue(''); setPhone(''); setCode(false); }} />
                                             <Text style={NewStyles.text10}>  {t('or')}  </Text>

@@ -15,7 +15,7 @@ export default function TransparentButton({ title, onPress, loading, color }) {
     const { colors } = useAppTheme();
     return (
         <Pressable style={[styles.button, NewStyles.center]} disabled={loading} onPress={onPress}>
-            {!loading && <Text style={[NewStyles.text10, { color: color ?? colors.text }]}>{title}</Text>}
+            {!loading && <Text style={[NewStyles.text10, { color: color ?? colors.text }]}> {title} </Text>}
             {loading && <ActivityIndicator color={themeColor0.bgColor(1)} size='small' />}
         </Pressable>
     )
