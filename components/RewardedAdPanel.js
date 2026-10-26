@@ -15,6 +15,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
     const { showModal } = useLoginModal();
     const token = useSelector(state => state.auth?.token);
     const [status, setStatus] = useState(null);
+    const statusRequestId = useRef(0);
     const [session, setSession] = useState(null);
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
@@ -25,6 +26,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
     const auth = { headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } };
 
     const loadStatus = useCallback(async () => {
+        const requestId = ++statusRequestId.current;
         try {
             const response = token
                 ? await axios.get(`${uri}/rewarded-ads/status`, {
@@ -33,16 +35,29 @@ export default function RewardedAdPanel({ onRewardGranted }) {
                 : await axios.get(`${uri}/rewarded-ads/public`, {
                     headers: { Accept: 'application/json' },
                 });
+            if (requestId !== statusRequestId.current) return;
             setStatus(response.data);
-            setMessage('');
         } catch (error) {
+            if (requestId !== statusRequestId.current) return;
             setStatus(null);
             setMessage('دریافت وضعیت تبلیغات انجام نشد. اتصال اینترنت را بررسی کنید.');
         }
     }, [token]);
 
     useFocusEffect(useCallback(() => {
-        if (!session) loadStatus();
+        if (session) return undefined;
+        loadStatus();
+        // A focused screen can remain mounted across midnight/cooldown expiry.
+        // Refresh without making the user navigate away and back.
+        const timer = setInterval(loadStatus, 60 * 1000);
+        const appState = AppState.addEventListener('change', next => {
+            if (next === 'active') loadStatus();
+        });
+        return () => {
+            clearInterval(timer);
+            appState.remove();
+            statusRequestId.current += 1;
+        };
     }, [loadStatus, session]));
 
     const endSession = (shouldCancel = true) => {
@@ -63,7 +78,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
         const sub = AppState.addEventListener('change', next => {
             // Background play must never qualify as a rewarded view.
             if (next !== 'active' && session) {
-                setMessage('پخش تبلیغ متوقف شد. برای دریافت پاداش، ویدئو را دوباره از ابتدا ببینید.');
+                setMessage('پخش تبلیغ متوقف شد. برای فعال‌سازی اشتراک رایگان، ویدئو را دوباره از ابتدا ببینید.');
                 endSession();
             }
         });
@@ -82,7 +97,9 @@ export default function RewardedAdPanel({ onRewardGranted }) {
             heartbeatPending.current = false;
             setSession({ ...data, id: data.session_id });
         } catch (error) {
-            setMessage(error?.response?.data?.message || 'فعلاً امکان شروع تبلیغ وجود ندارد.');
+            setMessage(error?.response?.status === 429
+                ? 'درخواست‌های زیادی ارسال شده است. لطفاً کمی بعد دوباره تلاش کنید.'
+                : (error?.response?.data?.message || 'فعلاً امکان شروع تبلیغ وجود ندارد.'));
             loadStatus();
         } finally { setBusy(false); }
     };
@@ -110,6 +127,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
         if (!session || completing.current || cancelRef.current) return;
         completing.current = true;
         setBusy(true);
+        let confirmedByServer = false;
         try {
             // Wait for a preceding heartbeat so final progress is not lost.
             const started = Date.now();
@@ -121,46 +139,49 @@ export default function RewardedAdPanel({ onRewardGranted }) {
             const { data } = await axios.post(`${uri}/rewarded-ads/${session.id}/complete`, {
                 session_token: session.session_token,
             }, auth);
+            confirmedByServer = true;
             setStatus(data.status);
-            setMessage('اشتراک پاداشی شما فعال شد.');
+            setMessage('اشتراک رایگان شما فعال شد.');
             onRewardGranted?.();
         } catch (error) {
-            setMessage(error?.response?.data?.message || 'تماشای کامل توسط سرور تأیید نشد. لطفاً دوباره تلاش کنید.');
-        } finally { endSession(false); }
+            if (!confirmedByServer) {
+                const errorMessage = error?.response?.status === 429
+                    ? 'درخواست‌های زیادی ارسال شده است. لطفاً کمی بعد دوباره تلاش کنید.'
+                    : (error?.response?.data?.message || 'تماشای کامل توسط سرور تأیید نشد. لطفاً دوباره تلاش کنید.');
+                setMessage(errorMessage);
+            }
+        } finally {
+            // A failed completion must cancel the server session. A confirmed
+            // reward must not be cancelled even if a UI callback fails.
+            endSession(!confirmedByServer);
+        }
     };
+
+    // While no viewing opportunity is available, hide the entire feature.
+    // Keep an already-started video mounted until it finishes or is cancelled.
+    const canShowOffer = !!status?.enabled && !!status?.has_available_ad
+        && (!token || status?.can_watch === true);
+    if (!session && !canShowOffer) return null;
 
     return (
         <View style={[styles.panel, { backgroundColor: colors.optionSurface || colors.surface, borderColor: colors.border || '#ddd2c4' }]}>
-            <Text style={[styles.heading, { color: colors.text }]}>دسترسی رایگان با تماشای تبلیغ</Text>
+            <Text style={[styles.heading, { color: colors.text }]}>اشتراک رایگان با تماشای ویدئو</Text>
             <Text style={[styles.description, { color: colors.text }]}>
-                با تماشای کامل یک ویدئو، اشتراک شما برای {status?.reward_minutes || 120} دقیقه فعال می‌شود. پس از پایان این زمان، دسترسی اشتراکی قطع خواهد شد. دانلود آفلاین غیرفعال است.
+                با تماشای کامل یک ویدئو، اشتراک شما برای {status?.reward_minutes || 120} دقیقه فعال می‌شود. پس از پایان این زمان، دسترسی اشتراکی قطع خواهد شد.
             </Text>
             {!!status?.ad_access_expires_at && (
                 <Text style={[styles.description, { color: colors.text }]}>اعتبار اشتراک تا: {formatDateTime(status.ad_access_expires_at)}</Text>
             )}
             {status && !!token && <Text style={[styles.description, { color: colors.text }]}>
-                پاداش باقی‌مانده امروز: {status.rewards_remaining} از {status.daily_limit}
-                {!!status.next_available_at && `\nزمان مجاز بعدی: ${formatDateTime(status.next_available_at)}`}
+                فرصت‌های باقی‌مانده امروز: {status.rewards_remaining} از {status.daily_limit}
             </Text>}
-            {!!status && !status.enabled && (
-                <Text style={[styles.message, { color: colors.text }]}>سیستم تبلیغات پاداش‌دار در حال حاضر غیرفعال است.</Text>
-            )}
-            {!!status?.enabled && !!token && !status.can_watch && (
-                <Text style={[styles.message, { color: colors.text }]}>
-                    {status.unavailable_reason === 'no_video' ? 'فعلاً ویدئوی تبلیغاتی فعال در بازه نمایش وجود ندارد.'
-                        : status.unavailable_reason === 'paid_subscription' ? 'اشتراک پولی شما فعال است؛ نیازی به تماشای تبلیغ ندارید.'
-                        : status.unavailable_reason === 'daily_limit' ? 'سقف دریافت پاداش امروز تکمیل شده است.'
-                        : status.unavailable_reason === 'cooldown' ? 'برای پاداش بعدی باید تا زمان مجاز اعلام‌شده صبر کنید.'
-                        : 'فعلاً امکان دریافت پاداش وجود ندارد.'}
-                </Text>
-            )}
             {!!status?.enabled && !token && (
-                <Text style={[styles.message, { color: colors.text }]}>برای دریافت پاداش ابتدا وارد حساب کاربری شوید.</Text>
+                <Text style={[styles.message, { color: colors.text }]}>برای فعال‌سازی اشتراک رایگان، ابتدا وارد حساب کاربری شوید.</Text>
             )}
             {!!message && <Text accessibilityRole="alert" style={[styles.message, { color: colors.text }]}>{message}</Text>}
             {!!status?.enabled && ((!!token && status.can_watch) || (!token && status.has_available_ad)) && <Pressable accessibilityRole="button" onPress={!token ? showModal : start} disabled={busy}
                 style={[styles.action, { backgroundColor: colors.primary || '#961D5A' }]}>
-                {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{!token ? 'ورود و دریافت اشتراک رایگان' : 'تماشای تبلیغ و دریافت اشتراک'}</Text>}
+                {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{!token ? 'ورود و فعال‌سازی اشتراک رایگان' : 'تماشای ویدئو و فعال‌سازی اشتراک'}</Text>}
             </Pressable>}
             <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${mainUri}/advertise`)} style={styles.requestLink}>
                 <Text style={[styles.requestText, { color: colors.text }]}>درخواست ثبت تبلیغ برای کسب‌وکارها</Text>
@@ -181,9 +202,9 @@ export default function RewardedAdPanel({ onRewardGranted }) {
                             onEnd={complete}
                             onError={() => { setMessage('ویدئو قابل پخش نیست.'); endSession(); }}
                         />
-                        <Text style={styles.videoHint}>برای دریافت پاداش، ویدئو را تا انتها تماشا کنید.</Text>
+                        <Text style={styles.videoHint}>برای فعال‌سازی اشتراک رایگان، ویدئو را تا انتها تماشا کنید.</Text>
                         <Pressable accessibilityRole="button" onPress={endSession} style={styles.close}>
-                            <Text style={styles.closeText}>خروج بدون دریافت پاداش</Text>
+                            <Text style={styles.closeText}>خروج بدون فعال‌سازی اشتراک</Text>
                         </Pressable>
                     </>}
                 </View>

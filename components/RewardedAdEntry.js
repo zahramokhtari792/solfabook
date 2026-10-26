@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -16,13 +16,27 @@ export default function RewardedAdEntry({ compact = false }) {
 
     useFocusEffect(useCallback(() => {
         let alive = true;
+        let latestRequestId = 0;
+        const refresh = () => {
+            const requestId = ++latestRequestId;
+            axios.get(`${uri}/rewarded-ads/${token ? 'status' : 'public'}`, {
+                headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            })
+                .then(({ data }) => { if (alive && requestId === latestRequestId) setInfo(data); })
+                .catch(() => { if (alive && requestId === latestRequestId) setInfo(null); });
+        };
         setInfo(null);
-        axios.get(`${uri}/rewarded-ads/${token ? 'status' : 'public'}`, {
-            headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        })
-            .then(({ data }) => { if (alive) setInfo(data); })
-            .catch(() => { if (alive) setInfo(null); });
-        return () => { alive = false; };
+        refresh();
+        // Eligibility changes at midnight and when the four-hour cooldown ends.
+        const timer = setInterval(refresh, 60 * 1000);
+        const appState = AppState.addEventListener('change', next => {
+            if (next === 'active') refresh();
+        });
+        return () => {
+            alive = false;
+            clearInterval(timer);
+            appState.remove();
+        };
     }, [token]));
 
     // Do not display an entry/button when the user is in cooldown, has reached
@@ -33,7 +47,7 @@ export default function RewardedAdEntry({ compact = false }) {
     return (
         <Pressable
             accessibilityRole="button"
-            accessibilityLabel="مشاهده تبلیغات پاداش‌دار و دریافت اشتراک رایگان"
+            accessibilityLabel="تماشای ویدئوی تبلیغاتی و فعال‌سازی اشتراک رایگان"
             onPress={() => navigation.navigate('Subscription')}
             style={[styles.container, compact && styles.compact, {
                 backgroundColor: colors.optionSurface || colors.surface,
@@ -44,9 +58,9 @@ export default function RewardedAdEntry({ compact = false }) {
                 <Ionicons name="play" size={18} color="#FFFFFF" />
             </View>
             <View style={styles.content}>
-                <Text style={[styles.title, { color: colors.text }]}>تماشای تبلیغ، دریافت {duration} اشتراک رایگان</Text>
+                <Text style={[styles.title, { color: colors.text }]}>دریافت {duration} اشتراک رایگان</Text>
                 <Text style={[styles.subtitle, { color: colors.text }]}>
-                    فعال‌سازی اشتراک بدون پرداخت هزینه
+                    با تماشای کامل یک ویدئوی تبلیغاتی
                 </Text>
             </View>
             <Ionicons name="chevron-back" size={20} color={colors.text} />
