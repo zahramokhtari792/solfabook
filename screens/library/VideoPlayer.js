@@ -1,3 +1,4 @@
+import { downloadOfflineFile } from '../../services/offlineSubscription';
 import {
   ActivityIndicator,
   Alert,
@@ -106,7 +107,7 @@ const VideoPlayer = ({ route, navigation }) => {
     enabled: !!file?.id && !!token,
 
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    gcTime: Infinity,
 
     networkMode: 'offlineFirst',
     retry: false,
@@ -223,7 +224,7 @@ const VideoPlayer = ({ route, navigation }) => {
 
       await ensureDir(dir)
 
-      await FileSystem.downloadAsync(
+      await downloadOfflineFile(
         `${dlUrl}/${item.file_path}`,
         localPath,
         { headers: { Authorization: `Bearer ${token}` } }

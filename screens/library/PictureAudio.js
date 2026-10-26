@@ -1,3 +1,4 @@
+import { downloadOfflineFile } from '../../services/offlineSubscription';
 import {
   ActivityIndicator,
   Alert,
@@ -85,7 +86,7 @@ const PictureAudio = ({ route }) => {
     enabled: !!id && !!userToken,
 
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    gcTime: Infinity,
 
     networkMode: 'offlineFirst',
     retry: false,
@@ -214,7 +215,7 @@ const PictureAudio = ({ route }) => {
 
       await FileSystem.makeDirectoryAsync(dir, { intermediates: true })
 
-      await FileSystem.downloadAsync(
+      await downloadOfflineFile(
         encodeURI(`${dlUrl}/${item.file_path}`),
         localPath
       )

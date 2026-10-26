@@ -1,3 +1,4 @@
+import { downloadOfflineFile } from '../services/offlineSubscription';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Platform } from 'react-native';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Slider from '@react-native-community/slider';
@@ -274,7 +275,7 @@ export default function AudioPlayer({
             }
 
             const encoded = encodeURI(remoteUri);
-            const { uri: downloadedUri } = await FileSystem.downloadAsync(encoded, localPath);
+            const { uri: downloadedUri } = await downloadOfflineFile(encoded, localPath);
             await FileSystem.writeAsStringAsync(localDonePath, 'ok', { encoding: FileSystem.EncodingType.UTF8 });
             setLocalUri(downloadedUri);
             return true;

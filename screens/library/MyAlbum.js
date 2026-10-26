@@ -54,7 +54,7 @@ const MyAlbum = () => {
     queryFn: fetchMyAlbums,
     enabled: !!userToken,
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    gcTime: Infinity,
     networkMode: 'offlineFirst',
     refetchOnMount: false,
     refetchOnWindowFocus: false,

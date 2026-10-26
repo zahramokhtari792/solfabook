@@ -76,6 +76,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { queryClient } from './lib/queryClient';
 import { persister } from './lib/persister';
 import { ThemeProvider, useAppTheme } from './context/ThemeProvider';
+import OfflineSubscriptionProvider, { withOfflineSubscription } from './components/OfflineSubscriptionProvider';
 import RewardedSubscriptionSync from './components/RewardedSubscriptionSync';
 
 
@@ -145,6 +146,11 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+const OfflinePDFReader = withOfflineSubscription(PDFReader);
+const OfflineMusicPlayer = withOfflineSubscription(MusicPlayer);
+const OfflineVideoPlayer = withOfflineSubscription(VideoPlayer);
+const OfflinePictureAudio = withOfflineSubscription(PictureAudio);
+const OfflineLibrary = withOfflineSubscription(OfflineStack);
 const Stack = createNativeStackNavigator();
 export default function App() {
   // Allow landscape only when a player explicitly requests it.
@@ -179,7 +185,7 @@ export default function App() {
             client={queryClient}
             persistOptions={{
               persister: persister,
-              maxAge: 1000 * 60 * 60 * 24 * 30, 
+              maxAge: Infinity, 
               buster: 'v1_cache',
             }}
           >
@@ -187,6 +193,7 @@ export default function App() {
               <ThemedNavigationContainer>
                 <KeyboardProvider>
                   <Provider store={store}>
+                    <OfflineSubscriptionProvider>
                     <RewardedSubscriptionSync navigationRef={rewardedSubscriptionNavigationRef} />
                     <VersionCheckProvider>
                       <LoginProvider>
@@ -214,10 +221,10 @@ export default function App() {
                             <Stack.Screen name='ShowFileByWho' component={ShowFileByWho} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='PublisherProfile' component={PublisherProfile} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='MoreAboutFile2' component={MoreAboutFile2} options={{ header: () => { return (<BackHeader />) } }} />
-                            <Stack.Screen name='PDFReader' component={PDFReader} options={{ headerShown: false }} />
+                            <Stack.Screen name='PDFReader' component={OfflinePDFReader} options={{ headerShown: false }} />
                             <Stack.Screen name='PDFReaderWebView' component={PDFReaderWebView} options={{ headerShown: false }} />
                             <Stack.Screen name='PDFReaderScreen' component={PDFReaderScreen} options={{ headerShown: false }} />
-                            <Stack.Screen name='PictureAudio' component={PictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='PictureAudio' component={OfflinePictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='Dictionary' component={Dictionary} options={{ header: () => { return (<BackHeader />) } }} />
@@ -228,9 +235,9 @@ export default function App() {
                             <Stack.Screen name='MusicalInstrumentIntro' component={MusicalInstrumentIntro} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='MusicalInstrument' component={MusicalInstrument} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='InstrumentDetail' component={InstrumentDetail} options={{ header: () => { return (<BackHeader />) } }} />
-                            <Stack.Screen name='MusicPlayer' component={MusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                            <Stack.Screen name='VideoPlayer' component={VideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
-                            <Stack.Screen name='OfflineStack' component={OfflineStack} options={{ headerShown: false }} />
+                            <Stack.Screen name='MusicPlayer' component={OfflineMusicPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                            <Stack.Screen name='VideoPlayer' component={OfflineVideoPlayer} options={{ header: () => { return (<BackHeader transparent={true} />) } }} />
+                            <Stack.Screen name='OfflineStack' component={OfflineLibrary} options={{ headerShown: false }} />
                             <Stack.Screen name='ActiveDevice' component={ActiveDevice} options={
                               Platform.OS != 'web' ? {
                                 headerShown: false,
@@ -259,6 +266,7 @@ export default function App() {
                       </LoginProvider>
                       <VersionCheckModal />
                     </VersionCheckProvider>
+                    </OfflineSubscriptionProvider>
                   </Provider>
                 </KeyboardProvider>
               </ThemedNavigationContainer>

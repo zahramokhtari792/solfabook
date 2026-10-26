@@ -1,3 +1,4 @@
+import { withOfflineSubscription } from '../../components/OfflineSubscriptionProvider';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNewStyles } from '../../styles/NewStyles';
@@ -65,6 +66,6 @@ const MyLibrary = () => {
   )
 }
 
-export default MyLibrary
+export default withOfflineSubscription(MyLibrary)
 
 const styles = StyleSheet.create({})

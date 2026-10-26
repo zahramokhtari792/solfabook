@@ -1,3 +1,4 @@
+import { downloadOfflineFile } from '../../services/offlineSubscription';
 import {
   ActivityIndicator,
   Alert,
@@ -88,7 +89,7 @@ const MusicPlayer = ({ route, navigation }) => {
     enabled: !!userToken && !!file?.id,
 
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    gcTime: Infinity,
 
     networkMode: 'offlineFirst',
     retry: false,
@@ -426,7 +427,7 @@ const MusicPlayer = ({ route, navigation }) => {
 
                             const encoded = encodeURI(`${dlUrl}/${item.file_path}`)
 
-                            await FileSystem.downloadAsync(encoded, localPath)
+                            await downloadOfflineFile(encoded, localPath)
 
                             await FileSystem.writeAsStringAsync(localDonePath, 'ok')
 

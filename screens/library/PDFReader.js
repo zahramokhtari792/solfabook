@@ -1,3 +1,4 @@
+import { downloadOfflineFile } from '../../services/offlineSubscription';
 import {
   ActivityIndicator,
   Alert,
@@ -98,7 +99,7 @@ const PDFReader = ({ route }) => {
     enabled: !!userToken && !!id,
 
     staleTime: 1000 * 60 * 5,
-    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    gcTime: Infinity,
 
     networkMode: 'offlineFirst',
     retry: false,
@@ -170,7 +171,7 @@ const PDFReader = ({ route }) => {
       await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
 
       const encoded = encodeURI(`${dlUrl}/${data[0].file_path}`);
-      const result = await FileSystem.downloadAsync(encoded, localPath);
+      const result = await downloadOfflineFile(encoded, localPath);
 
       if (result.status < 200 || result.status >= 300) {
         throw new Error('Download failed');
