@@ -30,6 +30,7 @@ import ChangePassword from './screens/account/ChangePassword';
 import ActiveDevice from './screens/account/ActiveDevice';
 import { themeColor4 } from './theme/Color';
 import FileDetail from './screens/explore/FileDetail';
+import OnlineSubscriptionContent from './screens/explore/OnlineSubscriptionContent';
 import ShowFileByWho from './screens/explore/ShowFileByWho';
 import PublisherProfile from './screens/explore/PublisherProfile';
 import MoreAboutFile2 from './screens/explore/MoreAboutFile2';
@@ -226,6 +227,7 @@ export default function App() {
                             <Stack.Screen name='PDFReaderScreen' component={PDFReaderScreen} options={{ headerShown: false }} />
                             <Stack.Screen name='PictureAudio' component={OfflinePictureAudio} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='AlbumDetail' component={AlbumDetail} options={{ header: () => { return (<BackHeader />) } }} />
+                            <Stack.Screen name='OnlineSubscriptionContent' component={OnlineSubscriptionContent} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='AllAlbums' component={AllAlbums} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='Dictionary' component={Dictionary} options={{ header: () => { return (<BackHeader />) } }} />
                             <Stack.Screen name='WordDetail' component={WordDetail} options={{ header: () => { return (<BackHeader />) } }} />

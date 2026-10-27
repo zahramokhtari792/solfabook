@@ -37,7 +37,6 @@ const AlbumDetail = ({ route, navigation }) => {
     const params = route?.params;
     const fileId = params?.id;
     const userToken = useSelector(state => state.auth?.token)
-    const [adOnlineExpiresAt, setAdOnlineExpiresAt] = useState(null);
     const user = useSelector(state => state.user?.data)
     const [loader, setLoader] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -63,6 +62,7 @@ const AlbumDetail = ({ route, navigation }) => {
     const [finalPrice, setFinalPrice] = useState();
     const [saved, setSaved] = useState(false);
     const [like, setLike] = useState(false);
+    const [isMine, setIsMine] = useState(false);
     const [paymodal, setPayModal] = useState(false)
     const [addLoader, setAddLoader] = useState(false)
     const [fileGalleryId, setFileGalleryId] = useState()
@@ -260,6 +260,7 @@ const AlbumDetail = ({ route, navigation }) => {
                     setSaved(false)
                 }
 
+                setIsMine(res?.data?.is_mine == 1);
                 setMyComments(res?.data?.comment)
             })
             .catch((err) => {
@@ -352,12 +353,6 @@ const AlbumDetail = ({ route, navigation }) => {
             console.log('Error =>', error);
         }
     };
-    useEffect(() => {
-        if (userToken) {
-            checkLikedSaved();
-        }
-    }, [userToken])
-
     useFocusEffect(
         React.useCallback(() => {
             const subscription = Linking.addEventListener('url', addLinkingListenerWallet);
@@ -372,7 +367,9 @@ const AlbumDetail = ({ route, navigation }) => {
         fetchFileDetail()
         fetchFileComment()
         fetchTrackList()
-    }, []))
+        if (userToken) checkLikedSaved()
+        else setIsMine(false)
+    }, [userToken, user?.active_subscription]))
 
     useFocusEffect(useCallback(() => {
         let alive = true;
@@ -460,35 +457,38 @@ const AlbumDetail = ({ route, navigation }) => {
                         }
 
                         <View style={{ paddingHorizontal: '5%' }}>
-                            {data?.need_subscription == 1 && adOnlineExpiresAt &&
-                                <Button title="مشاهده آنلاین با دسترسی تبلیغاتی"
-                                    onPress={() => navigation.navigate('OnlineSubscriptionContent', { id: data.id })} />
-                            }
-                            <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
-                                if (user && userToken) {
-                                    if (finalPrice == 0) {
+                            {!(data?.need_subscription == 1 && isMine) ?
+                                <Pressable style={[styles.button, NewStyles.center, NewStyles.shadow, NewStyles.border8,]} onPress={() => {
+                                    if (!user || !userToken) {
+                                        showModal()
+                                    } else if (data?.need_subscription == 1) {
+                                        if (user?.active_subscription == 1) walletPayment()
+                                        else navigation.navigate('Subscription')
+                                    } else if (finalPrice == 0) {
                                         walletPayment()
                                     } else {
                                         setPayModal(true)
                                     }
-                                } else {
-                                    showModal()
-                                }
-                            }}>
-                                {finalPrice == 0 && <Text style={[NewStyles.title4]}>{t("Get free")}</Text>}
-                                {finalPrice > 0 &&
-                                    <View style={[NewStyles.row, { height: 45, gap: 5 }]}>
-                                        <Text style={[NewStyles.title4]}>{t('Buy')}</Text>
-                                        <View style={{ height: '50%', width: 2, backgroundColor: colors.surface, marginHorizontal: 5 }} />
-                                        <View style={[NewStyles.row, { gap: 5 }]}>
-                                            <View>
-                                                {data?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text4, { fontSize: 12 }]}>{formatPrice(data?.price)}</Text>}
-                                                <Text style={NewStyles.text4}>{formatPrice(finalPrice)}</Text>
-                                            </View>
-                                            <Text style={NewStyles.text4}>{t('currency')}</Text>
-                                        </View>
-                                    </View>}
-                            </Pressable>
+                                }}>
+                                    {data?.need_subscription == 1 ?
+                                        <Text style={NewStyles.title4}>{user && userToken && user?.active_subscription == 1 ? t('Get') : t('Buy subscription')}</Text> :
+                                        <>
+                                            {finalPrice == 0 && <Text style={NewStyles.title4}>{t("Get free")}</Text>}
+                                            {finalPrice > 0 &&
+                                                <View style={[NewStyles.row, { height: 45, gap: 5 }]}>
+                                                    <Text style={NewStyles.title4}>{t('Buy')}</Text>
+                                                    <View style={{ height: '50%', width: 2, backgroundColor: colors.surface, marginHorizontal: 5 }} />
+                                                    <View style={[NewStyles.row, { gap: 5 }]}>
+                                                        <View>
+                                                            {data?.discounted_price && <Text style={[NewStyles.discountText, NewStyles.text4, { fontSize: 12 }]}>{formatPrice(data?.price)}</Text>}
+                                                            <Text style={NewStyles.text4}>{formatPrice(finalPrice)}</Text>
+                                                        </View>
+                                                        <Text style={NewStyles.text4}>{t('currency')}</Text>
+                                                    </View>
+                                                </View>}
+                                        </>}
+                                </Pressable> :
+                                <Button title={t('View File')} onPress={() => navigation.navigate('MusicPlayer', { file: data })} />}
                             {data?.is_shop == 1 && <Button title={t("Get a printed copy")} customStyle={{ backgroundColor: colors.background, borderWidth: 1, borderColor: themeColor0.bgColor(1), marginTop: 0 }} onPress={() => {
                                 Linking.openURL(data?.pay_link ? `${data?.pay_link}` : `${mainUri}/product/${fileId}`)
                             }} textStyle={{ color: themeMode === 'dark' ? colors.text : colors.primaryText }} />}
@@ -555,7 +555,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                                                 )}
                                                             </View>
                                                         </View>
-                                                        <TouchableOpacity disabled={addLoader} style={[{ paddingVertical: 5, width: 100, borderWidth: 1, borderColor: themeColor0.bgColor(1), borderRadius: 5 }, NewStyles.center]}
+                                                        {data?.need_subscription != 1 && <TouchableOpacity disabled={addLoader} style={[{ paddingVertical: 5, width: 100, borderWidth: 1, borderColor: themeColor0.bgColor(1), borderRadius: 5 }, NewStyles.center]}
                                                             onPress={() => {
                                                                 if (item?.in_cart == 0) {
                                                                     addToAlbumCart(item?.id)
@@ -576,7 +576,7 @@ const AlbumDetail = ({ route, navigation }) => {
                                                                             color={themeColor0.bgColor(1)}
                                                                         />
                                                             }
-                                                        </TouchableOpacity>
+                                                        </TouchableOpacity>}
                                                     </View>
                                                 </View>
                                             )

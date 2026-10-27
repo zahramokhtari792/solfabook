@@ -63,7 +63,6 @@ export default function AudioPlayer({
     const [total, setTotal] = useState(0);
     const [width, setWidth] = useState(0);
     const [tempWidth, setTempWidth] = useState(0);
-    const [seekableMs, setSeekableMs] = useState(0);
 
     const [isSeeking, setIsSeeking] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -71,9 +70,11 @@ export default function AudioPlayer({
     const [pendingPlay, setPendingPlay] = useState(false);
     const [rate, setRate] = useState(1);
 
-    // Seek snap-back fix: lock progress updates until player reaches target
-    const seekTargetRef = useRef(null); // ms
-    const SEEK_EPSILON_MS = 350;
+    // Let the native slider own the thumb while dragging. Ignore stale player
+    // progress until a seek is confirmed by the native player.
+    const seekTargetRef = useRef(null); // requested position, in ms
+    const seekIssuedAtRef = useRef(null);
+    const confirmedSeekRef = useRef(null); // { positionMs, confirmedAt }
 
     const remotePath = audio?.[index]?.file_path ?? '';
     const remoteUri = remotePath ? `${dlUrl}/${remotePath}` : '';
@@ -119,12 +120,13 @@ export default function AudioPlayer({
         setIsLoaded(false);
         setLoadingErr(null);
         seekTargetRef.current = null;
+        seekIssuedAtRef.current = null;
+        confirmedSeekRef.current = null;
         currentSourceRef.current = 'remote';
         setSourceType('remote');
         setLocalUri(null);
         setIsDownloading(false);
         setPendingPlay(false);
-        setSeekableMs(0);
     }, [remotePath, index]);
 
     // Apply initial source/local when provided by parent (e.g., MusicPlayer precheck)
@@ -230,6 +232,8 @@ export default function AudioPlayer({
         // restart if near end
         if (total > 0 && width >= total - 1500) {
             seekTargetRef.current = 0;
+            seekIssuedAtRef.current = Date.now();
+            confirmedSeekRef.current = null;
             setIsSeeking(true);
             isSeekingRef.current = true;
             playerRef.current?.seek(0);
@@ -393,10 +397,25 @@ export default function AudioPlayer({
     };
 
     const SLIDER_STEP_MS = 100;
-    const maxSeekMs = total > 0
-        ? (seekableMs > 0 ? Math.min(total, seekableMs) : total)
-        : 0;
+    // seekableDuration changes while streaming; using it as maximumValue
+    // makes the slider range (and thumb position) jump during a drag.
+    const maxSeekMs = total > 0 ? total : 0;
 
+    const finishSeek = (positionMs) => {
+        const target = seekTargetRef.current;
+        if (typeof target !== 'number') return;
+
+        const confirmedMs = Number.isFinite(positionMs)
+            ? Math.max(0, Math.min(positionMs, maxSeekMs))
+            : target;
+        seekTargetRef.current = null;
+        seekIssuedAtRef.current = null;
+        isSeekingRef.current = false;
+        confirmedSeekRef.current = { positionMs: confirmedMs, confirmedAt: Date.now() };
+        setWidth(confirmedMs);
+        setTempWidth(confirmedMs);
+        setIsSeeking(false);
+    };
 
     return (
         <View>
@@ -444,35 +463,55 @@ export default function AudioPlayer({
                         });
                     }
                 }}
+                onSeek={(event) => {
+                    const target = seekTargetRef.current;
+                    if (typeof target !== 'number') return;
+                    const requestedMs = Number(event?.seekTime) * 1000;
+                    // Ignore acknowledgements for an older seek if the user
+                    // scrubbed again before the previous native seek finished.
+                    if (event?.seekTime != null && Number.isFinite(requestedMs)
+                        && Math.abs(requestedMs - target) > 1000) return;
+                    const actualMs = event?.currentTime == null
+                        ? target : Number(event.currentTime) * 1000;
+                    finishSeek(actualMs);
+                }}
                 onProgress={(p) => {
                     if (!isLoaded) return;
 
                     const ctMs = (p?.currentTime ?? 0) * 1000;
-                    const v = Number.isFinite(ctMs) ? ctMs : 0;
-                    const seekable = (p?.seekableDuration ?? 0) * 1000;
-                    if (seekable > 0) setSeekableMs(seekable);
-                    if (limitMs && v >= limitMs) {
-                        setWidth(limitMs);
-                        setTempWidth(limitMs);
-                        setPlaying(false);
+                    if (!Number.isFinite(ctMs)) return;
+                    const v = Math.max(0, Math.min(ctMs, maxSeekMs));
+
+                    if (isSeekingRef.current) {
+                        const target = seekTargetRef.current;
+                        // While the user drags, the native slider is the only
+                        // source of thumb position (not onProgress).
+                        if (typeof target !== 'number') return;
+                        // Wait for onSeek. A queued pre-seek progress event could
+                        // otherwise falsely confirm a small seek and snap back.
+                        // Fallback only after native seek has had time to settle.
+                        const elapsed = Date.now() - (seekIssuedAtRef.current ?? Date.now());
+                        if (elapsed >= 1200 && Math.abs(v - target) <= Math.max(750, (elapsed + 350) * rate)) {
+                            finishSeek(v);
+                        }
                         return;
                     }
 
-                    // While seeking or right after seek: ignore until reaching target
-                    if (isSeekingRef.current || isSeeking) {
-                        const target = seekTargetRef.current;
-
-                        // If we're dragging (target null) -> don't update from progress
-                        if (typeof target !== 'number') return;
-
-                        // Unlock only when player reaches the seek target (within epsilon)
-                        if (Math.abs(v - target) <= SEEK_EPSILON_MS) {
-                            seekTargetRef.current = null;
-                            setIsSeeking(false);
-                            isSeekingRef.current = false;
-                            setWidth(v);
-                            setTempWidth(v);
+                    const confirmed = confirmedSeekRef.current;
+                    if (confirmed) {
+                        const ageMs = Date.now() - confirmed.confirmedAt;
+                        // Queued pre-seek progress can arrive after onSeek.
+                        // Never send the thumb back to that stale position.
+                        if (ageMs < 1000 && Math.abs(v - confirmed.positionMs) > 400 + (ageMs + 250) * rate) {
+                            return;
                         }
+                        if (ageMs >= 1000) confirmedSeekRef.current = null;
+                    }
+
+                    if (limitMs && ctMs >= limitMs) {
+                        setWidth(limitMs);
+                        setTempWidth(limitMs);
+                        setPlaying(false);
                         return;
                     }
 
@@ -506,7 +545,7 @@ export default function AudioPlayer({
                     minimumTrackTintColor={themeColor0.bgColor(1)}
                     maximumTrackTintColor={colors.textSecondary}
                     thumbTintColor={themeColor0.bgColor(1)}
-                    value={isSeeking ? tempWidth : width}
+                    value={width}
                     disabled={!isLoaded || total <= 0}
                     onSlidingStart={() => {
                         if (!isLoaded) return;
@@ -517,6 +556,8 @@ export default function AudioPlayer({
                         wasPlayingRef.current = playing;
                         if (playing) setPlaying(false);
                         seekTargetRef.current = null; // dragging, no target yet
+                        seekIssuedAtRef.current = null;
+                        confirmedSeekRef.current = null;
                         setTempWidth(width);
                     }}
                     onValueChange={(value) => {
@@ -534,9 +575,10 @@ export default function AudioPlayer({
                         const capped = limitMs ? Math.min(value, limitMs) : value;
                         const bounded = maxSeekMs > 0 ? Math.min(capped, maxSeekMs) : capped;
                         setTempWidth(bounded);
-                        setWidth(bounded);
+                        setWidth(bounded); // update once, only after release
 
                         seekTargetRef.current = bounded; // ms
+                        seekIssuedAtRef.current = Date.now();
                         playerRef.current?.seek(bounded / 1000);
                         if (wasPlayingRef.current) setPlaying(true);
                     }}
