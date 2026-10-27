@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUser } from '../slices/userSlice';
+import { fetchUser, expireRewardedSubscription } from '../slices/userSlice';
 import { queryClient } from '../lib/queryClient';
 
 /**
@@ -21,6 +21,8 @@ export default function RewardedSubscriptionSync({ navigationRef }) {
         let live = true;
         const checkExpiry = async () => {
             if (!live) return;
+            // Expire local feature flags even without a network connection.
+            if (Date.parse(expiresAt) <= Date.now()) dispatch(expireRewardedSubscription());
             const action = await dispatch(fetchUser(token));
             if (!live || !action.payload) return;
             if (Number(action.payload.active_subscription) !== 1) {

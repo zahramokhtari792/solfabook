@@ -3,7 +3,10 @@ import { ActivityIndicator, AppState, Modal, Pressable, StyleSheet, Text, View }
 import Video from 'react-native-video';
 import axios from 'axios';
 import * as Linking from 'expo-linking';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { fetchUser } from '../slices/userSlice';
+import { langIsRTL } from '../styles/NewStyles';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../context/ThemeProvider';
 import { useLoginModal } from '../context/LoginProvider';
@@ -12,6 +15,9 @@ import { formatDateTime } from '../helpers/Common';
 
 export default function RewardedAdPanel({ onRewardGranted }) {
     const { colors } = useAppTheme();
+    const { t, i18n } = useTranslation();
+    const dispatch = useDispatch();
+    const fontFamily = langIsRTL(i18n.resolvedLanguage || i18n.language || 'en') ? 'VazirBold' : 'VazirThin';
     const { showModal } = useLoginModal();
     const token = useSelector(state => state.auth?.token);
     const [status, setStatus] = useState(null);
@@ -40,7 +46,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
         } catch (error) {
             if (requestId !== statusRequestId.current) return;
             setStatus(null);
-            setMessage('دریافت وضعیت تبلیغات انجام نشد. اتصال اینترنت را بررسی کنید.');
+            setMessage("Could not load ad availability. Check your internet connection.");
         }
     }, [token]);
 
@@ -78,7 +84,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
         const sub = AppState.addEventListener('change', next => {
             // Background play must never qualify as a rewarded view.
             if (next !== 'active' && session) {
-                setMessage('پخش تبلیغ متوقف شد. برای فعال‌سازی اشتراک رایگان، ویدئو را دوباره از ابتدا ببینید.');
+                setMessage("The advertisement stopped. Watch the video again from the beginning to activate your free subscription.");
                 endSession();
             }
         });
@@ -98,8 +104,8 @@ export default function RewardedAdPanel({ onRewardGranted }) {
             setSession({ ...data, id: data.session_id });
         } catch (error) {
             setMessage(error?.response?.status === 429
-                ? 'درخواست‌های زیادی ارسال شده است. لطفاً کمی بعد دوباره تلاش کنید.'
-                : (error?.response?.data?.message || 'فعلاً امکان شروع تبلیغ وجود ندارد.'));
+                ? "Too many requests. Please try again shortly."
+                : "The advertisement cannot be started right now. Please try again.");
             loadStatus();
         } finally { setBusy(false); }
     };
@@ -117,7 +123,7 @@ export default function RewardedAdPanel({ onRewardGranted }) {
             lastHeartbeatPosition.current = second;
             return true;
         } catch (error) {
-            setMessage('ثبت پیشرفت پخش با خطا مواجه شد؛ لطفاً دوباره امتحان کنید.');
+            setMessage("Could not record playback progress. Please try again.");
             endSession();
             return false;
         } finally { heartbeatPending.current = false; }
@@ -141,13 +147,15 @@ export default function RewardedAdPanel({ onRewardGranted }) {
             }, auth);
             confirmedByServer = true;
             setStatus(data.status);
-            setMessage('اشتراک رایگان شما فعال شد.');
+            setMessage("Your free subscription is active with all features.");
+            // Refresh feature flags and persist the reward's exact offline expiry.
+            await dispatch(fetchUser(token));
             onRewardGranted?.();
         } catch (error) {
             if (!confirmedByServer) {
                 const errorMessage = error?.response?.status === 429
-                    ? 'درخواست‌های زیادی ارسال شده است. لطفاً کمی بعد دوباره تلاش کنید.'
-                    : (error?.response?.data?.message || 'تماشای کامل توسط سرور تأیید نشد. لطفاً دوباره تلاش کنید.');
+                    ? "Too many requests. Please try again shortly."
+                    : "The server could not confirm the complete view. Please try again.";
                 setMessage(errorMessage);
             }
         } finally {
@@ -165,31 +173,28 @@ export default function RewardedAdPanel({ onRewardGranted }) {
 
     return (
         <View style={[styles.panel, { backgroundColor: colors.optionSurface || colors.surface, borderColor: colors.border || '#ddd2c4' }]}>
-            <Text style={[styles.heading, { color: colors.text }]}>اشتراک رایگان با تماشای ویدئو</Text>
-            <Text style={[styles.description, { color: colors.text }]}>
-                با تماشای کامل یک ویدئو، اشتراک شما برای {status?.reward_minutes || 120} دقیقه فعال می‌شود. پس از پایان این زمان، دسترسی اشتراکی قطع خواهد شد.
+            <Text style={[styles.heading, { color: colors.text, fontFamily }]}>{t("Free subscription by watching a video")}</Text>
+            <Text style={[styles.description, { color: colors.text, fontFamily }]}>
+                {t("Watch a complete video to activate a subscription with offline downloads and dictionary access for {{minutes}} minutes. Access and offline files expire when this period ends.", { minutes: status?.reward_minutes || 120 })}
             </Text>
             {!!status?.ad_access_expires_at && (
-                <Text style={[styles.description, { color: colors.text }]}>اعتبار اشتراک تا: {formatDateTime(status.ad_access_expires_at)}</Text>
+                <Text style={[styles.description, { color: colors.text, fontFamily }]}>{t("Subscription valid until: {{date}}", { date: formatDateTime(status.ad_access_expires_at) })}</Text>
             )}
-            {status && !!token && <Text style={[styles.description, { color: colors.text }]}>
-                فرصت‌های باقی‌مانده امروز: {status.rewards_remaining} از {status.daily_limit}
-            </Text>}
             {!!status?.enabled && !token && (
-                <Text style={[styles.message, { color: colors.text }]}>برای فعال‌سازی اشتراک رایگان، ابتدا وارد حساب کاربری شوید.</Text>
+                <Text style={[styles.message, { color: colors.text, fontFamily }]}>{t("Sign in first to activate your free subscription.")}</Text>
             )}
-            {!!message && <Text accessibilityRole="alert" style={[styles.message, { color: colors.text }]}>{message}</Text>}
+            {!!message && <Text accessibilityRole="alert" style={[styles.message, { color: colors.text, fontFamily }]}>{t(message)}</Text>}
             {!!status?.enabled && ((!!token && status.can_watch) || (!token && status.has_available_ad)) && <Pressable accessibilityRole="button" onPress={!token ? showModal : start} disabled={busy}
                 style={[styles.action, { backgroundColor: colors.primary || '#961D5A' }]}>
-                {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionText}>{!token ? 'ورود و فعال‌سازی اشتراک رایگان' : 'تماشای ویدئو و فعال‌سازی اشتراک'}</Text>}
+                {busy ? <ActivityIndicator color="#fff" /> : <Text style={[styles.actionText, { fontFamily }]}>{t(!token ? "Sign in and activate free subscription" : "Watch a video and activate subscription")}</Text>}
             </Pressable>}
             <Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${mainUri}/advertise`)} style={styles.requestLink}>
-                <Text style={[styles.requestText, { color: colors.text }]}>درخواست ثبت تبلیغ برای کسب‌وکارها</Text>
+                <Text style={[styles.requestText, { color: colors.text, fontFamily }]}>{t("Advertise your business")}</Text>
             </Pressable>
             <Modal visible={!!session} animationType="fade" onRequestClose={endSession} presentationStyle="fullScreen">
                 <View style={styles.videoPage}>
                     {session && <>
-                        <Text style={styles.videoTitle}>{session.advertisement?.title || 'تبلیغ'}</Text>
+                        <Text style={[styles.videoTitle, { fontFamily }]}>{session.advertisement?.title || t("Advertisement")}</Text>
                         <Video
                             source={{ uri: session.advertisement.video_url }}
                             style={styles.video}
@@ -200,11 +205,11 @@ export default function RewardedAdPanel({ onRewardGranted }) {
                             progressUpdateInterval={1000}
                             onProgress={({ currentTime }) => sendHeartbeat(currentTime)}
                             onEnd={complete}
-                            onError={() => { setMessage('ویدئو قابل پخش نیست.'); endSession(); }}
+                            onError={() => { setMessage("The video could not be played."); endSession(); }}
                         />
-                        <Text style={styles.videoHint}>برای فعال‌سازی اشتراک رایگان، ویدئو را تا انتها تماشا کنید.</Text>
+                        <Text style={[styles.videoHint, { fontFamily }]}>{t("Watch the entire video to activate your free subscription.")}</Text>
                         <Pressable accessibilityRole="button" onPress={endSession} style={styles.close}>
-                            <Text style={styles.closeText}>خروج بدون فعال‌سازی اشتراک</Text>
+                            <Text style={[styles.closeText, { fontFamily }]}>{t("Exit without activating subscription")}</Text>
                         </Pressable>
                     </>}
                 </View>

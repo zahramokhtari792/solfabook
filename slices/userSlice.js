@@ -34,6 +34,18 @@ const userSlice = createSlice({
         })
     },
     reducers: {
+        expireRewardedSubscription: (state) => {
+            if (state.data?.subscription_source !== 'rewarded_ad') return;
+            const expiry = Date.parse(state.data.ad_access_expires_at);
+            if (!Number.isFinite(expiry) || expiry > Date.now()) return;
+            state.data.active_subscription = 0;
+            state.data.is_word = 0;
+            state.data.is_offline_mode = 0;
+            state.data.ad_online_access = 0;
+            state.data.ad_access_expires_at = null;
+            state.data.offline_access_expires_at = null;
+            state.data.subscription_source = null;
+        },
         emptyUser: (state) => {
             state.loading = false;
             state.data = null;
@@ -42,6 +54,6 @@ const userSlice = createSlice({
     }
 });
 
-export const { emptyUser } = userSlice.actions;
+export const { emptyUser, expireRewardedSubscription } = userSlice.actions;
 
 export default userSlice.reducer
