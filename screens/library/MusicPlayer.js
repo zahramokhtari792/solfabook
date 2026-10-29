@@ -22,7 +22,7 @@ import AudioPlayer from '../../components/AudioPlayer'
 import { Ionicons } from '@expo/vector-icons'
 import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { useQuery } from '@tanstack/react-query'
 import LibraryFileLoadError from '../../components/LibraryFileLoadError'
 

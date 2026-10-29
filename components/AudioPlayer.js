@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import Video from 'react-native-video';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { useNewStyles } from '../styles/NewStyles';
 import { themeColor0, themeColor1 } from '../theme/Color';

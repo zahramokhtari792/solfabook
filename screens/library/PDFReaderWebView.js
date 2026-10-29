@@ -11,7 +11,7 @@ import axios from 'axios'
 import { dlUrl, uri } from '../../services/URL'
 import { useSelector } from 'react-redux'
 import { handleError } from '../../helpers/Common'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { useTranslation } from 'react-i18next'
 import PdfReaderHeader from './pdfReaderWebView/components/PdfReaderHeader';
 import PdfSearchBar from './pdfReaderWebView/components/PdfSearchBar';

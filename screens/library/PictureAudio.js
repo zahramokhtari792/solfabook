@@ -20,7 +20,7 @@ import AlbumIcon from '../../assets/svg/AlbumIcon'
 import { themeColor0 } from '../../theme/Color'
 import { CaptureProtection } from '../../helpers/CaptureProtection'
 import { useTranslation } from 'react-i18next'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { useQuery } from '@tanstack/react-query'
 import LibraryFileLoadError from '../../components/LibraryFileLoadError'
 
