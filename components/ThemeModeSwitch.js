@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
         direction: 'ltr',
     },
     decorations: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
     },
     thumb: {
         position: 'absolute',

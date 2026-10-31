@@ -16,6 +16,6 @@ export default function CustomStatusBar() {
     const statusBarBackgroundColor = Platform.OS === 'android' ? themeColor0.bgColor(1) : themeColor0.bgColor(1);
 
     return (
-        <StatusBar barStyle={isDark ? 'dark-content' : 'dark-content'} backgroundColor={statusBarBackgroundColor} animated={true} StatusBarAnimation='fade' />
+        <StatusBar barStyle={isDark ? 'dark-content' : 'dark-content'} animated={true} StatusBarAnimation='fade' />
     )
 }

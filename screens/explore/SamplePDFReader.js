@@ -1055,7 +1055,7 @@ const createPdfUrl = filePath => {
     );
 };
 
-const SamplePDFReader = ({ route }) => {
+const SamplePDFReader = ({ route, navigation }) => {
     const webViewRef =
         useRef(null);
 
@@ -1922,7 +1922,7 @@ const styles = StyleSheet.create({
     },
 
     loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
 
         zIndex: 20,
 
@@ -1942,7 +1942,7 @@ const styles = StyleSheet.create({
     },
 
     errorOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
 
         zIndex: 30,
 

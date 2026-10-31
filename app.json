@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "expo.solfabook.with-webbrowser-redirect",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.solfabook.app",
@@ -36,7 +31,6 @@
         "monochromeImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "edgeToEdgeEnabled": true,
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
@@ -118,6 +112,18 @@
         "react-native-capture-protection",
         {
           "captureType": "restrictedCapture"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "enableFullScreenImage_legacy": true,
+          "android": {
+            "imageWidth": 200
+          }
         }
       ]
     ],
