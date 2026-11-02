@@ -1,7 +1,8 @@
 import React from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../context/ThemeProvider';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /** Show a terminal error instead of leaving a media reader on an endless loader. */
 export default function LibraryFileLoadError({ error, onRetry }) {
@@ -18,7 +19,7 @@ export default function LibraryFileLoadError({ error, onRetry }) {
         : (error?.message || 'دریافت فایل با خطا مواجه شد.');
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', padding: 24 }}>
+    <SafeAreaView edges={{ top: 'off', bottom: 'additive' }} style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', padding: 24 }}>
       <View style={{ alignItems: 'center', gap: 16 }}>
         <Text style={{ color: colors.text, fontFamily: 'VazirBold', fontSize: 16, textAlign: 'center', lineHeight: 30 }}>
           {message}

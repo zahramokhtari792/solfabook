@@ -155,6 +155,7 @@ export const themePalettes = Object.freeze({
         danger: themeColor6.bgColor(1),
         success: themeColor7.bgColor(1),
         warning: themeColor11.bgColor(1),
+        textInputBackground: '#FBF7F0'
     }),
     dark: Object.freeze({
         primary: themeColor0.bgColor(1),
@@ -174,5 +175,6 @@ export const themePalettes = Object.freeze({
         danger: '#EF7777',
         success: '#63C68B',
         warning: '#FFB74D',
+        textInputBackground: '#242424'
     }),
 });

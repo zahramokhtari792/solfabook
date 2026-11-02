@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View, SafeAreaView, BackHandler, RefreshControl } from 'react-native'
+import { FlatList, StyleSheet, Text, View, BackHandler, RefreshControl } from 'react-native'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useNewStyles } from '../../styles/NewStyles';
 import CustomStatusBar from '../../components/CustomStatusBar'
@@ -14,6 +14,7 @@ import DictionaryHome from './DictionaryHome'
 import MusicalHomeSection from '../musicalinstrument/MusicalHomeSection'
 import { useTranslation } from 'react-i18next'
 import RewardedAdEntry from '../../components/RewardedAdEntry';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const Home = () => {
@@ -65,7 +66,7 @@ const Home = () => {
 
   if (loader) { return (<Loader />) }
   return (
-    <SafeAreaView style={NewStyles.container}>
+    <SafeAreaView edges={{top:'off', bottom:'off'}} style={NewStyles.container}>
       <CustomStatusBar />
       <FlatList
         data={data}

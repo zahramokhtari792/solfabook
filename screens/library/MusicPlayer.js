@@ -4,7 +4,6 @@ import {
   Alert,
   Animated,
   FlatList,
-  ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -25,6 +24,8 @@ import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system/legacy'
 import { useQuery } from '@tanstack/react-query'
 import LibraryFileLoadError from '../../components/LibraryFileLoadError'
+import { ImageBackground } from 'expo-image';
+import { useAppTheme } from '../../context/ThemeProvider';
 
 const MusicPlayer = ({ route, navigation }) => {
 
@@ -54,6 +55,7 @@ const MusicPlayer = ({ route, navigation }) => {
   const [cachedCovers, setCachedCovers] = useState({})
 
   const fadeAnim = useRef(new Animated.Value(1)).current
+  const { colors, themeMode } = useAppTheme();
 
   useEffect(() => {
     CaptureProtection.prevent()
@@ -62,15 +64,37 @@ const MusicPlayer = ({ route, navigation }) => {
 
   const fetchFiles = async () => {
 
+    const headers = {
+      Accept: 'application/json',
+      Authorization: `Bearer ${userToken}`,
+    }
+
+    // Purchased albums expose their playable tracks through fetchTrackList.
+    // fetchFiles is for standalone audio files and can legitimately return no
+    // file_audio rows for an album, even when the album itself is purchased.
+    if (Number(file?.is_album) === 1) {
+      const res = await axios.post(
+        `${uri}/fetchTrackList`,
+        { file_id: file?.id, user_id: user?.id },
+        { headers }
+      )
+
+      const tracks = Array.isArray(res?.data) ? res.data : []
+
+      if (!tracks.some(item => item?.file_path)) {
+        throw new Error('فایل‌های صوتی این آلبوم روی سرور در دسترس نیستند.');
+      }
+
+      return {
+        audio: tracks,
+        galleries: Array.isArray(res?.data?.galleries) ? res.data.galleries : [],
+      }
+    }
+
     const res = await axios.post(
       `${uri}/fetchFiles`,
       { id: file?.id },
-      {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
+      { headers }
     )
 
     if (!Array.isArray(res?.data?.file_audio) || !res.data.file_audio.some(item => item?.file_path)) {
@@ -84,7 +108,7 @@ const MusicPlayer = ({ route, navigation }) => {
   }
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['music-player-files', file?.id, userToken],
+    queryKey: ['music-player-files', file?.id, Number(file?.is_album) === 1 ? 'album-tracks' : 'file-audio', userToken],
     queryFn: fetchFiles,
     enabled: !!userToken && !!file?.id,
 
@@ -218,50 +242,50 @@ const MusicPlayer = ({ route, navigation }) => {
 
     setInitialAudioReady(false)
 
-    ;(async () => {
+      ; (async () => {
 
-      try {
+        try {
 
-        const current = audio[musicIndex]
+          const current = audio[musicIndex]
 
-        if (!current) {
-          if (active) {
+          if (!current) {
+            if (active) {
+              setInitialLocalUri(null)
+              setInitialSourceType('remote')
+              setInitialAudioReady(true)
+            }
+            return
+          }
+
+          const { trackId, localPath, localDonePath } = getLocalPaths(current, musicIndex)
+
+          const info = await FileSystem.getInfoAsync(localPath)
+          const done = await FileSystem.getInfoAsync(localDonePath)
+
+          if (active && info.exists && done.exists) {
+
+            setInitialLocalUri(info.uri)
+            setInitialSourceType('local')
+
+            setDownloadedTracks(prev => ({
+              ...prev,
+              [trackId]: true
+            }))
+
+          } else {
+
             setInitialLocalUri(null)
             setInitialSourceType('remote')
-            setInitialAudioReady(true)
+
           }
-          return
-        }
 
-        const { trackId, localPath, localDonePath } = getLocalPaths(current, musicIndex)
+        } finally {
 
-        const info = await FileSystem.getInfoAsync(localPath)
-        const done = await FileSystem.getInfoAsync(localDonePath)
-
-        if (active && info.exists && done.exists) {
-
-          setInitialLocalUri(info.uri)
-          setInitialSourceType('local')
-
-          setDownloadedTracks(prev => ({
-            ...prev,
-            [trackId]: true
-          }))
-
-        } else {
-
-          setInitialLocalUri(null)
-          setInitialSourceType('remote')
+          if (active) setInitialAudioReady(true)
 
         }
 
-      } finally {
-
-        if (active) setInitialAudioReady(true)
-
-      }
-
-    })()
+      })()
 
     return () => { active = false }
 
@@ -304,18 +328,21 @@ const MusicPlayer = ({ route, navigation }) => {
     return <LibraryFileLoadError error={error} onRetry={refetch} />
   }
 
-  const coverUri =
-    cachedCovers[galleries[currentIndex]?.image_path] ??
-    `${dlUrl}/${galleries[currentIndex]?.image_path}`
+  const coverPath =
+    galleries[currentIndex]?.image_path || file?.image_gallery?.image_path
+
+  const coverUri = coverPath
+    ? (cachedCovers[coverPath] ?? `${dlUrl}/${coverPath}`)
+    : undefined
 
   return (
 
     <SafeAreaView style={NewStyles.container} edges={{ top: 'off', bottom: 'additive' }}>
 
       <ImageBackground
-        style={{ flex: 1, paddingTop: 65 }}
+        style={{ flex: 1, paddingTop: 65, backgroundColor: colors.background }}
         source={{ uri: `${dlUrl}/${file?.image_gallery?.image_path}` }}
-        imageStyle={{ opacity: 0.5, backgroundColor: themeColor4.bgColor(1) }}
+        imageStyle={{ opacity: 0.5, backgroundColor: colors.background }}
         blurRadius={25}
       >
 

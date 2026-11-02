@@ -1,4 +1,4 @@
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react';
 import UserIcon from '../assets/svg/UserIcon'
 import { useNewStyles } from '../styles/NewStyles'
@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useInternetStatus } from '../hooks/useInternetStatus'
 import { showToastOrAlert } from '../helpers/Common'
 import { useAppTheme } from '../context/ThemeProvider';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Header = () => {
     const navigation = useNavigation()
@@ -28,7 +29,7 @@ const Header = () => {
     const { colors, isDark } = useAppTheme();
     const accentColor = isDark ? colors.primaryText : colors.primary;
     return (
-        <SafeAreaView style={[{ backgroundColor: colors.background, borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: accentColor }, NewStyles.rowWrapper]}>
+        <SafeAreaView edges={{ top: Platform.OS === 'ios' ? 'additive' : 'off', bottom: 'off' }} style={[{ backgroundColor: colors.background, borderBottomWidth: StyleSheet.hairlineWidth, borderBlockColor: accentColor }, NewStyles.rowWrapper]}>
             <Image source={require('../assets/images/solfabooklogo.png')} style={{ height: 70, width: 70, marginRight: 15 }} />
             <View style={[NewStyles.row, { flex: 1, justifyContent: 'flex-end' }]}>
                 <Pressable style={{ paddingHorizontal: 10 }} onPress={() => {

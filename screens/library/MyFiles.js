@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { handleError, showToastOrAlert } from '../../helpers/Common'
 import { useInternetStatus } from '../../hooks/useInternetStatus'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useFocusEffect } from '@react-navigation/native'
 
 const MyFiles = () => {
 
@@ -59,6 +60,17 @@ const MyFiles = () => {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   })
+
+
+  // Refresh the library whenever this tab becomes active so purchases and
+  // subscription-accessible files appear without a manual pull-to-refresh.
+  useFocusEffect(
+    useCallback(() => {
+      if (userToken && isOnline) {
+        void refetch()
+      }
+    }, [isOnline, refetch, userToken])
+  )
 
 
   const deleteFile = async () => {

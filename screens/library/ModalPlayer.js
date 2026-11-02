@@ -7,6 +7,7 @@ import { useAppTheme } from '../../context/ThemeProvider';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ModalPlayer = ({
     visible,
@@ -47,7 +48,7 @@ const ModalPlayer = ({
         <Modal animationType='slide' visible={visible} onRequestClose={() => {
             setVisible(false)
         }}>
-            <View style={[{ backgroundColor: colors.background, width: '100%', borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, padding: 10 }, NewStyles.row]}>
+            <SafeAreaView edges={{top:'additive', bottom:'additive'}} style={[{ backgroundColor: colors.background, width: '100%', borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, padding: 10 }, NewStyles.row]}>
                 <View style={[{ flex: 1, alignItems: 'flex-end' },]}>
                     <TouchableOpacity style={{ padding: 10, }} onPress={() => {
                         setVisible(false)
@@ -61,7 +62,7 @@ const ModalPlayer = ({
                 <View style={{ flex: 1 }}>
 
                 </View>
-            </View>
+            </SafeAreaView>
             <FlatList
                 style={{ backgroundColor: colors.background }}
                 data={audio}

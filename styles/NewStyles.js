@@ -268,7 +268,7 @@ export const makeStyles = (lang = 'fa', colors = themePalettes.light) => {
 
         textInput: {
             minHeight: 50,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.textInputBackground,
             paddingHorizontal: '5%',
         },
 

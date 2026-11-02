@@ -45,6 +45,20 @@ export default function LoginModal() {
         setValue,
     });
 
+    // The OTP input is mounted only after the verification request succeeds.
+    // Focus it after the modal has laid out so the keyboard is ready immediately.
+    useEffect(() => {
+        if (!loginModal || !code || loginWithPassword) {
+            return undefined;
+        }
+
+        const focusTimeout = setTimeout(() => {
+            ref.current?.focus?.();
+        }, 250);
+
+        return () => clearTimeout(focusTimeout);
+    }, [loginModal, code, loginWithPassword, ref]);
+
     const validatePhone = () => {
         if (phone.match(/^09\d{9}$/)) {
             return true;
@@ -177,7 +191,7 @@ export default function LoginModal() {
                                     </View>
                                 </View>
                                 :
-                                <View style={styles.wrapper}>
+                                <View style={[styles.wrapper, { width: '100%' }]}>
                                     <Text style={NewStyles.text10}>{t('A verification code has been sent to {{phone}}.', { phone })}</Text>
                                     <CodeField
                                         ref={ref}
@@ -185,12 +199,18 @@ export default function LoginModal() {
                                         value={value}
                                         onChangeText={(text) => { setValue(text); }}
                                         cellCount={6}
+                                        rootStyle={{ width: '100%', height: 48, alignSelf: 'center' }}
+                                        textInputStyle={{ opacity: 0.02, zIndex: 10, elevation: 10 }}
+                                        autoFocus
+                                        onPressIn={() => ref.current?.focus?.()}
+                                        caretHidden={false}
                                         keyboardType="number-pad"
                                         textContentType="oneTimeCode"
                                         autoComplete={Platform.select({ android: 'sms-otp', default: 'one-time-code' })}
                                         renderCell={({ index, symbol, isFocused }) => (
                                             <Text
                                                 key={index}
+                                                pointerEvents="none"
                                                 style={[styles.cell, NewStyles.border10, { fontFamily: langIsRTL(lang) ? 'VazirBold' : 'VazirThin' }]}
                                                 onLayout={getCellOnLayoutHandler(index)}>
                                                 {symbol || (isFocused ? <Cursor /> : null)}

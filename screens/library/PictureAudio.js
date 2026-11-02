@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  SafeAreaView,
   Text,
   View,
   TouchableOpacity
@@ -13,7 +12,7 @@ import axios from 'axios'
 import { dlUrl, uri } from './../../services/URL'
 import { useSelector } from 'react-redux'
 import Loader from '../../components/Loader'
-import makeStyles from '../../styles/NewStyles'
+import { useNewStyles } from '../../styles/NewStyles'
 import AudioPlayer from '../../components/AudioPlayer'
 import ModalPlayer from './ModalPlayer'
 import AlbumIcon from '../../assets/svg/AlbumIcon'
@@ -23,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import * as FileSystem from 'expo-file-system/legacy'
 import { useQuery } from '@tanstack/react-query'
 import LibraryFileLoadError from '../../components/LibraryFileLoadError'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PictureAudio = ({ route }) => {
 
@@ -31,7 +31,7 @@ const PictureAudio = ({ route }) => {
   const { i18n, t } = useTranslation()
   const lang = i18n.resolvedLanguage ?? i18n.language ?? 'en'
 
-  const NewStyles = useMemo(() => makeStyles(lang), [lang])
+  const NewStyles = useNewStyles(lang)
 
   const userToken = useSelector(state => state.auth?.token)
 
@@ -248,7 +248,7 @@ const PictureAudio = ({ route }) => {
 
   return (
 
-    <SafeAreaView style={NewStyles.container}>
+    <SafeAreaView edges={{top:'additive', bottom:'additive'}} style={NewStyles.container}>
 
       {audio.length > 0 && (
 

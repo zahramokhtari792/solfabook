@@ -15,7 +15,7 @@ export default function AccordionItem({ item, index, active, setActive }) {
     const NewStyles = useNewStyles(lang);
     const { colors } = useAppTheme();
     return (
-        <Pressable style={[styles.itemWrapper, { backgroundColor: colors.surface }, NewStyles.shadow]} onPress={() => { if (active == item?.id) { setActive() } else { setActive(item?.id) } }}>
+        <Pressable style={[styles.itemWrapper, { backgroundColor: colors.background }, NewStyles.shadow]} onPress={() => { if (active == item?.id) { setActive() } else { setActive(item?.id) } }}>
             <View style={[NewStyles.rowWrapper, { gap: 10 }]}>
                 <Text style={NewStyles.title}>{index + 1}</Text>
                 <Text style={[NewStyles.text10, { flex: 1 }]}>{item?.title}</Text>
